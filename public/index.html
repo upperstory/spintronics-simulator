@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <!-- Basic meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Page title/descriptions -->
+    <title>Spintronics Simulator</title>
+    <meta name="apple-mobile-web-app-title" content="Spintronics Simulator">
+    <meta name="application-name" content="Spintronics Simulator">
+    <meta name="description" content="Spintronics Simulator - Build and test spintronic circuits online.">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Spintronics Simulator">
+    <meta property="og:description" content="Spintronics Simulator - Build and test spintronic circuits online.">
+    <meta property="og:url" content="https://simulator.spintronics.com/">
+    <meta property="og:site_name" content="Spintronics Simulator">
+    <meta property="fb:admins" content="10212589640286261">
+    <meta property="og:image" content="/assets/upper-story-og-banner.jpg">
+    <meta property="og:image:width" content="2000">
+    <meta property="og:image:height" content="1000">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:description" content="Spintronics Simulator - Build and test spintronic circuits online.">
+    <meta name="twitter:title" content="Spintronics Simulator">
+    <meta name="twitter:site" content="@turingtumble">
+    <meta name="twitter:image" content="/assets/upper-story-og-banner.jpg">
+    <meta name="twitter:creator" content="@turingtumble">
+
+    <!-- Favorites icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="24x24" href="/favicon-24x24.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#2b5797">
+    <meta name="theme-color" content="#ffffff">
+    <!-- Favorites icon END -->
+
+    <!--<script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>-->
+    <style type="text/css">
+        /*@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');*/
+
+        html, body {
+            margin: 0px;
+            padding: 0px;
+        }
+
+         .prepreloader {
+             border: 16px solid #f3f3f3;
+             border-radius: 50%;
+             border-top: 16px solid #3498db;
+             width: 120px;
+             height: 120px;
+             -webkit-animation: spin 2s linear infinite; /* Safari */
+             animation: spin 2s linear infinite;
+         }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+
+    <!-- Preloaded items -->
+    <link rel="preload" href="https://fonts.googleapis.com/css?family=Roboto&display=swap" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap">
+</head>
+
+<body>
+    <div style="font-family: Roboto; position: absolute; left: -1000px; visibility: hidden;">.</div>
+
+    <div id="prepreloader-box" style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%">
+        <div style="display: inline-block; width: 100%; text-align: center">
+            <p style="font-family: Roboto; font-size: 16px; margin-top: calc(50vh - 80px)">Loading Spintronics Simulator v1.0...</p>
+        </div>
+        <div style="display: inline-block; width: 100%; text-align: center;">
+            <div style="display: inline-block" class="prepreloader"></div>
+        </div>
+    </div>
+
+    <!-- Once this loads, it overlays the preloader div. -->
+    <div style="width:100%; height:100%; position:absolute; left: 0px; top: 0px;" id="phaserparent"></div>
+
+    <script src="phaser.min.js"></script>
+    <script src="planck.min.js"></script>
+    <script src="Tone.js"></script>
+
+    <script type="module" src="spintronicssimulator.js"></script>
+
+</body>
+
+</html>

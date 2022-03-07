@@ -1,0 +1,8 @@
+{
+  "name": "Spintronics Simulator",
+  "description": "A free, online simulator of spintronic circuits.",
+  "repository": "https://github.com/upperstory/spintronics-simulator",
+  "logo": "https://cdn.rawgit.com/heroku/node-js-getting-started/main/public/node.svg",
+  "keywords": ["spintronics", "simulator", "upper story"],
+  "image": "heroku/nodejs"
+}

@@ -1,0 +1,17 @@
+# Node build artifacts
+node_modules
+npm-debug.log
+
+# Local development
+*.env
+*.dev
+.DS_Store
+no_publish
+.gitGitHub
+.gitHeroku
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+

@@ -1,0 +1,11 @@
+RewriteEngine on
+
+#Redirect http requests to simulator.spintronics.com to https requests
+RewriteCond %{HTTP_HOST} ^simulator\.spintronics\.com$
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=302]
+
+
+#ErrorDocument 404 https://www.upperstory.com/404page.html
+
+AddType application/spintronicssimulator spin
