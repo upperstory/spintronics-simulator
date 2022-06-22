@@ -51,7 +51,7 @@ export class PartManager {
 
     addPart(partType, x, y, value = null)
     {
-        if (partType == 'junction') {
+        if (partType === 'junction') {
             var newPart = new JunctionPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -62,7 +62,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'button') {
+        else if (partType === 'button') {
             var newPart = new ButtonPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -77,7 +77,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'resistor') {
+        else if (partType === 'resistor') {
             var newPart = new ResistorPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -88,14 +88,14 @@ export class PartManager {
             if (value != null)
             {
                 let requestedValue = ResistorPart.possibleResistorValues.indexOf(value);
-                if (requestedValue == -1)
+                if (requestedValue === -1)
                     requestedValue = 0;
                 newPart.setResistance(requestedValue);
             }
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'capacitor') {
+        else if (partType === 'capacitor') {
             var newPart = new CapacitorPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -107,14 +107,14 @@ export class PartManager {
             if (value != null)
             {
                 let requestedValue = CapacitorPart.possibleCapacitanceValues.indexOf(value);
-                if (requestedValue == -1)
+                if (requestedValue === -1)
                     requestedValue = 0;
                 newPart.setCapacitance(requestedValue);
             }
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'diode') {
+        else if (partType === 'diode') {
             var newPart = new DiodePart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -125,7 +125,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'transistor') {
+        else if (partType === 'transistor') {
             var newPart = new TransistorPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -141,7 +141,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'level-changer') {
+        else if (partType === 'level-changer') {
             var newPart = new LevelChangerPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -152,7 +152,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'phonograph') {
+        else if (partType === 'phonograph') {
             var newPart = new PhonographPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -163,7 +163,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'motor') {
+        else if (partType === 'motor') {
             var newPart = new MotorPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -174,7 +174,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'inductor') {
+        else if (partType === 'inductor') {
             var newPart = new InductorPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -185,7 +185,7 @@ export class PartManager {
             if (value != null)
             {
                 let requestedValue = InductorPart.possibleInductanceValues.indexOf(value);
-                if (requestedValue == -1)
+                if (requestedValue === -1)
                     requestedValue = 0;
                 newPart.setInductance(requestedValue);
             }
@@ -193,7 +193,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'tile') {
+        else if (partType === 'tile') {
             var newPart = new TilePart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
             newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
@@ -204,7 +204,7 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-        else if (partType == 'tile-connector') {
+        else if (partType === 'tile-connector') {
             var newPart = new TileConnectorPart(this.scene, x, y, this.world);
             this.parts.push(newPart);
             return newPart;
@@ -220,7 +220,7 @@ export class PartManager {
         // First, delete all the connectors. Start over.
         for (let i = 0; i < this.parts.length; i++)
         {
-            if (this.parts[i].partType == 'tile-connector') {
+            if (this.parts[i].partType === 'tile-connector') {
                 // Now destroy the part
                 this.parts[i].destroy();
                 this.parts.splice(i, 1);
@@ -230,12 +230,12 @@ export class PartManager {
         // Iterate through all the tiles. For each tile, iterate through all other tiles, looking for adjacent tiles.
         for (let i = 0; i < this.parts.length; i++)
         {
-            if (this.parts[i].partType == 'tile' || this.parts[i].partType == 'motor')
+            if (this.parts[i].partType === 'tile' || this.parts[i].partType === 'motor')
             {
                 // Iterate through all the other tiles
                 for (let j = i + 1; j < this.parts.length; j++)
                 {
-                    if (this.parts[j].partType == 'tile' || this.parts[j].partType == 'motor')
+                    if (this.parts[j].partType === 'tile' || this.parts[j].partType === 'motor')
                     {
                         // Check if the tile 'j' is adjacent to the current one 'i'.
                         // Calculate the distance between the tiles
@@ -274,7 +274,7 @@ export class PartManager {
         for (let i = 0; i < this.parts.length; i++)
         {
             //console.log(this.parts[partIndex]);
-            if (this.chainBeingBuilt.connections[0].part == this.parts[i]) {
+            if (this.chainBeingBuilt.connections[0].part === this.parts[i]) {
 
                 retVal.partIndex = i;
                 retVal.cw = this.chainBeingBuilt.connections[0].cw;
@@ -361,35 +361,35 @@ export class PartManager {
 
     onPartClicked(part, pointer)
     {
-        if (this.toolMode == 'delete')
+        if (this.toolMode === 'delete')
         {
             let partIndex = 0;
             //Get the part index.
             for (let i = 0; i < this.parts.length; i++)
             {
-                if (this.parts[i] == part) {
+                if (this.parts[i] === part) {
                     partIndex = i;
                 }
             }
 
             this.deletePart(partIndex);
         }
-        else if (this.toolMode == 'edit')
+        else if (this.toolMode === 'edit')
         {
             let partIndex = 0;
             //Get the part index.
             for (let i = 0; i < this.parts.length; i++)
             {
-                if (this.parts[i] == part) {
+                if (this.parts[i] === part) {
                     partIndex = i;
                 }
             }
             this.changePartProperty(partIndex);
         }
-        else if (this.toolMode == 'interact')
+        else if (this.toolMode === 'interact')
         {
             // The button part should change state if the center of it is clicked in Interact mode.
-            if (part.partType == 'button')
+            if (part.partType === 'button')
                 part.clickedInInteractMode(pointer);
 
         }
@@ -413,7 +413,7 @@ export class PartManager {
             for (let d = 0; d < thisChain.connections.length; d++)
             {
                 let thisConnection = thisChain.connections[d];
-                if (thisConnection.part == this.parts[partIndex])
+                if (thisConnection.part === this.parts[partIndex])
                 {
                     thisChain.connections.splice(d, 1);
                     d--;
@@ -444,13 +444,13 @@ export class PartManager {
 
     onChainClicked(chain, pointer)
     {
-        if (this.toolMode == 'delete')
+        if (this.toolMode === 'delete')
         {
             let chainIndex = 0;
             //Get the part index.
             for (let i = 0; i < this.chains.length; i++)
             {
-                if (this.chains[i] == chain) {
+                if (this.chains[i] === chain) {
                     chainIndex = i;
                 }
             }
@@ -508,11 +508,11 @@ export class PartManager {
     onPointerMoveOverPart(part, pointer)
     {
         // The pointer moved over the part 'part'.
-        if (this.toolMode == 'delete')
+        if (this.toolMode === 'delete')
         {
             part.setPartTint(0xFF0000);
         }
-        else if (this.toolMode == 'move')
+        else if (this.toolMode === 'move')
         {
             part.setPartTint(0xDDDDDD);
             if (this.partDragging)
@@ -520,7 +520,7 @@ export class PartManager {
             else
                 this.scene.input.setDefaultCursor('grab');
         }
-        else if (this.toolMode == 'edit')
+        else if (this.toolMode === 'edit')
         {
             part.setPartTint(0xDDDDDD);
         }
@@ -529,7 +529,7 @@ export class PartManager {
     onPointerMoveOutOfPart(part, pointer)
     {
         // The pointer moved off the part 'part'.
-        if (this.toolMode == 'delete')
+        if (this.toolMode === 'delete')
         {
             part.clearPartTint();
         }
@@ -718,7 +718,7 @@ export class PartManager {
 
             for (var i = 0; i < part.sprocketExists.length; i++)
             {
-                if (part.sprocketExists[i] == false)
+                if (part.sprocketExists[i] === false)
                     continue;
 
                 var sprocketCenter = {x: part.x + part.sprocketCenter[i].x, y: part.y + part.sprocketCenter[i].y};
@@ -776,16 +776,16 @@ export class PartManager {
     onPartDragStart(part, pointer, dragX, dragY, physicsBody)
     {
         let worldPointer = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
-        if (this.toolMode == 'move') {
+        if (this.toolMode === 'move') {
             this.dragDiff.x = worldPointer.x - part.x;
             this.dragDiff.y = worldPointer.y - part.y;
             this.partDragging = true;
             this.scene.input.setDefaultCursor('grabbing');
         }
-        else if (this.toolMode == 'interact') {
+        else if (this.toolMode === 'interact') {
             let point = {x: (worldPointer.x - part.x) / worldScale, y: (worldPointer.y - part.y) / worldScale};
 //            let point = {x: worldPointer.x / worldScale, y: worldPointer.y / worldScale};
-            if (physicsBody != undefined) {
+            if (physicsBody !== undefined) {
                 this.mouseJoint = planck.MouseJoint({maxForce: 1000}, this.mouseGround, physicsBody, planck.Vec2(point));
                 this.world.createJoint(this.mouseJoint);
             }

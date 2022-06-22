@@ -10,7 +10,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
         this.textureDefault = textureDefault;
         this.textureHover = textureHover;
         this.texturePressed = texturePressed;
-        this.textureIcon = textureIcon;
+        // this.textureIcon = textureIcon;
         this.toggledCallback = pressedCallback;
         this.textureDisabled = textureDisabled;
         this.buttonType = 'default';
@@ -73,10 +73,10 @@ export class ToggleButton extends Phaser.GameObjects.Container
         }
     }
 
-    setImageScale(scaleFactor)
-    {
-        this.buttonIcon.setScale(scaleFactor);
-    }
+    // setImageScale(scaleFactor)
+    // {
+    //     this.buttonIcon.setScale(scaleFactor);
+    // }
 
     getToggleState ()
     {
@@ -89,29 +89,29 @@ export class ToggleButton extends Phaser.GameObjects.Container
         this.tooltipJustify = tooltipJustify;
     }
 
-    setTooltipJustify(tooltipJustify)
-    {
-        this.tooltipJustify = tooltipJustify;
-    }
+    // setTooltipJustify(tooltipJustify)
+    // {
+    //     this.tooltipJustify = tooltipJustify;
+    // }
 
     setToggleState (toggleState)
     {
         if (this.disabled)
             return;
 
-        if (this.toggleState == false && toggleState == true)
+        if (this.toggleState === false && toggleState === true)
         {
             this.buttonBackground.setTexture(this.texturePressed);
         }
-        else if (this.toggleState == false && toggleState == false)
+        else if (this.toggleState === false && toggleState === false)
         {
             this.buttonBackground.setTexture(this.textureDefault);
         }
-        else if (this.toggleState == true && toggleState == true)
+        else if (this.toggleState === true && toggleState === true)
         {
             this.buttonBackground.setTexture(this.texturePressed);
         }
-        else if (this.toggleState == true && toggleState == false)
+        else if (this.toggleState === true && toggleState === false)
         {
             this.buttonBackground.setTexture(this.textureDefault);
         }
@@ -123,11 +123,11 @@ export class ToggleButton extends Phaser.GameObjects.Container
         if (this.disabled)
             return;
 
-        if (this.buttonType == 'default')
+        if (this.buttonType === 'default')
         {
             this.buttonBackground.setTexture(this.texturePressed);
         }
-        else if (this.buttonType == 'toggle') {
+        else if (this.buttonType === 'toggle') {
             this.setToggleState(true);
             this.toggledCallback.bind(this.parentContainer)(this.name, this.toggleState);
         }
@@ -139,7 +139,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
         if (this.disabled)
             return;
 
-        if (this.buttonType == 'default')
+        if (this.buttonType === 'default')
         {
             this.buttonBackground.setTexture(this.textureHover);
             this.toggledCallback.bind(this.parentContainer)(this.name, true);
@@ -152,7 +152,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
         if (this.disabled)
             return;
 
-        if (this.toggleState == false)
+        if (this.toggleState === false)
         {
             this.buttonBackground.setTexture(this.textureHover);
         }
@@ -165,7 +165,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
         this.buttonIcon.alpha = 1;
 
         // Draw the Tooltip
-        if (this.tooltipString != "" && this.tooltipText == null) {
+        if (this.tooltipString !== "" && this.tooltipText == null) {
             // Make this button the top-most item
             this.setDepth(17);
 
@@ -183,7 +183,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
             this.toolTipGraphics = this.thisScene.add.graphics();
             this.toolTipGraphics.lineStyle(2, 0x111111, 1);
             this.toolTipGraphics.fillStyle(0xffffff, 1);
-            if (this.tooltipJustify == 'right')
+            if (this.tooltipJustify === 'right')
                 this.toolTipGraphics.fillRoundedRect((this.width / 2) + 8 - 4, (-textBounds.height / 2) - 2, textBounds.width + 8, textBounds.height + 4, 6);
             else
                 this.toolTipGraphics.fillRoundedRect(-((this.width / 2) + 8 + 4 + textBounds.width), (-textBounds.height / 2) - 2, textBounds.width + 8, textBounds.height + 4, 6);
@@ -193,7 +193,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
             //this.textRectangle = this.thisScene.add.rectangle((this.width / 2) + 8 + (textBounds.width / 2), (-textBounds.height / 2), textBounds.width, textBounds.height, 0xffffff);
             //this.add(this.textRectangle);
 
-            if (this.tooltipJustify == 'right')
+            if (this.tooltipJustify === 'right')
                 this.tooltipText.setPosition(this.width / 2 + 8, -textBounds.height / 2);
             else
                 this.tooltipText.setPosition(-(this.width / 2 + 8 + textBounds.width), -textBounds.height / 2);
@@ -209,7 +209,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
             return;
 
         // console.log('pointer out');
-        if (this.toggleState == false)
+        if (this.toggleState === false)
         {
             this.buttonBackground.setTexture(this.textureDefault);
         }

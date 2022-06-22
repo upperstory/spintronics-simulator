@@ -2,10 +2,12 @@ import { ToggleButton } from './toggle-button.js';
 import { PartBase } from './parts/partbase.js';
 import { PartManager } from './part-manager.js';
 import { PopupLevelChooser } from './popup-level-chooser.js';
-import {tileSpacing} from './constants.js';
+import { tileSpacing } from './constants.js';
+import GesturesPlugin from "./phaser3-rex-plugins/plugins/gestures-plugin.js";
 
-let mapWidth = 10000;
-let mapHeight = 10000;
+// console.log("In spintronicssimulator js...");
+let mapWidth = 4000;
+let mapHeight = 4000;
 
 let buttonWidth = 70;
 let buttonHeight = 70;
@@ -13,6 +15,8 @@ let buttonHeight = 70;
 const dpr = window.devicePixelRatio;
 const width = window.innerWidth * dpr;
 const height = window.innerHeight * dpr;
+
+console.log("width: ", width, ", height: ", height, ", dpr: ", dpr);
 
 let config = {
     type: Phaser.AUTO,
@@ -43,6 +47,15 @@ let config = {
         preload: preload,
         create: create,
         update: update
+    },
+    plugins: {
+        scene: [
+            {
+                plugin: GesturesPlugin,
+                key: 'rexGestures',
+                mapping: 'rexGestures'
+            }
+        ]
     }
 };
 
@@ -89,7 +102,7 @@ let partClickedForLevelSelect = {partIndex: -1, cw: false};
 
 let partManager = null;
 
-let highlightGraphics = null;
+// let highlightGraphics = null;
 
 // We have to have this variable because of an apparent bug in Phaser that sends POINTER_OVER events to the scene first when objects are in a container in the scene.
 let disablePointerOverEvent = false;
@@ -280,6 +293,7 @@ function preload ()
 
 function preloaderResize (gameSize, baseSize, displaySize, resolution)
 {
+    // console.log("preloaderResize params passed in. Gamesize: ", gameSize, " basesize ", baseSize, " displaysize ", displaySize, " resolution ", resolution);
     let width = this.cameras.main.width;
     let height = this.cameras.main.height;
 
@@ -309,7 +323,7 @@ function create ()
     this.viewOnly = false;
     if (urlParams.has('viewOnly')) {
         const viewOnly = urlParams.get('viewOnly');
-        if (viewOnly == 'true')
+        if (viewOnly === 'true')
             this.viewOnly = true;
     }
 
@@ -358,7 +372,7 @@ function create ()
     graphics.destroy();
 
     graphics = controlscene.add.graphics();
-    graphics.fillStyle(0x0097B3, 1);
+    graphics.fillStyle(0x992F7E, 1);
     graphics.lineStyle(2,0x111111, 0.8);
     graphics.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10);
     graphics.strokeRoundedRect(1, 1, buttonWidth-2, buttonHeight-2, 10);
@@ -486,6 +500,52 @@ function create ()
 
     this.useZoomExtents = false;
     this.scale.on('resize', resize, this);
+
+    // Kelly Test Pinch //
+    // let print = this.add.text(0, 0, 'Hello World');
+    // let circle = this.add.circle(0, 0, 100, 0x888888);
+    // let pinch = this.rexGestures.add.pinch();
+    // console.log("Pinch: ", pinch);
+
+    let dragScale = this.rexGestures.add.pinch();
+    var camera = this.cameras.main;
+    dragScale
+        .on('drag1', function (dragScale) {
+            var drag1Vector = dragScale.drag1Vector;
+            camera.scrollX -= drag1Vector.x / camera.zoom;
+            camera.scrollY -= drag1Vector.y / camera.zoom;
+        })
+        .on('pinch', function (dragScale) {
+            var scaleFactor = dragScale.scaleFactor;
+            camera.zoom *= scaleFactor;
+        }, this)
+
+    // Kelly Test Pinch
+    // pinch
+    //     .on('drag1', function (pinch) {
+    //         var drag1Vector = pinch.drag1Vector;
+    //         circle.x += drag1Vector.x;
+    //         circle.y += drag1Vector.y;
+    //     })
+    //     .on('pinch', function (pinch) {
+    //         var scaleFactor = pinch.scaleFactor;
+    //         circle.scaleX *= scaleFactor;
+    //         circle.scaleY *= scaleFactor;
+    //         print.text = circle.scaleX;
+    //     }, this)
+    //     .on('drag1start', function (pinch) {
+    //         print.text = 'drag1start';
+    //     }, this)
+    //     .on('drag1end', function (pinch) {
+    //         print.text = 'drag1end';
+    //     }, this)
+    //     .on('pinchstart', function (pinch) {
+    //         print.text = 'pinchstart';
+    //     }, this)
+    //     .on('pinchend', function (pinch) {
+    //         print.text = 'pinchend';
+    //     }, this)
+
     //let worldCenter = this.cameras.main.getWorldPoint(this.cameras.main.centerX, this.cameras.main.centerY);
     //let topleft = this.cameras.main.getWorldPoint(0,0);
     //let bottomright = this.cameras.main.getWorldPoint(this.cameras.main.width,this.cameras.main.height);
@@ -592,6 +652,7 @@ var startingDragCenter = {x: 0, y: 0};
 var startingPointer = {x: 0, y: 0};
 function onDragStart(pointer, dragX, dragY)
 {
+    console.log("In on drag start function...");
     if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         startingDragCenter = self.cameras.main.getWorldPoint(self.cameras.main.centerX, self.cameras.main.centerY);
         startingPointer.x = pointer.x;
@@ -605,6 +666,7 @@ function onDragStart(pointer, dragX, dragY)
 
 function onDrag(pointer, dragX, dragY)
 {
+    console.log("In on drag function...");
     if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         let desiredCenterPosition = {x: 0, y: 0};
         desiredCenterPosition.x = startingDragCenter.x - (pointer.x - startingPointer.x) / self.cameras.main.zoom;
@@ -615,6 +677,7 @@ function onDrag(pointer, dragX, dragY)
 
 function onDragEnd(pointer, dragX, dragY)
 {
+    console.log("In on drag end function...");
     if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         mapDragging = false;
         self.input.setDefaultCursor('default');
@@ -1353,7 +1416,7 @@ function onZoomOutClicked(name, newToggleState)
 }
 
 
-var objects = {};
+// var objects = {};
 function onSwitchToggled (name, newToggleState)
 {
     self.chainbutton.setToggleState(false);
@@ -1374,107 +1437,107 @@ function onSwitchToggled (name, newToggleState)
     self.editbutton.setToggleState(false);
     partManager.setToolMode('default');
     partManager.cancelChain();
-
-    if (name == 'chain')
+    console.log("In onSwitchToggled function. Passed in name: ", name);
+    if (name === 'chain')
     {
         self.chainbutton.setToggleState(true);
         mouseImage.setVisible(false);
     }
-    else if (name == 'junction')
+    else if (name === 'junction')
     {
         self.junctionbutton.setToggleState(true);
         mouseImage.setTexture('junction');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'motor')
+    else if (name === 'motor')
     {
         self.motorbutton.setToggleState(true);
         mouseImage.setTexture('motor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'resistor')
+    else if (name === 'resistor')
     {
         self.resistorbutton.setToggleState(true);
         mouseImage.setTexture('resistor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'capacitor')
+    else if (name === 'capacitor')
     {
         self.capacitorbutton.setToggleState(true);
         mouseImage.setTexture('capacitor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'inductor')
+    else if (name === 'inductor')
     {
         self.inductorbutton.setToggleState(true);
         mouseImage.setTexture('inductor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'phonograph')
+    else if (name === 'phonograph')
     {
         self.phonographbutton.setToggleState(true);
         mouseImage.setTexture('phonograph');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'diode')
+    else if (name === 'diode')
     {
         self.diodebutton.setToggleState(true);
         mouseImage.setTexture('diode');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'button')
+    else if (name === 'button')
     {
         self.buttonbutton.setToggleState(true);
         mouseImage.setTexture('button');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'transistor')
+    else if (name === 'transistor')
     {
         self.transistorbutton.setToggleState(true);
         mouseImage.setTexture('transistor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'level-changer')
+    else if (name === 'level-changer')
     {
         self.levelchangerbutton.setToggleState(true);
         mouseImage.setTexture('level-changer');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'tile')
+    else if (name === 'tile')
     {
         self.tilebutton.setToggleState(true);
         mouseImage.setTexture('tile');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
         mouseImage.setVisible(true);
     }
-    else if (name == 'interact') {
+    else if (name === 'interact') {
         self.interactbutton.setToggleState(true);
         mouseImage.setVisible(false);
         partManager.setToolMode.bind(partManager)('interact');
     }
-    else if (name == 'move')
+    else if (name === 'move')
     {
         self.movebutton.setToggleState(true);
         mouseImage.setVisible(false);
         partManager.setToolMode.bind(partManager)('move');
     }
-    else if (name == 'delete')
+    else if (name === 'delete')
     {
         self.deletebutton.setToggleState(true);
         mouseImage.setVisible(false);
         partManager.setToolMode.bind(partManager)('delete');
     }
-    else if (name == 'edit')
+    else if (name === 'edit')
     {
         self.editbutton.setToggleState(true);
         mouseImage.setVisible(false);
@@ -1662,47 +1725,64 @@ function drawHighlight(centerX, centerY, radius, thickness, angle, cw)
 
 function onPointerDown(pointer, currentlyOver)
 {
+    console.log("In onPointerDown function, passed in pointer: ", pointer, " this: ", this);
     let worldPointer = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
     // Drop a part if we've got a part selected
     if (this.junctionbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('junction', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.junctionbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.buttonbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('button', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.buttonbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.resistorbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('resistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.resistorbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.capacitorbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('capacitor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.capacitorbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.diodebutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('diode', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.diodebutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.transistorbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('transistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.transistorbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.levelchangerbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('level-changer', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.levelchangerbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.phonographbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('phonograph', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        this.phonographbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.motorbutton.getToggleState())
     {
@@ -1710,11 +1790,18 @@ function onPointerDown(pointer, currentlyOver)
         partManager.addPart('motor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
         // Update all the tile connectors
         partManager.updateTileConnectors();
+        // Kelly testing to get rid of hover image after pointer down...
+        console.log("in pointer down function, if motorbutton...");
+        this.motorbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.inductorbutton.getToggleState())
     {
         var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
         partManager.addPart('inductor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+        // Kelly testing to get rid of hover image after pointer down...
+        this.inductorbutton.setToggleState(false);
+        mouseImage.setVisible(false);
     }
     else if (this.tilebutton.getToggleState())
     {
@@ -1722,6 +1809,8 @@ function onPointerDown(pointer, currentlyOver)
         partManager.addPart('tile', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
         // Update all the tile connectors
         partManager.updateTileConnectors();
+        this.tilebutton.setToggleState(false);
+        mouseImage.setVisible(false);
 
     }
     else if (this.chainbutton.getToggleState())
@@ -1916,6 +2005,7 @@ function drawBackgroundGrid ()
         this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + (-1/Math.sqrt(3)) * mapWidth);
     }
 
+    // red asterik star in middle of background
     this.backgroundGrid.lineStyle(1, 0xFF0000, 0.35);
     this.backgroundGrid.lineBetween(-gridSpacing, 0, gridSpacing, 0);
     this.backgroundGrid.lineBetween(-gridSpacing*(1/2), -gridSpacing*(Math.sqrt(3)/2), gridSpacing*(1/2), gridSpacing*(Math.sqrt(3)/2));

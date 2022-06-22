@@ -4,7 +4,7 @@
 
     <!-- Basic meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Page title/descriptions -->
     <title>Spintronics Simulator</title>
@@ -44,8 +44,8 @@
         /*@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');*/
 
         html, body {
-            margin: 0px;
-            padding: 0px;
+            margin: 0;
+            padding: 0;
         }
 
          .prepreloader {
@@ -89,10 +89,12 @@
     </div>
 
     <!-- Once this loads, it overlays the preloader div. -->
-    <div style="width:100%; height:100%; position:absolute; left: 0px; top: 0px;" id="phaserparent"></div>
+    <div style="width:100%; height:100%; position:absolute; left: 0; top: 0;" id="phaserparent"></div>
 
     <script src="phaser.min.js"></script>
     <script src="planck.min.js"></script>
+<!--    Kelly Test   -->
+    <script src="./phaser3-rex-plugins/plugins/gestures.js"></script>
     <script src="Tone.js"></script>
 
     <script type="module" src="spintronicssimulator.js"></script>
