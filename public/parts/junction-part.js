@@ -38,8 +38,8 @@ export class JunctionPart extends PartBase
         this.partImage.setScale(0.5);
         this.partImage.setDepth(2);
         //this.add(this.partImage);
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
         // Set the size of the container to the size of the biggest piece (this base sprocket)
         //this.setSize(this.partWidth, this.partHeight);
         //this.partCenterX = this.partWidth / 2;

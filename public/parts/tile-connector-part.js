@@ -13,8 +13,8 @@ export class TileConnectorPart extends PartBase
         this.partImage.setScale(0.5);
         this.partImage.setDepth(1);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
     }
 
     serialize()

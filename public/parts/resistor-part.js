@@ -21,12 +21,8 @@ export class ResistorPart extends PartBase
         this.partImage.setDepth(8);
         //this.add(this.partImage);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
-        //this.setSize(this.partWidth, this.partHeight);
-
-        //this.partCenterX = this.partWidth / 2;
-        //this.partCenterY = this.partHeight / 2;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
 
         // Set the listeners
         this.partImage.setInteractive({
@@ -222,7 +218,7 @@ export class ResistorPart extends PartBase
     {
         this.x = x;
         this.y = y;
-        if (this.partImage != undefined)
+        if (this.partImage !== undefined)
             this.partImage.setPosition(x, y);
     }
 

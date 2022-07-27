@@ -361,6 +361,8 @@ export class PartManager {
 
     onPartClicked(part, pointer)
     {
+        console.log("Part: ", part, " pointer: ", pointer);
+
         if (this.toolMode === 'delete')
         {
             let partIndex = 0;
@@ -533,12 +535,12 @@ export class PartManager {
         {
             part.clearPartTint();
         }
-        else if (this.toolMode == 'move')
+        else if (this.toolMode === 'move')
         {
             part.clearPartTint();
             this.scene.input.setDefaultCursor('default');
         }
-        else if (this.toolMode == 'edit')
+        else if (this.toolMode === 'edit')
         {
             part.clearPartTint();
         }
@@ -547,7 +549,7 @@ export class PartManager {
     onPointerMoveOverChain(chain, pointer)
     {
         // The pointer moved over the part 'part'.
-        if (this.toolMode == 'delete')
+        if (this.toolMode === 'delete')
         {
             chain.setTintFill(0xAA0000);
         }
@@ -579,7 +581,7 @@ export class PartManager {
         {
             chainLength += this.chains[i].chainLength;
         }
-        console.log(chainLength);
+        // console.log(chainLength);
     }
 
     redrawChainBeingBuilt(pointer)
@@ -687,7 +689,7 @@ export class PartManager {
             for (let j = 0; j < thisChain.connections.length; j++)
             {
                 let thisConnection = thisChain.connections[j];
-                if (thisConnection.part == nextPart && thisConnection.level == nextSprocket.level)
+                if (thisConnection.part === nextPart && thisConnection.level === nextSprocket.level)
                 {
                     return null;
                 }
@@ -698,7 +700,7 @@ export class PartManager {
         for (let j = 1; j < this.chainBeingBuilt.connections.length; j++)
         {
             let thisConnection = this.chainBeingBuilt.connections[j];
-            if (thisConnection.part == nextPart && thisConnection.level == nextSprocket.level)
+            if (thisConnection.part === nextPart && thisConnection.level === nextSprocket.level)
             {
                 return null;
             }
@@ -775,6 +777,7 @@ export class PartManager {
 
     onPartDragStart(part, pointer, dragX, dragY, physicsBody)
     {
+        console.log("In part-manager, onPartDragStart function: ", part, " dragX ", dragX);
         let worldPointer = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
         if (this.toolMode === 'move') {
             this.dragDiff.x = worldPointer.x - part.x;
@@ -794,14 +797,15 @@ export class PartManager {
 
     onPartDragEnd(part, pointer, dragX, dragY, physicsBody)
     {
+        console.log("In part-manager, onPartDragEnd function: ", part, " dragX ", dragX);
         let worldPointer = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
-        if (this.toolMode == 'move') {
+        if (this.toolMode === 'move') {
             this.redrawChains();
             this.updateTileConnectors();
             this.partDragging = false;
             this.scene.input.setDefaultCursor('grab');
         }
-        else if (this.toolMode == 'interact') {
+        else if (this.toolMode === 'interact') {
             let point = {x: (worldPointer.x - part.x) / worldScale, y: (worldPointer.y - part.y) / worldScale};
 
             if (this.mouseJoint) {
@@ -813,14 +817,15 @@ export class PartManager {
 
     onPartDrag(part, pointer, dragX, dragY, physicsBody)
     {
+        console.log("In part-manager, onPartDrag function: ", part, " dragX ", dragX);
         let worldPointer = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
-        if (this.toolMode == 'move') {
+        if (this.toolMode === 'move') {
             let desiredPosition = {x: 0, y: 0};
             desiredPosition.x = worldPointer.x - this.dragDiff.x;
             desiredPosition.y = worldPointer.y - this.dragDiff.y;
 
             let snapPosition;
-            if (part.partType == 'motor' || part.partType == 'tile')
+            if (part.partType === 'motor' || part.partType === 'tile')
             {
                 snapPosition = PartBase.getSnapPosition(desiredPosition, tileSpacing);
             } else {
@@ -831,7 +836,7 @@ export class PartManager {
             this.redrawChains();
             this.updateTileConnectors();
         }
-        else if (this.toolMode == 'interact') {
+        else if (this.toolMode === 'interact') {
             let point = {x: (worldPointer.x - part.x) / worldScale, y: (worldPointer.y - part.y) / worldScale};
 
             if (this.mouseJoint) {

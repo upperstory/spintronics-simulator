@@ -175,19 +175,19 @@ export class PartBase extends Phaser.GameObjects.Container
 
         var mindist = Math.min(topleftdist, toprightdist, bottomleftdist, bottomrightdist);
 
-        if (mindist == topleftdist)
+        if (mindist === topleftdist)
         {
             snapPoint = topleft;
             snapIndex.x = xMinLineIndex;
             snapIndex.y = yMinLineIndex;
         }
-        else if (mindist == toprightdist)
+        else if (mindist === toprightdist)
         {
             snapPoint = topright;
             snapIndex.x = xMaxLineIndex;
             snapIndex.y = yMinLineIndex;
         }
-        else if (mindist == bottomleftdist)
+        else if (mindist === bottomleftdist)
         {
             snapPoint = bottomleft;
             snapIndex.x = xMinLineIndex;
@@ -269,12 +269,12 @@ export class PartBase extends Phaser.GameObjects.Container
     static getPartImageOffsets(partType)
     {
         let retVal = {x: 0, y: 0};
-        if (partType == 'motor')
+        if (partType === 'motor')
         {
             retVal.x = 0;//-75/2;
             retVal.y = -20.5;//-216/2 + 95;
         }
-        else if (partType == 'phonograph')
+        else if (partType === 'phonograph')
         {
             retVal.x = 2;//-39/2;
             retVal.y = -16.5;//-13/2;
@@ -291,7 +291,7 @@ export class PartBase extends Phaser.GameObjects.Container
     // {left, right, top, bottom}
     getPartExtents()
     {
-        if (partType == 'undefined')
+        if (partType === 'undefined')
             return null;
 
         return {left: this.x, right: this.x, top: this.y, bottom: this.y};

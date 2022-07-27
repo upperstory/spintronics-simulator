@@ -14,8 +14,8 @@ export class TilePart extends PartBase
         this.partImage.setScale(0.5);
         this.partImage.setDepth(0);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
 
         // Set the listeners
         this.partImage.setInteractive({

@@ -15,8 +15,8 @@ export class InductorPart extends PartBase
         this.partImage.setScale(0.5);
         this.partImage.setDepth(10);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
 
         this.inductorBaseImage = scene.add.image(this.x, this.y,'inductor-base');
         this.inductorBaseImage.setScale(0.5);

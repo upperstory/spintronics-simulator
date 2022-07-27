@@ -15,8 +15,8 @@ export class PhonographPart extends PartBase
         this.partImage.setDepth(10);
 
         //this.add(this.partImage);
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
         //this.setSize(this.partWidth, this.partHeight);
         //this.partImage.setDisplaySize(this.partWidth, this.partHeight);
         //this.partCenterX = this.partWidth / 2;

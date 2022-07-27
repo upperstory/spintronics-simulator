@@ -21,8 +21,8 @@ export class CapacitorPart extends PartBase
         this.partImage.setVisible(true);
 
         //this.add(this.partImage);
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
         //this.setSize(this.partWidth, this.partHeight);
         //this.partImage.setDisplaySize(this.partWidth, this.partHeight);
         //this.partCenterX = this.partWidth / 2;

@@ -17,8 +17,8 @@ export class TransistorPart extends PartBase
         this.partImage.setDepth(8);
         //this.partImage.setAlpha(0.0);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
 
         this.transistorGuideImage = scene.add.image(this.x, this.y,'transistor-guide');
         this.transistorGuideImage.setScale(0.5);

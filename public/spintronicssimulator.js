@@ -2,21 +2,49 @@ import { ToggleButton } from './toggle-button.js';
 import { PartBase } from './parts/partbase.js';
 import { PartManager } from './part-manager.js';
 import { PopupLevelChooser } from './popup-level-chooser.js';
-import { tileSpacing } from './constants.js';
+import { tileSpacing } from "./constants.js";
+import { isMobile } from "./constants.js";
+import { isTouchMobile } from "./constants.js";
 import GesturesPlugin from "./phaser3-rex-plugins/plugins/gestures-plugin.js";
 
-// console.log("In spintronicssimulator js...");
+console.log("ON LOAD -- isMobile: ", isMobile, " isTouchMobile: ", isTouchMobile);
+
+let dpr = window.devicePixelRatio;
+let width = window.innerWidth * dpr;
+let height = window.innerHeight * dpr;
+// console.log("ON LOAD -- innerWidth: ", innerWidth, ", innerHeight: ", innerHeight, ", dpr: ", dpr);
+
 let mapWidth = 4000;
 let mapHeight = 4000;
+let buttonWidth = 45;
+let buttonHeight = 45;
+// let buttonWidth = 70;
+// let buttonHeight = 70;
+// let window_ratio = ( (window.innerHeight/12) * 2 );
+// console.log("window ratio: ", window_ratio);
+// let buttonHeight = ((window.innerHeight - window_ratio ) / 12);
+// let buttonWidth = ((window.innerHeight - window_ratio ) / 12);
+let buttonContainerHeight = (window.innerHeight-20) / 12;
+let buttonContainerWidth = (window.innerHeight-20) / 12;
+// console.log("ON LOAD -- button container height is: ", buttonContainerHeight);
 
-let buttonWidth = 70;
-let buttonHeight = 70;
-
-const dpr = window.devicePixelRatio;
-const width = window.innerWidth * dpr;
-const height = window.innerHeight * dpr;
-
-console.log("width: ", width, ", height: ", height, ", dpr: ", dpr);
+if ( window.innerHeight > 768 ) {
+    // mapWidth = 1500;
+    // mapHeight = 1500;
+    buttonWidth = buttonContainerHeight * .85;
+    buttonHeight = buttonContainerHeight * .85;
+    // console.log("ON LOAD - if inner height more than 800, button height: ", buttonHeight);
+} else if ( window.innerHeight > 600 && window.innerHeight <= 768 ) {
+    // buttonWidth = buttonContainerHeight * .8;
+    // buttonHeight = buttonContainerHeight * .8;
+    buttonWidth = 50;
+    buttonHeight = 50;
+    // console.log("ON LOAD - if inner height is between 600 and 800, button height: ", buttonHeight);
+} else if ( window.innerHeight <= 600 ) {
+    buttonWidth = 45;
+    buttonHeight = 45;
+    // console.log("ON LOAD - if inner height is less than 600, button height: ", buttonHeight);
+}
 
 let config = {
     type: Phaser.AUTO,
@@ -140,17 +168,6 @@ function preload ()
         }
     });
     this.loadingText.setOrigin(0.5, 0.5);
-
-    /*this.percentText = this.make.text({
-        x: width / 2,
-        y: height / 2 + 30,
-        text: '0%',
-        style: {
-            font: '18px Roboto',
-            fill: '#3a3a3c'
-        }
-    });
-    this.percentText.setOrigin(0.5, 0.5);*/
 
     this.assetText = this.make.text({
         x: width / 2,
@@ -293,7 +310,6 @@ function preload ()
 
 function preloaderResize (gameSize, baseSize, displaySize, resolution)
 {
-    // console.log("preloaderResize params passed in. Gamesize: ", gameSize, " basesize ", baseSize, " displaysize ", displaySize, " resolution ", resolution);
     let width = this.cameras.main.width;
     let height = this.cameras.main.height;
 
@@ -315,10 +331,12 @@ function preloaderResize (gameSize, baseSize, displaySize, resolution)
 
 function create ()
 {
+
     // Now check the url to see if there are parameters.
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
 
+    // console.log("CREATE FUNCTION -- buttonContainerHeight: ", buttonContainerHeight, " buttonHeight: ", buttonHeight);
     // Determine if this is a view-only editor.
     this.viewOnly = false;
     if (urlParams.has('viewOnly')) {
@@ -342,6 +360,23 @@ function create ()
     this.dragZone = this.add.zone(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight);
     this.dragZone.setPosition(0,0);
     this.cameras.main.setBounds(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight, true);
+
+    // Kelly Test Pinch to Zoom for mobile //
+    if ( isMobile || isTouchMobile ) {
+        let currentZoom = self.cameras.main.zoom;
+        let newZoom = currentZoom / 2;
+
+        // Check to see if the image is too small to fill the screen.
+        let screenWidth = self.cameras.main.width;
+        let screenHeight = self.cameras.main.height;
+
+        if (mapWidth * newZoom < screenWidth || mapHeight * newZoom < screenHeight) {
+            newZoom = currentZoom;
+        }
+        self.cameras.main.setZoom(newZoom);
+    }
+    // End Kelly Test
+
     // First is the background grid
     drawBackgroundGrid.bind(this)();
 
@@ -372,7 +407,7 @@ function create ()
     graphics.destroy();
 
     graphics = controlscene.add.graphics();
-    graphics.fillStyle(0x992F7E, 1);
+    graphics.fillStyle(0x0097B3, 1);
     graphics.lineStyle(2,0x111111, 0.8);
     graphics.fillRoundedRect(0, 0, buttonWidth, buttonHeight, 10);
     graphics.strokeRoundedRect(1, 1, buttonWidth-2, buttonHeight-2, 10);
@@ -380,42 +415,43 @@ function create ()
     graphics.destroy();
 
     // Create the buttons
-    let buttonX = (buttonWidth /2) + 6;
-    let topMargin = 6;
-    this.chainbutton = new ToggleButton(controlscene, 'chain', buttonX, topMargin + 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'chain-icon', onSwitchToggled, 'button-disabled-background');
+    let buttonX = (buttonContainerWidth/2) + 6;
+    let buttonYoffset = (buttonContainerHeight/2) + 6;
+    // let topMargin = 6;
+    this.chainbutton = new ToggleButton(controlscene, 'chain', buttonX, buttonYoffset, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'chain-icon', onSwitchToggled, 'button-disabled-background');
     this.chainbutton.setButtonType('toggle');
     this.chainbutton.setTooltipString('Add chain loop', 'right');
-    this.junctionbutton = new ToggleButton(controlscene, 'junction', buttonX, topMargin + 35+75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'junction-icon', onSwitchToggled, 'button-disabled-background');
+    this.junctionbutton = new ToggleButton(controlscene, 'junction', buttonX, buttonYoffset+buttonContainerHeight, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'junction-icon', onSwitchToggled, 'button-disabled-background');
     this.junctionbutton.setButtonType('toggle');
     this.junctionbutton.setTooltipString('Junction', 'right');
-    this.motorbutton = new ToggleButton(controlscene, 'motor', buttonX, topMargin + 35+2*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'motor-icon', onSwitchToggled, 'button-disabled-background');
+    this.motorbutton = new ToggleButton(controlscene, 'motor', buttonX, buttonYoffset+buttonContainerHeight*2, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'motor-icon', onSwitchToggled, 'button-disabled-background');
     this.motorbutton.setButtonType('toggle');
     this.motorbutton.setTooltipString('Battery', 'right');
-    this.resistorbutton = new ToggleButton(controlscene, 'resistor', buttonX, topMargin + 35+3*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'resistor-icon', onSwitchToggled, 'button-disabled-background');
+    this.resistorbutton = new ToggleButton(controlscene, 'resistor', buttonX, buttonYoffset+buttonContainerHeight*3, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'resistor-icon', onSwitchToggled, 'button-disabled-background');
     this.resistorbutton.setButtonType('toggle');
     this.resistorbutton.setTooltipString('Resistor', 'right');
-    this.capacitorbutton = new ToggleButton(controlscene, 'capacitor', buttonX, topMargin + 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'capacitor-icon', onSwitchToggled, 'button-disabled-background');
+    this.capacitorbutton = new ToggleButton(controlscene, 'capacitor', buttonX, buttonYoffset+buttonContainerHeight*4, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'capacitor-icon', onSwitchToggled, 'button-disabled-background');
     this.capacitorbutton.setButtonType('toggle');
     this.capacitorbutton.setTooltipString('Capacitor', 'right');
-    this.inductorbutton = new ToggleButton(controlscene, 'inductor', buttonX, topMargin + 35+5*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'inductor-icon', onSwitchToggled, 'button-disabled-background');
+    this.inductorbutton = new ToggleButton(controlscene, 'inductor', buttonX, buttonYoffset+buttonContainerHeight*5, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'inductor-icon', onSwitchToggled, 'button-disabled-background');
     this.inductorbutton.setButtonType('toggle');
     this.inductorbutton.setTooltipString('Inductor', 'right');
-    this.phonographbutton = new ToggleButton(controlscene, 'phonograph', buttonX, topMargin + 35+6*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'phonograph-icon', onSwitchToggled, 'button-disabled-background');
+    this.phonographbutton = new ToggleButton(controlscene, 'phonograph', buttonX, buttonYoffset+buttonContainerHeight*6, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'phonograph-icon', onSwitchToggled, 'button-disabled-background');
     this.phonographbutton.setButtonType('toggle');
     this.phonographbutton.setTooltipString('Ammeter', 'right');
-    this.diodebutton = new ToggleButton(controlscene, 'diode', buttonX, topMargin + 35+7*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'diode-icon', onSwitchToggled, 'button-disabled-background');
+    this.diodebutton = new ToggleButton(controlscene, 'diode', buttonX, buttonYoffset+buttonContainerHeight*7, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'diode-icon', onSwitchToggled, 'button-disabled-background');
     this.diodebutton.setButtonType('toggle');
     this.diodebutton.setTooltipString('Diode', 'right');
-    this.buttonbutton = new ToggleButton(controlscene, 'button', buttonX, topMargin + 35+8*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'button-icon', onSwitchToggled, 'button-disabled-background');
+    this.buttonbutton = new ToggleButton(controlscene, 'button', buttonX, buttonYoffset+buttonContainerHeight*8, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'button-icon', onSwitchToggled, 'button-disabled-background');
     this.buttonbutton.setButtonType('toggle');
     this.buttonbutton.setTooltipString('Switch', 'right');
-    this.transistorbutton = new ToggleButton(controlscene, 'transistor', buttonX, topMargin + 35+9*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'transistor-icon', onSwitchToggled, 'button-disabled-background');
+    this.transistorbutton = new ToggleButton(controlscene, 'transistor', buttonX, buttonYoffset+buttonContainerHeight*9, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'transistor-icon', onSwitchToggled, 'button-disabled-background');
     this.transistorbutton.setButtonType('toggle');
     this.transistorbutton.setTooltipString('Transistor', 'right');
-    this.levelchangerbutton = new ToggleButton(controlscene, 'level-changer', buttonX, topMargin + 35+10*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'level-changer-icon', onSwitchToggled, 'button-disabled-background');
+    this.levelchangerbutton = new ToggleButton(controlscene, 'level-changer', buttonX, buttonYoffset+buttonContainerHeight*10, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'level-changer-icon', onSwitchToggled, 'button-disabled-background');
     this.levelchangerbutton.setButtonType('toggle');
     this.levelchangerbutton.setTooltipString('Level changer', 'right');
-    this.tilebutton = new ToggleButton(controlscene, 'tile', buttonX, topMargin + 35+11*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'tile-icon', onSwitchToggled, 'button-disabled-background');
+    this.tilebutton = new ToggleButton(controlscene, 'tile', buttonX, buttonYoffset+buttonContainerHeight*11, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'tile-icon', onSwitchToggled, 'button-disabled-background');
     this.tilebutton.setButtonType('toggle');
     this.tilebutton.setTooltipString('Tile', 'right');
 
@@ -499,52 +535,29 @@ function create ()
     this.input.keyboard.on('keydown-ESC', (event) => escapeKeyDown.bind(this)(event))
 
     this.useZoomExtents = false;
+    // console.log("In CREATE function, on resize pass in resize: ", resize);
     this.scale.on('resize', resize, this);
 
-    // Kelly Test Pinch //
-    // let print = this.add.text(0, 0, 'Hello World');
-    // let circle = this.add.circle(0, 0, 100, 0x888888);
-    // let pinch = this.rexGestures.add.pinch();
-    // console.log("Pinch: ", pinch);
-
+    // Kelly Test Pinch on Touch Screen //
     let dragScale = this.rexGestures.add.pinch();
     var camera = this.cameras.main;
     dragScale
-        .on('drag1', function (dragScale) {
-            var drag1Vector = dragScale.drag1Vector;
-            camera.scrollX -= drag1Vector.x / camera.zoom;
-            camera.scrollY -= drag1Vector.y / camera.zoom;
-        })
+        // .on('drag1', function (dragScale) {
+            // console.log("in dragscale on drag1.");
+            // var drag1Vector = dragScale.drag1Vector;
+            // camera.scrollX -= drag1Vector.x / camera.zoom;
+            // camera.scrollY -= drag1Vector.y / camera.zoom;
+        // })
         .on('pinch', function (dragScale) {
+            // console.log("In dragscale on pinch. Current parts: ", current_parts.parts);
             var scaleFactor = dragScale.scaleFactor;
+            // current_parts.scaleX *= scaleFactor;
+            // current_parts.scaleY *= scaleFactor;
             camera.zoom *= scaleFactor;
         }, this)
 
-    // Kelly Test Pinch
-    // pinch
-    //     .on('drag1', function (pinch) {
-    //         var drag1Vector = pinch.drag1Vector;
-    //         circle.x += drag1Vector.x;
-    //         circle.y += drag1Vector.y;
-    //     })
-    //     .on('pinch', function (pinch) {
-    //         var scaleFactor = pinch.scaleFactor;
-    //         circle.scaleX *= scaleFactor;
-    //         circle.scaleY *= scaleFactor;
-    //         print.text = circle.scaleX;
-    //     }, this)
-    //     .on('drag1start', function (pinch) {
-    //         print.text = 'drag1start';
-    //     }, this)
-    //     .on('drag1end', function (pinch) {
-    //         print.text = 'drag1end';
-    //     }, this)
-    //     .on('pinchstart', function (pinch) {
-    //         print.text = 'pinchstart';
-    //     }, this)
-    //     .on('pinchend', function (pinch) {
-    //         print.text = 'pinchend';
-    //     }, this)
+
+
 
     //let worldCenter = this.cameras.main.getWorldPoint(this.cameras.main.centerX, this.cameras.main.centerY);
     //let topleft = this.cameras.main.getWorldPoint(0,0);
@@ -570,6 +583,7 @@ function create ()
     // 16 = Part content above level 5 sprockets
 
     partManager = new PartManager(this, gridSpacing, mapWidth, mapHeight, this.world);
+    // console.log("on load partManager.parts: ", partManager.parts);
 
     // Set the Interact button to ON so you can mess with the parts.
     onSwitchToggled('interact', true);
@@ -652,8 +666,8 @@ var startingDragCenter = {x: 0, y: 0};
 var startingPointer = {x: 0, y: 0};
 function onDragStart(pointer, dragX, dragY)
 {
-    console.log("In on drag start function...");
-    if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+    // console.log("In onDragStart function, passed in pointer: ", pointer);
+    if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         startingDragCenter = self.cameras.main.getWorldPoint(self.cameras.main.centerX, self.cameras.main.centerY);
         startingPointer.x = pointer.x;
         startingPointer.y = pointer.y;
@@ -666,8 +680,8 @@ function onDragStart(pointer, dragX, dragY)
 
 function onDrag(pointer, dragX, dragY)
 {
-    console.log("In on drag function...");
-    if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+    // console.log("In onDrag function, passed in pointer: ", pointer);
+    if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         let desiredCenterPosition = {x: 0, y: 0};
         desiredCenterPosition.x = startingDragCenter.x - (pointer.x - startingPointer.x) / self.cameras.main.zoom;
         desiredCenterPosition.y = startingDragCenter.y - (pointer.y - startingPointer.y) / self.cameras.main.zoom;
@@ -677,8 +691,8 @@ function onDrag(pointer, dragX, dragY)
 
 function onDragEnd(pointer, dragX, dragY)
 {
-    console.log("In on drag end function...");
-    if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+    // console.log("In onDragEnd function, passed in pointer: ", pointer);
+    if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         mapDragging = false;
         self.input.setDefaultCursor('default');
     }
@@ -694,16 +708,16 @@ async function loadCircuitFromDatabase (linkID)
             break;
     }
 
-    if (code != null && code != '') {
+    if (code != null && code !== '') {
         let result = await fetchCircuit(code, linkID);
-        if (result == "Circuit is loading.") {
+        if (result === "Circuit is loading.") {
             for (let tries = 1; tries <= 3; tries++) {
                 result = await getCircuit(code, linkID);
-                if (result['status'] == 'success')
+                if (result['status'] === 'success')
                     break;
             }
 
-            if (result['status'] == 'success')
+            if (result['status'] === 'success')
             {
                 // We've got our circuit, now load it.
                 //console.log(JSON.parse(result['circuitJSON']));
@@ -799,7 +813,7 @@ async function onGenerateLinkClicked (name, newToggleState)
     // First, make a JSON of it.
     let jsonData = createCircuitJSON();
 
-    if (partManager.parts.length == 0)
+    if (partManager.parts.length === 0)
     {
         // There are no parts in this circuit!
         let graybackground = controlscene.add.dom().createElement('div', 'background-color: rgba(0, 0, 0, 0.2); position: absolute; left: ' + controlscene.cameras.main.width / 2 + 'px; top: ' + controlscene.cameras.main.height / 2 + 'px; width: ' + controlscene.cameras.main.width + 'px; height: ' + controlscene.cameras.main.height + 'px', '');
@@ -818,7 +832,7 @@ async function onGenerateLinkClicked (name, newToggleState)
 
         element.addListener('click');
         element.on('click', (event) => {
-            if (event.target.name == 'doneButton') {
+            if (event.target.name === 'doneButton') {
                 element.destroy();
                 graybackground.destroy();
             }
@@ -854,18 +868,18 @@ async function onGenerateLinkClicked (name, newToggleState)
                 break;
         }
 
-        if (code != null && code != '') {
+        if (code != null && code !== '') {
             let result = await submitCircuit(code, jsonData);
             console.log(result);
-            if (result == "Circuit accepted.") {
+            if (result === "Circuit accepted.") {
 
                 for (let tries = 1; tries < 5; tries++) {
                     result = await getLink(code);
-                    if (result['status'] == 'success')
+                    if (result['status'] === 'success')
                         break;
                 }
 
-                if (result['status'] == 'success') {
+                if (result['status'] === 'success') {
                     // We got our link.
                     // Show text box with button to copy to clipboard. Text shows value of: "https://simulator.spintronics.comlinkID=" + result['link'];
                     let linkText = "https://simulator.spintronics.com?linkID=" + result['link'];
@@ -893,11 +907,11 @@ async function onGenerateLinkClicked (name, newToggleState)
                     //let doneButton = document.getElementsByName('doneButton');
                     element.addListener('click');
                     element.on('click', (event) => {
-                        if (event.target.name == 'doneButton') {
+                        if (event.target.name === 'doneButton') {
                             element.destroy();
                             graybackground.destroy();
                         }
-                        if (event.target.name == 'copyButton') {
+                        if (event.target.name === 'copyButton') {
                             copyTextToClipboard(linkInput.value);
                         }
                         event.stopPropagation();
@@ -939,7 +953,7 @@ async function onGenerateLinkClicked (name, newToggleState)
 
                 element.addListener('click');
                 element.on('click', (event) => {
-                    if (event.target.name == 'doneButton') {
+                    if (event.target.name === 'doneButton') {
                         element.destroy();
                         graybackground.destroy();
                     }
@@ -1414,11 +1428,66 @@ function onZoomOutClicked(name, newToggleState)
     // Stop resizing to the zoom extents.
     self.useZoomExtents = false;
 }
-
-
+// Kelly variable to toggle off the part picked but not dropped
+let previous_button_selected = '';
+let button_has_mouse_image = false;
+console.log("GLOBAL previous part that was selected: ", previous_button_selected, " dropped: ", button_has_mouse_image);
 // var objects = {};
-function onSwitchToggled (name, newToggleState)
+function onSwitchToggled(name, newToggleState)
 {
+    console.log("IN ON TOGGLE, is mobile?", isMobile, " or is touch device? ", isTouchMobile);
+    // Kelly if statement to toggle off the part picked but not dropped
+    if ( previous_button_selected === name && button_has_mouse_image === true ) {
+        console.log("Clicked on same part button. MouseImage: ", mouseImage.visible );
+        console.log("if statement, previous button selected is ", previous_button_selected, " and dropped is set to ", button_has_mouse_image);
+
+        self.chainbutton.setToggleState(false);
+        self.junctionbutton.setToggleState(false);
+        self.motorbutton.setToggleState(false);
+        self.resistorbutton.setToggleState(false);
+        self.capacitorbutton.setToggleState(false);
+        self.inductorbutton.setToggleState(false);
+        self.phonographbutton.setToggleState(false);
+        self.diodebutton.setToggleState(false);
+        self.buttonbutton.setToggleState(false);
+        self.transistorbutton.setToggleState(false);
+        self.levelchangerbutton.setToggleState(false);
+        self.tilebutton.setToggleState(false);
+        self.interactbutton.setToggleState(false);
+        self.movebutton.setToggleState(false);
+        self.deletebutton.setToggleState(false);
+        self.editbutton.setToggleState(false);
+
+        mouseImage.setVisible(false);
+        // Kelly reset so that button can be used again
+        previous_button_selected = '';
+        button_has_mouse_image = false;
+        return;
+    }
+
+    previous_button_selected = name;    // now set variable to the part that was picked
+    button_has_mouse_image = true;
+
+    console.log("AFTER CLICKED ON PART BUTTON OR IN TOGGLE FUNCTION, previous part that was selected: ", previous_button_selected);
+    // console.log("Name of button that was clicked on: ", name);
+    // console.log("Chain: ", self.chainbutton.getToggleState());
+    // console.log("Junction: ", self.junctionbutton.getToggleState());
+    // console.log("Motor: ", self.motorbutton.getToggleState());
+    // console.log("Resistor: ", self.resistorbutton.getToggleState());
+    // console.log("Capacitor: ", self.capacitorbutton.getToggleState());
+    // console.log("Inductor: ", self.inductorbutton.getToggleState());
+    // console.log("Phono: ", self.phonographbutton.getToggleState());
+    // console.log("Diode: ", self.diodebutton.getToggleState());
+    // console.log("Switch: ", self.buttonbutton.getToggleState());
+    // console.log("Transistor: ", self.transistorbutton.getToggleState());
+    // console.log("Level: ", self.levelchangerbutton.getToggleState());
+    // console.log("Tile: ", self.tilebutton.getToggleState());
+    // console.log("Interact Tool: ", self.interactbutton.getToggleState());
+    // console.log("Move Tool: ", self.movebutton.getToggleState());
+    // console.log("Delete Tool: ", self.deletebutton.getToggleState());
+    // console.log("Edit Tool: ", self.editbutton.getToggleState());
+    console.log("******************************");
+
     self.chainbutton.setToggleState(false);
     self.junctionbutton.setToggleState(false);
     self.motorbutton.setToggleState(false);
@@ -1437,7 +1506,7 @@ function onSwitchToggled (name, newToggleState)
     self.editbutton.setToggleState(false);
     partManager.setToolMode('default');
     partManager.cancelChain();
-    console.log("In onSwitchToggled function. Passed in name: ", name);
+    // console.log("In onSwitchToggled function, passed in name: ", name);
     if (name === 'chain')
     {
         self.chainbutton.setToggleState(true);
@@ -1446,79 +1515,103 @@ function onSwitchToggled (name, newToggleState)
     else if (name === 'junction')
     {
         self.junctionbutton.setToggleState(true);
-        mouseImage.setTexture('junction');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+
+
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setTexture('junction');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'motor')
     {
         self.motorbutton.setToggleState(true);
         mouseImage.setTexture('motor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'resistor')
     {
         self.resistorbutton.setToggleState(true);
         mouseImage.setTexture('resistor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'capacitor')
     {
         self.capacitorbutton.setToggleState(true);
         mouseImage.setTexture('capacitor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'inductor')
     {
         self.inductorbutton.setToggleState(true);
         mouseImage.setTexture('inductor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'phonograph')
     {
         self.phonographbutton.setToggleState(true);
         mouseImage.setTexture('phonograph');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'diode')
     {
         self.diodebutton.setToggleState(true);
         mouseImage.setTexture('diode');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'button')
     {
         self.buttonbutton.setToggleState(true);
         mouseImage.setTexture('button');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'transistor')
     {
         self.transistorbutton.setToggleState(true);
         mouseImage.setTexture('transistor');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'level-changer')
     {
         self.levelchangerbutton.setToggleState(true);
         mouseImage.setTexture('level-changer');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'tile')
     {
         self.tilebutton.setToggleState(true);
         mouseImage.setTexture('tile');
         mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if ( !isMobile || !isTouchMobile ) {
+            mouseImage.setVisible(true);
+        }
     }
     else if (name === 'interact') {
         self.interactbutton.setToggleState(true);
@@ -1565,7 +1658,7 @@ function onPointerMove(pointer)
     // Chain mode
     if (this.chainbutton.getToggleState())
     {
-        if (partManager.isInTheMiddleOfBuildingAChain() == false)
+        if (partManager.isInTheMiddleOfBuildingAChain() === false)
         {
             // We haven't drawn any of the chain, yet. So when the mouse is over a part, draw arrows to choose which way the chain should go.
             // Search for a part that has a sprocket circle on which the cursor is over.
@@ -1625,18 +1718,18 @@ function onPointerMove(pointer)
 
                 if (angleDiff >= 0 && angleDiff < 180) {
                     // The clockwise arrow
-                    if (!(isFirstSprocket && firstSprocket.cw == false))
+                    if (!(isFirstSprocket && firstSprocket.cw === false))
                         drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, true);
                 } else {
                     // The counterclockwise arrow
-                    if (!(isFirstSprocket && firstSprocket.cw == true))
+                    if (!(isFirstSprocket && firstSprocket.cw === true))
                         drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, false);
                 }
             }
         }
 
         // Redraw the chain we're currently building.
-        if (partManager.isInTheMiddleOfBuildingAChain() == true)
+        if (partManager.isInTheMiddleOfBuildingAChain() === true)
         {
             partManager.redrawChainBeingBuilt(worldPointer);
         }
@@ -1725,8 +1818,9 @@ function drawHighlight(centerX, centerY, radius, thickness, angle, cw)
 
 function onPointerDown(pointer, currentlyOver)
 {
-    console.log("In onPointerDown function, passed in pointer: ", pointer, " this: ", this);
+    console.log("In onPointerDown function, passed in pointer: ", pointer);
     let worldPointer = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+    button_has_mouse_image = false;
     // Drop a part if we've got a part selected
     if (this.junctionbutton.getToggleState())
     {
@@ -1734,6 +1828,7 @@ function onPointerDown(pointer, currentlyOver)
         partManager.addPart('junction', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
         this.junctionbutton.setToggleState(false);
         mouseImage.setVisible(false);
+
     }
     else if (this.buttonbutton.getToggleState())
     {
@@ -1791,7 +1886,6 @@ function onPointerDown(pointer, currentlyOver)
         // Update all the tile connectors
         partManager.updateTileConnectors();
         // Kelly testing to get rid of hover image after pointer down...
-        console.log("in pointer down function, if motorbutton...");
         this.motorbutton.setToggleState(false);
         mouseImage.setVisible(false);
     }
@@ -1853,7 +1947,7 @@ function onPointerDown(pointer, currentlyOver)
 
                 if (angleDiff >= 0 && angleDiff < 180) {
                     // Clockwise
-                    if (!(isFirstSprocket && firstSprocket.cw == false)) {
+                    if (!(isFirstSprocket && firstSprocket.cw === false)) {
                         if (!isFirstSprocket)
                             partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
                         else
@@ -1861,7 +1955,7 @@ function onPointerDown(pointer, currentlyOver)
                     }
                 } else {
                     // Counterclockwise
-                    if (!(isFirstSprocket && firstSprocket.cw == true)) {
+                    if (!(isFirstSprocket && firstSprocket.cw === true)) {
                         if (!isFirstSprocket)
                             partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, false);
                         else
@@ -1927,6 +2021,7 @@ function onPointerDown(pointer, currentlyOver)
             }
         }
     }
+    // console.log("OnPointerDown function, partManager.parts: ", partManager.parts);
 }
 
 // Callback function for when the sprocket level is chosen from the popup menu list.
@@ -2129,10 +2224,137 @@ function getZoomExtents ()
     }
     return zoomExtents;
 }
-
-//function resize (gameSize, baseSize, displaySize, resolution)
+// Kelly Test to add responsive button sizes
 function resize (gameSize, baseSize, displaySize, previousWidth, previousHeight)
 {
+    // console.log("isMobile: ", isMobile, " isTouchMobile: ", isTouchMobile);
+    dpr = window.devicePixelRatio;
+    width = window.innerWidth * dpr;
+    height = window.innerHeight * dpr;
+    // console.log("RESIZED -- width: ", window.innerWidth, ", height: ", window.innerHeight, ", dpr: ", dpr);
+
+// let buttonWidth = 70;
+// let buttonHeight = 70;
+    buttonContainerHeight = (window.innerHeight - 20) / 12;
+    buttonContainerWidth = (window.innerHeight - 20) / 12;
+    // console.log("RESIZED - now button container height is: ", buttonContainerHeight);
+
+    if ( window.innerHeight > 768 ) {
+        // mapWidth = 1500;
+        // mapHeight = 1500;
+        buttonWidth = buttonContainerHeight * .85;
+        buttonHeight = buttonContainerHeight * .85;
+        // console.log("RESIZED - if inner height more than 800, button height: ", buttonHeight);
+    } else if ( window.innerHeight > 600 && window.innerHeight <= 768 ) {
+        // buttonWidth = buttonContainerHeight * .8;
+        // buttonHeight = buttonContainerHeight * .8;
+        buttonWidth = 50;
+        buttonHeight = 50;
+        // console.log("RESIZED - if inner height is between 600 and 800, button height: ", buttonHeight);
+    } else if ( window.innerHeight <= 600 ) {
+        buttonWidth = 45;
+        buttonHeight = 45;
+        // console.log("RESIZED - if inner height is less than 600, button height: ", buttonHeight);
+    }
+
+    // Kelly Test recreate part buttons with new size
+    let buttonX = (buttonContainerWidth/2) + 6;
+    let buttonYoffset = (buttonContainerHeight/2) + 6;
+
+    this.chainbutton.destroy();
+    this.junctionbutton.destroy();
+    this.motorbutton.destroy();
+    this.resistorbutton.destroy();
+    this.capacitorbutton.destroy();
+    this.inductorbutton.destroy();
+    this.phonographbutton.destroy();
+    this.diodebutton.destroy();
+    this.buttonbutton.destroy();
+    this.transistorbutton.destroy();
+    this.levelchangerbutton.destroy();
+    this.tilebutton.destroy();
+    this.interactbutton.destroy();
+    this.tilebutton.destroy();
+    this.movebutton.destroy();
+    this.deletebutton.destroy();
+    this.editbutton.destroy();
+    this.removeallbutton.destroy();
+    this.zoominbutton.destroy();
+    this.zoomoutbutton.destroy();
+    this.linkbutton.destroy();
+    this.savebutton.destroy();
+    this.loadbutton.destroy();
+    // this.fullscreenbutton.destroy();
+
+    // left side part buttons
+    this.chainbutton = new ToggleButton(controlscene, 'chain', buttonX, buttonYoffset, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'chain-icon', onSwitchToggled, 'button-disabled-background');
+    this.chainbutton.setButtonType('toggle');
+    this.chainbutton.setTooltipString('Add chain loop', 'right');
+    this.junctionbutton = new ToggleButton(controlscene, 'junction', buttonX, buttonYoffset+buttonContainerHeight, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'junction-icon', onSwitchToggled, 'button-disabled-background');
+    this.junctionbutton.setButtonType('toggle');
+    this.junctionbutton.setTooltipString('Junction', 'right');
+    this.motorbutton = new ToggleButton(controlscene, 'motor', buttonX, buttonYoffset+buttonContainerHeight*2, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'motor-icon', onSwitchToggled, 'button-disabled-background');
+    this.motorbutton.setButtonType('toggle');
+    this.motorbutton.setTooltipString('Battery', 'right');
+    this.resistorbutton = new ToggleButton(controlscene, 'resistor', buttonX, buttonYoffset+buttonContainerHeight*3, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'resistor-icon', onSwitchToggled, 'button-disabled-background');
+    this.resistorbutton.setButtonType('toggle');
+    this.resistorbutton.setTooltipString('Resistor', 'right');
+    this.capacitorbutton = new ToggleButton(controlscene, 'capacitor', buttonX, buttonYoffset+buttonContainerHeight*4, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'capacitor-icon', onSwitchToggled, 'button-disabled-background');
+    this.capacitorbutton.setButtonType('toggle');
+    this.capacitorbutton.setTooltipString('Capacitor', 'right');
+    this.inductorbutton = new ToggleButton(controlscene, 'inductor', buttonX, buttonYoffset+buttonContainerHeight*5, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'inductor-icon', onSwitchToggled, 'button-disabled-background');
+    this.inductorbutton.setButtonType('toggle');
+    this.inductorbutton.setTooltipString('Inductor', 'right');
+    this.phonographbutton = new ToggleButton(controlscene, 'phonograph', buttonX, buttonYoffset+buttonContainerHeight*6, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'phonograph-icon', onSwitchToggled, 'button-disabled-background');
+    this.phonographbutton.setButtonType('toggle');
+    this.phonographbutton.setTooltipString('Ammeter', 'right');
+    this.diodebutton = new ToggleButton(controlscene, 'diode', buttonX, buttonYoffset+buttonContainerHeight*7, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'diode-icon', onSwitchToggled, 'button-disabled-background');
+    this.diodebutton.setButtonType('toggle');
+    this.diodebutton.setTooltipString('Diode', 'right');
+    this.buttonbutton = new ToggleButton(controlscene, 'button', buttonX, buttonYoffset+buttonContainerHeight*8, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'button-icon', onSwitchToggled, 'button-disabled-background');
+    this.buttonbutton.setButtonType('toggle');
+    this.buttonbutton.setTooltipString('Switch', 'right');
+    this.transistorbutton = new ToggleButton(controlscene, 'transistor', buttonX, buttonYoffset+buttonContainerHeight*9, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'transistor-icon', onSwitchToggled, 'button-disabled-background');
+    this.transistorbutton.setButtonType('toggle');
+    this.transistorbutton.setTooltipString('Transistor', 'right');
+    this.levelchangerbutton = new ToggleButton(controlscene, 'level-changer', buttonX, buttonYoffset+buttonContainerHeight*10, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'level-changer-icon', onSwitchToggled, 'button-disabled-background');
+    this.levelchangerbutton.setButtonType('toggle');
+    this.levelchangerbutton.setTooltipString('Level changer', 'right');
+    this.tilebutton = new ToggleButton(controlscene, 'tile', buttonX, buttonYoffset+buttonContainerHeight*11, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'tile-icon', onSwitchToggled, 'button-disabled-background');
+    this.tilebutton.setButtonType('toggle');
+    this.tilebutton.setTooltipString('Tile', 'right');
+
+    // Right side toolbar
+    let spaceWidth = this.cameras.main.width;
+    let rightSideToolbarPositionX = spaceWidth - 10 - buttonWidth / 2;
+
+    this.interactbutton = new ToggleButton(controlscene, 'interact', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'interact-icon', onSwitchToggled, 'button-disabled-background');
+    this.interactbutton.setButtonType('toggle');
+    this.interactbutton.setTooltipString('Interact', 'left');
+    this.movebutton = new ToggleButton(controlscene, 'move', rightSideToolbarPositionX, 35+75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'move-icon', onSwitchToggled, 'button-disabled-background');
+    this.movebutton.setButtonType('toggle');
+    this.movebutton.setTooltipString('Reposition part', 'left');
+    this.deletebutton = new ToggleButton(controlscene, 'delete', rightSideToolbarPositionX, 35+2*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'delete-icon', onSwitchToggled, 'button-disabled-background');
+    this.deletebutton.setButtonType('toggle');
+    this.deletebutton.setTooltipString('Remove part', 'left');
+    this.editbutton = new ToggleButton(controlscene, 'edit', rightSideToolbarPositionX, 35+3*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'edit-icon', onSwitchToggled, 'button-disabled-background');
+    this.editbutton.setButtonType('toggle');
+    this.editbutton.setTooltipString('Change part properties', 'left');
+    this.removeallbutton = new ToggleButton(controlscene, 'remove-all', rightSideToolbarPositionX, 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'remove-all-icon', onRemoveAllClicked, 'button-disabled-background');
+    this.removeallbutton.setTooltipString('Remove all', 'left');
+    this.zoominbutton = new ToggleButton(controlscene, 'zoom-in', rightSideToolbarPositionX, 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-in-icon', onZoomInClicked, 'button-disabled-background');
+    this.zoominbutton.setTooltipString('Zoom in', 'left');
+    this.zoomoutbutton = new ToggleButton(controlscene, 'zoom-out', rightSideToolbarPositionX, 35+5*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-out-icon', onZoomOutClicked, 'button-disabled-background');
+    this.zoomoutbutton.setTooltipString('Zoom out', 'left');
+    this.linkbutton = new ToggleButton(controlscene, 'link', rightSideToolbarPositionX, 35+6*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'link-icon', onGenerateLinkClicked, 'button-disabled-background');
+    this.linkbutton.setTooltipString('Copy circuit to clipboard', 'left');
+    this.savebutton = new ToggleButton(controlscene, 'save', rightSideToolbarPositionX, 35+7*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'save-icon', onSaveClicked, 'button-disabled-background');
+    this.savebutton.setTooltipString('Save circuit', 'left');
+    this.loadbutton = new ToggleButton(controlscene, 'load', rightSideToolbarPositionX, 35+8*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'load-icon', onLoadClicked, 'button-disabled-background');
+    this.loadbutton.setTooltipString('Load circuit', 'left');
+    // this.fullscreenbutton = new ToggleButton(controlscene, 'full-editor', rightSideToolbarPositionX, 35+9*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'full-screen-icon', onFullEditorClicked, 'button-disabled-background');
+    // this.fullscreenbutton.setTooltipString('Open in full simulator', 'left');
+
     positionLeftSideButtons.bind(this)();
     positionRightSideButtons.bind(this)();
 
@@ -2194,7 +2416,7 @@ function positionLeftSideButtons()
 {
     let leftMargin = 6;
     let topMargin = 6;
-    let spaceHeight = this.cameras.main.height;
+    // let spaceHeight = this.cameras.main.height;
 
     let buttons = [this.chainbutton,
         this.motorbutton,
@@ -2209,17 +2431,26 @@ function positionLeftSideButtons()
         this.transistorbutton,
         this.levelchangerbutton
         ];
-
-    let xPos = (buttonWidth /2) + leftMargin;
-    let yPos = topMargin + (buttonHeight /2);
+        let xPos = (buttonContainerHeight / 2) + leftMargin;
+        let yPos = (buttonContainerHeight / 2) + topMargin;
+        // buttonHeight = buttonContainerHeight * .9;
+    // let xPos = (buttonWidth /2) + leftMargin;
+    // let yPos = topMargin + (buttonHeight /2);
+    // console.log("POSITION LEFT SIDE BUTTONS - innerHeight: ", window.innerHeight, " buttonContainerHeight: ", buttonContainerHeight, " top margin: ", topMargin, " x pos: ", xPos, " y pos: ", yPos);
+    // console.log("POSITION LEFT SIDE BUTTONS - buttonHeight: ", buttonHeight);
     for (let i = 0; i < buttons.length; i++)
     {
+        // console.log("IN BUTTON FOR LOOP - button: ", buttons[i].name, " xPos:", xPos, " yPos: ", yPos);
         buttons[i].setPosition(xPos, yPos);
-        yPos += buttonHeight + 10;
-        if (yPos > spaceHeight - (buttonHeight / 2) - topMargin)
+        yPos += buttonContainerHeight;
+
+        if (yPos > window.innerHeight - (buttonContainerHeight / 2) - topMargin)
+        // if (yPos > (window.innerHeight - 15) - topMargin)
         {
-            yPos = topMargin + (buttonHeight / 2);
+            // console.log("IN BUTTON FOR LOOP IF - if yPos greater than innerHeight, yPos is: ", yPos);
+            yPos = topMargin + (buttonContainerHeight / 2);
             xPos += buttonWidth + 10;
+            // console.log("IN BUTTON LOOP IF - after new coordinates, yPos: ", yPos, " xPos: ", xPos);
         }
     }
 }
@@ -2260,11 +2491,13 @@ function positionRightSideButtons()
     let xPos = spaceWidth - 6 - (buttonWidth / 2) - ((numColumns - 1) * (buttonWidth + 10));
     let yPos = topMargin + (buttonHeight /2);
     let firstColumn = true;
+    // console.log("buttons per column: ", buttonsPerColumn, " numColumns: ", numColumns, " remainder: ", remainder);
+    // console.log("x position: ", xPos, " y position: ", yPos);
     for (let i = 0; i < buttons.length; i++)
     {
         buttons[i].setPosition(xPos, yPos);
         yPos += buttonHeight + 10;
-        if ((firstColumn && i == (remainder - 1)) || (yPos > spaceHeight - (buttonHeight / 2) + topMargin))
+        if ((firstColumn && i === (remainder - 1)) || (yPos > spaceHeight - (buttonHeight / 2) + topMargin))
         {
             firstColumn = false;
             yPos = topMargin + (buttonHeight /2);
