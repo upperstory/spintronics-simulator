@@ -251,13 +251,13 @@ export class JunctionPart extends PartBase
     {
         this.x = x;
         this.y = y;
-        if (this.partImage != undefined)
+        if (this.partImage !== undefined)
             this.partImage.setPosition(x, y);
-        if (this.middleSprocketImage != undefined)
+        if (this.middleSprocketImage !== undefined)
             this.middleSprocketImage.setPosition(x, y);
-        if (this.topSprocketImage != undefined)
+        if (this.topSprocketImage !== undefined)
             this.topSprocketImage.setPosition(x, y);
-        if (this.capImage != undefined)
+        if (this.capImage !== undefined)
             this.capImage.setPosition(x, y);
     }
 

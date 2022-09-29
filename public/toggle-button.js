@@ -4,6 +4,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
 
     constructor(scene, name, x, y, width, height, textureDefault, textureHover, texturePressed, textureIcon, pressedCallback, textureDisabled = null)
     {
+
         super(scene, x, y);
         this.thisScene = scene;
         this.name = name;
@@ -20,32 +21,54 @@ export class ToggleButton extends Phaser.GameObjects.Container
 
         // Add this container to the scene
         scene.add.existing(this);
+        // console.log("toggle button constructor passed in buttonwidth: ", width, " and buttonheight: ", height);
         this.setSize(width, height);
+
         // Add event handlers
         this.setInteractive();
         this.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
         this.on('pointerup', (pointer, localx, localy, event) => this.onPointerUp(pointer, localx, localy, event));
         this.on('pointerover', (pointer, localx, localy, event) => this.onPointerOver(pointer, localx, localy, event));
         this.on('pointerout', (pointer, localx, localy, event) => this.onPointerOut(pointer, localx, localy, event));
-
+        // console.log("passed in to toggle button - name: ", this.name);
         // Add button background
         this.buttonBackground = scene.add.image(0, 0, textureDefault);
-        this.buttonBackground.alpha = 0.5;
+        if ( this.name !== 'yes-btn') {
+            this.buttonBackground.alpha = 0.5;
+        } else if ( this.name === 'yes-btn') {
+            this.buttonBackground.alpha = 1;
+        }
+
         this.buttonBackground.setDisplaySize(width, height);
         this.add(this.buttonBackground);
 
         // Add icon
+
         this.buttonIcon = scene.add.image(0, 0, textureIcon);
         this.buttonIcon.alpha = 0.5;
-        if (this.buttonIcon.displayWidth > this.buttonIcon.displayHeight) {
-            if (this.buttonIcon.displayWidth > this.buttonBackground.displayWidth * 0.9)
-                this.buttonIcon.setScale((this.buttonBackground.displayWidth * 0.9) / this.buttonIcon.displayWidth);
-        }
-        else {
-            if (this.buttonIcon.displayHeight > this.buttonBackground.displayHeight * 0.9)
-                this.buttonIcon.setScale((this.buttonBackground.displayHeight * 0.9) / this.buttonIcon.displayHeight);
-        }
-        //this.buttonIcon.setDisplaySize(width*0.8, height*0.8);
+        // console.log("this.buttonIcon: ", this.buttonIcon);
+        // console.log("buttonicon width: ", this.buttonIcon.displayWidth);
+        // console.log("buttonicon height: ", this.buttonIcon.displayHeight);
+
+        // if ( textureIcon !== 'yes-btn' )
+        // {
+            if (this.buttonIcon.displayWidth > this.buttonIcon.displayHeight) {
+                if (this.buttonIcon.displayWidth > this.buttonBackground.displayWidth * 0.9) {
+                    this.buttonIcon.setScale((this.buttonBackground.displayWidth * 0.9) / this.buttonIcon.displayWidth);
+                }
+            } else {
+                // console.log("in else...");
+                if (this.buttonIcon.displayHeight > this.buttonBackground.displayHeight * 0.9) {
+                    this.buttonIcon.setScale((this.buttonBackground.displayHeight * 0.9) / this.buttonIcon.displayHeight);
+                }
+            }
+        // }
+        // else if ( textureIcon === 'yes-btn' ) {
+            // console.log("in if for yes-btn...");
+            // this.buttonIcon.height(50);
+            // this.buttonIcon.width(100);
+        // }
+
         this.add(this.buttonIcon);
 
         this.tooltipString = "";
@@ -128,6 +151,8 @@ export class ToggleButton extends Phaser.GameObjects.Container
             this.buttonBackground.setTexture(this.texturePressed);
         }
         else if (this.buttonType === 'toggle') {
+            // console.log("In button type toggle in toggle-button js!");
+            // clearChainDots(chainDots.length);
             this.setToggleState(true);
             this.toggledCallback.bind(this.parentContainer)(this.name, this.toggleState);
         }
@@ -232,7 +257,4 @@ export class ToggleButton extends Phaser.GameObjects.Container
 
         event.stopPropagation();
     }
-
-
-
 }

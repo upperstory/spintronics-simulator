@@ -22,7 +22,8 @@ export class PartManager {
     chains = [];
     chainBeingBuilt = null;
     scene = null;
-    sprocketTolerance = 5;
+    // sprocketTolerance = 5; Kelly added larger tolerance to more easily connect with mouse or touch
+    sprocketTolerance = 15;
     toolMode = 'default';
     dragDiff = {x: 0, y: 0};
     gridSpacing = 0;
@@ -288,6 +289,7 @@ export class PartManager {
 
     startChain()
     {
+        console.log("in start chain of part manager...");
         this.chainBeingBuilt = new Chain(this.scene);
         this.chainBeingBuilt.setPointerDownCallback(this.onChainClicked, this);
         this.chainBeingBuilt.setPointerMoveCallback(this.onPointerMoveOverChain, this);
@@ -296,10 +298,9 @@ export class PartManager {
 
     closeChain()
     {
+        console.log("In closeChain function in part manager...");
         this.chainBeingBuilt.closeChain();
-
         this.createChainJoints(this.chainBeingBuilt);
-
         this.chains.push(this.chainBeingBuilt);
         this.chainBeingBuilt = null;
         this.redrawChains();
@@ -317,14 +318,17 @@ export class PartManager {
     {
         // Add gear joints that connect the sprockets
         let lastConnection = chain.connections[0];
+        // console.log("in part manager create chain joints function, this is last connection: ", lastConnection);
+
         for (let i = 1; i < chain.connections.length; i++)
         {
             let thisConnection = chain.connections[i];
             let level = lastConnection.level;
 
             let gearRatio = -thisConnection.part.sprocketPhysicsRadius[level]/lastConnection.part.sprocketPhysicsRadius[level];
-            if (lastConnection.cw != thisConnection.cw)
+            if (lastConnection.cw !== thisConnection.cw) {
                 gearRatio = -gearRatio;
+            }
             chain.joints[i - 1] = this.world.createJoint(planck.GearJoint({}, lastConnection.part.sprocketBodies[level], thisConnection.part.sprocketBodies[level], lastConnection.part.sprocketJoints[level], thisConnection.part.sprocketJoints[level], gearRatio));
         }
     }
@@ -340,17 +344,35 @@ export class PartManager {
 
     addChainConnection(partIndex, level, cw)
     {
-        this.chainBeingBuilt.addConnection(this.parts[partIndex], level, cw);
+        // console.log("Adding chain to part with this index: ", partIndex);
+        this.chainBeingBuilt.addConnection(partIndex, this.parts[partIndex], level, cw);
+
+
+        // console.log("chain connection array in part manager: ", chainConnectionArray);
         this.chainBeingBuilt.redrawChainGraphics();
+        // Kelly added return
+        // console.log("now all parts minus those with connections: ", showTouchDotsOnThesePartsOnly);
+        // console.log("and all parts on board: ", this.parts);
+        // return showTouchDotsOnThesePartsOnly;
     }
 
     getLengthOfChainBeingBuilt()
     {
-        if (this.chainBeingBuilt != null)
+        if (this.chainBeingBuilt != null) {
+            // console.log("In function getlengthofchainbeingbuilt: ", this.chainBeingBuilt.connections.length);
             return this.chainBeingBuilt.connections.length;
-
+        }
         return 0;
     }
+
+    // Kelly added this function to get the list of parts having connections for drawing touch dots
+    // getPartsWithChainConnections() {
+    //     console.log("in part manager, function to get parts with connections: ", chain.connections);
+    //     if ( this.connections.length != null ) {
+    //         return this.connections;
+    //     }
+    //     return -1;
+    // }
 
     getLevelOfChainBeingBuilt()
     {
@@ -361,7 +383,7 @@ export class PartManager {
 
     onPartClicked(part, pointer)
     {
-        console.log("Part: ", part, " pointer: ", pointer);
+        // console.log("Part: ", part, " pointer: ", pointer);
 
         if (this.toolMode === 'delete')
         {
@@ -463,6 +485,7 @@ export class PartManager {
 
     deleteChain(chainIndex)
     {
+        // console.log("...now in deletechain called from deleteAllChains...", chainIndex);
         this.deleteChainJoints(this.chains[chainIndex]);
 
         // Adjust all the chains to get rid of the connection.
@@ -472,8 +495,18 @@ export class PartManager {
 
     deleteAllChains()
     {
-        while(this.chains.length > 0)
+        // console.log("In deleteAllChains function in part-manager.js.")
+        // console.log("Chains length is: ", this.chains.length);
+        // this.deleteChain(0);
+        var chainbeingbuilt = this.getLengthOfChainBeingBuilt();
+        // console.log("chainbeingbuilt length is: ", chainbeingbuilt);
+        //Kelly added this if to delete any chain being built when deleting all
+        if (chainbeingbuilt != null) {
+            this.cancelChain();
+        }
+        while(this.chains.length > 0 )
         {
+            // console.log("In while chains have length > 0 loop...")
             this.deleteChain(0);
         }
     }
@@ -517,10 +550,11 @@ export class PartManager {
         else if (this.toolMode === 'move')
         {
             part.setPartTint(0xDDDDDD);
-            if (this.partDragging)
+            if (this.partDragging) {
                 this.scene.input.setDefaultCursor('grabbing');
-            else
+            } else {
                 this.scene.input.setDefaultCursor('grab');
+            }
         }
         else if (this.toolMode === 'edit')
         {
@@ -558,7 +592,7 @@ export class PartManager {
     onPointerMoveOutOfChain(chain, pointer)
     {
         // The pointer moved off the part 'part'.
-        if (this.toolMode == 'delete')
+        if (this.toolMode === 'delete')
         {
             chain.clearTint();
         }
@@ -586,8 +620,9 @@ export class PartManager {
 
     redrawChainBeingBuilt(pointer)
     {
-        if (this.chainBeingBuilt != null)
+        if (this.chainBeingBuilt != null) {
             this.chainBeingBuilt.redrawChainGraphics(pointer);
+        }
     }
 
     isSprocketAvailable(partIndex, level)
@@ -598,8 +633,9 @@ export class PartManager {
             for (let j = 0; j < thisChain.connections.length; j++)
             {
                 let thisConnection = thisChain.connections[j];
-                if (thisConnection.part == this.parts[partIndex] && thisConnection.level == level)
+                if (thisConnection.part === this.parts[partIndex] && thisConnection.level === level) {
                     return false;
+                }
             }
         }
         return true;
@@ -615,8 +651,9 @@ export class PartManager {
         {
             // Check each level on this part.
             // Does the sprocket exist?
-            if (!thisPart.sprocketExists[l])
+            if (!thisPart.sprocketExists[l]) {
                 continue;
+            }
 
             // Is there a chain already on it?
             let sprocketAlreadyUsed = false;
@@ -626,23 +663,25 @@ export class PartManager {
                 for (let j = 0; j < thisChain.connections.length; j++)
                 {
                     let thisConnection = thisChain.connections[j];
-                    if (thisConnection.part == thisPart && thisConnection.level == l) {
+                    if (thisConnection.part === thisPart && thisConnection.level === l) {
                         sprocketAlreadyUsed = true;
                         break;
                     }
                 }
 
-                if (sprocketAlreadyUsed)
+                if (sprocketAlreadyUsed) {
                     break;
+                }
             }
 
-            if (sprocketAlreadyUsed)
+            if (sprocketAlreadyUsed) {
                 continue;
+            }
 
             // Does it have the same radius?
-            if (thisPart.sprocketRadius[level] != thisPart.sprocketRadius[l])
+            if (thisPart.sprocketRadius[level] !== thisPart.sprocketRadius[l]) {
                 continue;
-
+            }
             retVal.push(l);
         }
 
@@ -669,14 +708,14 @@ export class PartManager {
         let lastChainPart = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
 
         // Check to make sure it's not the same part that it's currently on.
-        if (nextPart == lastChainPart)
+        if (nextPart === lastChainPart)
             return null;
 
         // Check to make sure it's on the correct level.
-        if (currentChainLevel != nextSprocket.level)
+        if (currentChainLevel !== nextSprocket.level)
         {
             // Well this one's not at the correct level, but is there another sprocket with the same radius that is at the correct level?
-            if (nextPart.sprocketRadius[currentChainLevel] == nextPart.sprocketRadius[nextSprocket.level])
+            if (nextPart.sprocketRadius[currentChainLevel] === nextPart.sprocketRadius[nextSprocket.level])
                 nextSprocket.level = currentChainLevel;
             else
                 return null;
@@ -743,12 +782,15 @@ export class PartManager {
 
     getSprocketBounds(partIndex, level)
     {
+        // console.log("In part-manager.js function getSprocketBounds - partIndex & level: ", partIndex, " & ", level);
         const part = this.parts[partIndex];
+        // console.log("in part-manager.js function getSprocketBounds - part: ", part);
         let bounds = {
             x: part.x + part.sprocketCenter[level].x,
             y: part.y + part.sprocketCenter[level].y,
             radius: part.sprocketRadius[level],
-            thickness: this.sprocketTolerance * 2};
+            thickness: this.sprocketTolerance * 2,
+        };
 
         return bounds;
     }
@@ -759,12 +801,14 @@ export class PartManager {
             return null;
 
         const part = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
+        // console.log("in part manager, part: ", part);
         const level = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].level
         let bounds = {
             x: part.x + part.sprocketCenter[level].x,
             y: part.y + part.sprocketCenter[level].y,
             radius: part.sprocketRadius[level],
             thickness: this.sprocketTolerance * 2};
+            // thispart: part;
 
         return bounds;
     }
@@ -777,7 +821,7 @@ export class PartManager {
 
     onPartDragStart(part, pointer, dragX, dragY, physicsBody)
     {
-        console.log("In part-manager, onPartDragStart function: ", part, " dragX ", dragX);
+        // console.log("In part-manager, onPartDragStart function: ", part, " dragX ", dragX);
         let worldPointer = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
         if (this.toolMode === 'move') {
             this.dragDiff.x = worldPointer.x - part.x;
@@ -797,7 +841,7 @@ export class PartManager {
 
     onPartDragEnd(part, pointer, dragX, dragY, physicsBody)
     {
-        console.log("In part-manager, onPartDragEnd function: ", part, " dragX ", dragX);
+        // console.log("In part-manager, onPartDragEnd function: ", part, " dragX ", dragX);
         let worldPointer = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
         if (this.toolMode === 'move') {
             this.redrawChains();
@@ -817,7 +861,7 @@ export class PartManager {
 
     onPartDrag(part, pointer, dragX, dragY, physicsBody)
     {
-        console.log("In part-manager, onPartDrag function: ", part, " dragX ", dragX);
+        // console.log("In part-manager, onPartDrag function: ", part, " dragX ", dragX);
         let worldPointer = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
         if (this.toolMode === 'move') {
             let desiredPosition = {x: 0, y: 0};
@@ -874,7 +918,7 @@ export class PartManager {
                 // Find the part of this connection;
                 for (let pi = 0; pi < this.parts.length; pi++)
                 {
-                    if (thisConnection.part == this.parts[pi])
+                    if (thisConnection.part === this.parts[pi])
                     {
                         partIndex = pi;
                         break;

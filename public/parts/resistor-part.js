@@ -155,19 +155,19 @@ export class ResistorPart extends PartBase
         this.resistance = ResistorPart.possibleResistorValues[index];
         //this.resistanceText.setText(this.getResistanceString());
 
-        if (index == 0)
+        if (index === 0)
             this.partImage.setTexture('resistor-100');
-        else if (index == 1)
+        else if (index === 1)
             this.partImage.setTexture('resistor-200');
-        else if (index == 2)
+        else if (index === 2)
             this.partImage.setTexture('resistor-500');
-        else if (index == 3)
+        else if (index === 3)
             this.partImage.setTexture('resistor-1000');
-        else if (index == 4)
+        else if (index === 4)
             this.partImage.setTexture('resistor-2000');
-        else if (index == 5)
+        else if (index === 5)
             this.partImage.setTexture('resistor-20');
-        else if (index == 6)
+        else if (index === 6)
             this.partImage.setTexture('resistor-50');
 
         let dampingRatio = 100;
