@@ -1652,7 +1652,7 @@ function onSwitchToggled(name, newToggleState)
     if (name === 'chain')
     {
         dynamicPartsListForTouchDots = [...partManager.parts];
-        console.log("dynamic parts list for touch dots on pointer down is: ", dynamicPartsListForTouchDots);
+        // console.log("dynamic parts list for touch dots on pointer down is: ", dynamicPartsListForTouchDots);
         self.chainbutton.setToggleState(true);
         mouseImage.setVisible(false);
         // if ( isMobile || isTouchMobile ) {
@@ -1938,7 +1938,7 @@ function onPointerMove(pointer) {
     // Kelly added function to show touch dots where to connect chain (on mobile)
     function drawTouchDots(centerX, centerY, radius, angle, cw, ismidchain, islevel, isfirstconnection) {
         // console.log("This part centerx: ", centerX, " and this part centery: ", centerY);
-        // console.log("in draw touch dots function...");
+        console.log("in draw touch dots function...", isfirstconnection, " and cw is: ", cw);
 
         if (ismidchain) {
             // console.log("in draw touch dots function, in if ismidchain true");
@@ -1958,13 +1958,19 @@ function onPointerMove(pointer) {
             chainDots[drawn] = this.add.graphics();
             // Set to the top-most depth
             chainDots[drawn].setDepth(20);
-            if ( !isfirstconnection ) {
+            if (isfirstconnection) {
                 chainDots[drawn].fillStyle(0x00FF00, 0.65);
+                chainDots[drawn].fillCircle(myPointX, myPointY, 20);
+            // } else if (isfirstconnection === 'first') {
+            //     chainDots[drawn].fillStyle(0xFF0000, 0.65);
+            //     chainDots[drawn].fillCircle(myPointX, myPointY, 20);
             } else {
-                chainDots[drawn].fillStyle(0x0000FF, 0.65);
+                chainDots[drawn].fillStyle(0x00FF00, 0.65);
+                chainDots[drawn].fillCircle(myPointX, myPointY, 20);
+                chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 20);
             }
-            chainDots[drawn].fillCircle(myPointX, myPointY, 20);
-            chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 20);
+
+
         // drawing first dot connection points
         } else {
             // console.log("in draw dots else...");
@@ -2142,7 +2148,9 @@ function onPointerMove(pointer) {
                     // Is this the very first sprocket in this chain?
                     let isFirstSprocket = false;
                     let firstSprocket = partManager.getInfoAboutFirstSprocketInChainBeingBuilt();
+                    console.log("first sprocket: ", firstSprocket);
                     dynamicPartsListForTouchDots[firstSprocket.partIndex] = 'first';
+
                     if (firstSprocket.partIndex === nearestSprocket.partIndex) {
                         // It IS the sprocket we began this chain on. We're going to end this chain now.
 
@@ -2181,10 +2189,10 @@ function onPointerMove(pointer) {
                                 // console.log("In if is NOT first sprocket (add chain connection).");
 
                             //    Kelly added here to test finding connections
-                                console.log("nearest sprocket: ", nearestSprocket);
+                            //     console.log("nearest sprocket: ", nearestSprocket);
                                 partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
                                 dynamicPartsListForTouchDots[nearestSprocket.partIndex] = null;
-                                console.log("In POINTER DOWN (not first part CW) - took out nearest part, now dynamic list is: ", dynamicPartsListForTouchDots);
+                                // console.log("In POINTER DOWN (not first part CW) - took out nearest part, now dynamic list is: ", dynamicPartsListForTouchDots);
                                 // console.log("This chain connection: ", partsCanBeConnected);
                             } else {
                                 // console.log("in angle if, else, to close chain.");
@@ -2200,7 +2208,7 @@ function onPointerMove(pointer) {
                                 // console.log("In if is NOT first sprocket (add chain connection).");
                                 partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, false);
                                 dynamicPartsListForTouchDots[nearestSprocket.partIndex] = null;
-                                console.log("In POINTER DOWN (not first part CCW) - took out nearest part, now dynamic list is: ", dynamicPartsListForTouchDots);
+                                // console.log("In POINTER DOWN (not first part CCW) - took out nearest part, now dynamic list is: ", dynamicPartsListForTouchDots);
                             } else {
                                 // console.log("in second angle if, else, to close chain.");
                                 partManager.closeChain();
@@ -2222,6 +2230,7 @@ function onPointerMove(pointer) {
                     for (let m = 0; m < dynamicPartsListForTouchDots.length; m++) {
 
                         nextSprocketBounds[m] = partManager.getSprocketBounds(m, chosenLevel);
+                        // console.log("Next sprocket bounds in loop: ", nextSprocketBounds[m]);
 
                         let getDistance = Math.sqrt(Math.pow(getLastSprocketBounds.x - nextSprocketBounds[m].x, 2) + Math.pow(getLastSprocketBounds.y - nextSprocketBounds[m].y, 2));
                         let getYdiff = getLastSprocketBounds.y - nextSprocketBounds[m].y;
@@ -2278,11 +2287,12 @@ function onPointerMove(pointer) {
                                 newangle = 90 - newangle;
                             }
                         }
-                        console.log("New Parts List for Dots: ", dynamicPartsListForTouchDots[m]);
-                        console.log("All Parts: ", allPartsOnBoard[m]);
+                        // console.log("New Parts List for Dots: ", dynamicPartsListForTouchDots[m]);
+                        // let getLevelsOnPart =  partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nextSprocketBounds[m]);
+                        console.log("Chosen level before draw dots: ", chosenLevel);
                         if (dynamicPartsListForTouchDots[m] === 'first') {
                             drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, true);
-                        } else if ( dynamicPartsListForTouchDots[m] !== null ) {
+                       } else if ( dynamicPartsListForTouchDots[m] !== null ) {
                             drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, false);
                         }
                     }  // end of loop to check each available part to draw touch dots
@@ -2432,7 +2442,7 @@ function onPointerMove(pointer) {
         let firstChainPointy = [];
         drawn = 0;
         chosenLevel = level;
-        console.log("level in popup level selected function: ", chosenLevel);
+        // console.log("level in popup level selected function: ", chosenLevel);
 
         disablePointerOverEvent = false;
         popupLevelChooser = null;
@@ -2444,8 +2454,8 @@ function onPointerMove(pointer) {
 
             // // Kelly added loop to draw new touch dots after choosing level
             // // console.log("part clicked for level select cw is: ", partClickedForLevelSelect);
-            console.log("In popup level function, all parts on board: ", dynamicPartsListForTouchDots, " and length: ", dynamicPartsListForTouchDots.length);
-            console.log("In popup level function, parts manager parts: ", partManager.parts, " and length: ", partManager.parts.length);
+            // console.log("In popup level function, all parts on board: ", dynamicPartsListForTouchDots, " and length: ", dynamicPartsListForTouchDots.length);
+            // console.log("In popup level function, parts manager parts: ", partManager.parts, " and length: ", partManager.parts.length);
             // for (var i = 0; i < allPartsOnBoard.length; i++) {
             for (var i = 0; i < partManager.parts.length; i++) {
                 // console.log("match? i: ", i, " and part clicked for level select: ", partClickedForLevelSelect.partIndex);

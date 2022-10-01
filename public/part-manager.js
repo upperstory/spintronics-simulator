@@ -289,7 +289,7 @@ export class PartManager {
 
     startChain()
     {
-        console.log("in start chain of part manager...");
+        // console.log("in start chain of part manager...");
         this.chainBeingBuilt = new Chain(this.scene);
         this.chainBeingBuilt.setPointerDownCallback(this.onChainClicked, this);
         this.chainBeingBuilt.setPointerMoveCallback(this.onPointerMoveOverChain, this);
