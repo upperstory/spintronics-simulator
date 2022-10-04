@@ -618,10 +618,60 @@ function create ()
         }, this)
         .on('pinch', function (pinch) {
             // console.log("In dragscale on pinch. Current parts: ", current_parts.parts);
-            var scaleFactor = dragScale.scaleFactor;
-            // current_parts.scaleX *= scaleFactor;
-            // current_parts.scaleY *= scaleFactor;
-            camera.zoom *= scaleFactor;
+            let camera = this.cameras.main;
+
+            let zoomFactor = pinch.scaleFactor;
+            // Find the center between the two pinch points - this is the point we want to zoom in and out of.
+            // In screen units, not world units.
+            let pinchCenterPoint = {
+                x: (pinch.pointers[0].x + pinch.pointers[1].x) / 2,
+                y: (pinch.pointers[0].y + pinch.pointers[1].y) / 2
+            };
+            let pinchCenterWorldPoint = camera.getWorldPoint(pinchCenterPoint.x, pinchCenterPoint.y);
+
+            //this.backgroundGrid.fillStyle(0xFF0000, 0.35);
+            //this.backgroundGrid.fillEllipse(pinchCenterWorldPoint.x, pinchCenterWorldPoint.y, 2, 2);
+
+            let worldCenterPoint = camera.midPoint;
+
+            //this.backgroundGrid.fillStyle(0x00FF00, 0.35);
+            //this.backgroundGrid.fillEllipse(worldCenterPoint.x, worldCenterPoint.y, 2, 2);
+
+            let distanceFromCenter = {
+                x: pinchCenterWorldPoint.x - worldCenterPoint.x,
+                y: pinchCenterWorldPoint.y - worldCenterPoint.y
+            };
+
+            let newDistanceFromCenter = {
+                x: distanceFromCenter.x * zoomFactor,
+                y: distanceFromCenter.y * zoomFactor
+            };
+
+            camera.setZoom(camera.zoom * zoomFactor);
+            camera.centerOn(worldCenterPoint.x + (newDistanceFromCenter.x - distanceFromCenter.x) + (lastPinchCenterPoint.x - pinchCenterPoint.x), worldCenterPoint.y + (newDistanceFromCenter.y - distanceFromCenter.y) + (lastPinchCenterPoint.y - pinchCenterPoint.y));
+
+            lastPinchCenterPoint.x = pinchCenterPoint.x;
+            lastPinchCenterPoint.y = pinchCenterPoint.y;
+
+            //DEBUG:
+            /*this.debugText.setText("dragScale: " + dragScale.scaleFactor.toString() +
+                "\nCamera zoom: " + camera.zoom.toString() +
+                "\nWorld center point x: " + worldCenterPoint.x.toString() +
+                "\nWorld center point y: " + worldCenterPoint.y.toString() +
+                "\nWorld pinch point x: " + pinchCenterWorldPoint.x.toString() +
+                "\nWorld pinch point y: " + pinchCenterWorldPoint.y.toString() +
+                "\nPinch point x: " + pinchCenterPoint.x.toString() +
+                "\nPinch point y: " + pinchCenterPoint.y.toString() +
+                "\nShift x: " + (newDistanceFromCenter.x - distanceFromCenter.x).toString() +
+                "\nShift y: " + (newDistanceFromCenter.y - distanceFromCenter.y).toString() +
+                "\nCamera center x: " + camera.centerX.toString() +
+                "\nCamera center y: " + camera.centerY.toString() +
+                "\nCamera scroll x: " + camera.scrollX.toString() +
+                "\nCamera scroll y: " + camera.scrollY.toString());
+            */
+
+            // Stop resizing window to the zoom extents.
+            self.useZoomExtents = false;
         }, this)
 
 
