@@ -401,6 +401,16 @@ function create ()
     // Always on top
     mouseImage.setDepth(100);
 
+    // Create the debug text box. Used especially for debugging on mobile.
+    this.debugText = controlscene.add.text(10, 10, "Debug output", {
+        font: '20px Roboto',
+        fontSize: '50px',
+        color: "rgb(20,20,20)",
+        fontStyle: 'strong'
+    });
+    // Make visible or invisible to see debugging output.
+    this.debugText.setVisible(true);
+
     // Create the button textures
     let graphics = controlscene.add.graphics();
     graphics.fillStyle(0xD1D3D4, 1);
@@ -568,16 +578,45 @@ function create ()
     this.scale.on('resize', resize, this);
 
     // Kelly Test Pinch on Touch Screen //
-    let dragScale = this.rexGestures.add.pinch();
-    var camera = this.cameras.main;
-    dragScale
-        // .on('drag1', function (dragScale) {
+    this.dragScale = this.rexGestures.add.pinch();
+    let lastPinchCenterPoint = {x: 0, y: 0};
+
+    this.dragScale
+        .on('drag1', function (pinch) {
+            //if (this.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+                // Get the starting point for the drag.
+                let camera = this.cameras.main;
+                let startingDragCenter = camera.midPoint;
+                let desiredCenterPosition = {x: 0, y: 0};
+                desiredCenterPosition.x = startingDragCenter.x - (pinch.drag1Vector.x / this.cameras.main.zoom);
+                desiredCenterPosition.y = startingDragCenter.y - (pinch.drag1Vector.y / this.cameras.main.zoom);
+
+                camera.centerOn(desiredCenterPosition.x, desiredCenterPosition.y);
+
+                // Stop resizing window to the zoom extents.
+                this.useZoomExtents = false;
+                //DEBUG:
+                /*this.debugText.setText("Camera scroll x: " + camera.scrollX.toString() +
+                    "\nCamera scroll y: " + camera.scrollY.toString());
+                */
+            //}
+
+
             // console.log("in dragscale on drag1.");
             // var drag1Vector = dragScale.drag1Vector;
             // camera.scrollX -= drag1Vector.x / camera.zoom;
             // camera.scrollY -= drag1Vector.y / camera.zoom;
-        // })
-        .on('pinch', function (dragScale) {
+         }, this)
+        .on('pinchstart', function(pinch) {
+            lastPinchCenterPoint = {
+                x: (pinch.pointers[0].x + pinch.pointers[1].x) / 2,
+                y: (pinch.pointers[0].y + pinch.pointers[1].y) / 2
+            };
+        }, this)
+        .on('pinchend', function(pinch) {
+
+        }, this)
+        .on('pinch', function (pinch) {
             // console.log("In dragscale on pinch. Current parts: ", current_parts.parts);
             var scaleFactor = dragScale.scaleFactor;
             // current_parts.scaleX *= scaleFactor;
@@ -689,41 +728,47 @@ function update ()
 */
 }
 
-var mapDragging = true;
-var startingDragCenter = {x: 0, y: 0};
-var startingPointer = {x: 0, y: 0};
+//var startingDragCenter = {x: 0, y: 0};
+//var startingPointer = {x: 0, y: 0};
+
+// Used to detect when dragging the entire workspace
 function onDragStart(pointer, dragX, dragY)
 {
+    // The rexGestures pinch gesture doesn't take into account objects
+    // above it that take priority for dragging. This enables pinch
+    // and drag when a regular drag is started.
+    self.dragScale.setEnable(true);
     // console.log("In onDragStart function, passed in pointer: ", pointer);
-    if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+    /*if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+        // Get the starting point for the drag.
         startingDragCenter = self.cameras.main.getWorldPoint(self.cameras.main.centerX, self.cameras.main.centerY);
         startingPointer.x = pointer.x;
         startingPointer.y = pointer.y;
-        mapDragging = true;
 
         // Stop resizing window to the zoom extents.
         self.useZoomExtents = false;
-    }
+    }*/
+
 }
 
 function onDrag(pointer, dragX, dragY)
 {
     // console.log("In onDrag function, passed in pointer: ", pointer);
-    if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+    /*if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         let desiredCenterPosition = {x: 0, y: 0};
         desiredCenterPosition.x = startingDragCenter.x - (pointer.x - startingPointer.x) / self.cameras.main.zoom;
         desiredCenterPosition.y = startingDragCenter.y - (pointer.y - startingPointer.y) / self.cameras.main.zoom;
         self.cameras.main.centerOn(desiredCenterPosition.x, desiredCenterPosition.y);
-    }
+    }*/
 }
 
 function onDragEnd(pointer, dragX, dragY)
 {
     // console.log("In onDragEnd function, passed in pointer: ", pointer);
     if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
-        mapDragging = false;
         self.input.setDefaultCursor('default');
     }
+    self.dragScale.setEnable(false);
 }
 
 async function loadCircuitFromDatabase (linkID)
@@ -2552,6 +2597,7 @@ function onPointerMove(pointer) {
         let mapBottom = mapHeight / 2;
 
         this.backgroundGrid = this.add.graphics();
+
         this.backgroundGrid.lineStyle(1, 0x000000, 0.05);
         this.backgroundGrid.beginPath();
         this.backgroundGrid.arc(100, 100, 50, 45 * (2 * Math.PI / 360), 90 * (2 * Math.PI / 360), false);
@@ -2619,6 +2665,7 @@ function onPointerMove(pointer) {
             this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + Math.sqrt(2) * mapWidth);
             y -= 2 * gridSpacing;
         }*/
+
     }
 
 
