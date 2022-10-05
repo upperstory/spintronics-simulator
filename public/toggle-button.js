@@ -153,7 +153,7 @@ export class ToggleButton extends Phaser.GameObjects.Container
         else if (this.buttonType === 'toggle') {
             // console.log("In button type toggle in toggle-button js!");
             // clearChainDots(chainDots.length);
-            this.setToggleState(true);
+            //this.setToggleState(true);
             this.toggledCallback.bind(this.parentContainer)(this.name, this.toggleState);
         }
         event.stopPropagation();

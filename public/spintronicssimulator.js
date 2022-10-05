@@ -409,7 +409,7 @@ function create ()
         fontStyle: 'strong'
     });
     // Make visible or invisible to see debugging output.
-    this.debugText.setVisible(true);
+    this.debugText.setVisible(false);
 
     // Create the button textures
     let graphics = controlscene.add.graphics();
@@ -561,6 +561,7 @@ function create ()
 
     this.input.on('pointermove', (pointer) => onPointerMove.bind(this)(pointer));
     this.input.on('pointerdown', (pointer, currentlyOver) => onPointerDown.bind(this)(pointer, currentlyOver));
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => onMouseWheel.bind(this)(pointer, gameObjects, deltaX, deltaY, deltaZ));
 
     this.dragZone.setInteractive({
        draggable: true
@@ -647,7 +648,22 @@ function create ()
                 y: distanceFromCenter.y * zoomFactor
             };
 
-            camera.setZoom(camera.zoom * zoomFactor);
+            let currentZoom = camera.zoom;
+            let newZoom = camera.zoom * zoomFactor;
+
+            // Check to see if the image is too small to fill the screen.
+            let screenWidth = camera.width;
+            let screenHeight = camera.height;
+
+            if (mapWidth * newZoom < screenWidth || mapHeight * newZoom < screenHeight) {
+                newZoom = currentZoom;
+            }
+
+            // Limit zooming in too far
+            if (newZoom > 10)
+                newZoom = 10;
+
+            camera.setZoom(newZoom);
             camera.centerOn(worldCenterPoint.x + (newDistanceFromCenter.x - distanceFromCenter.x) + (lastPinchCenterPoint.x - pinchCenterPoint.x), worldCenterPoint.y + (newDistanceFromCenter.y - distanceFromCenter.y) + (lastPinchCenterPoint.y - pinchCenterPoint.y));
 
             lastPinchCenterPoint.x = pinchCenterPoint.x;
@@ -1531,24 +1547,6 @@ function zoomOut()
 
 // Kelly added button and function for an info/instructions screen overlay
 function onInfoBtnClicked(name, newToggleState) {
-    // toggle off other tools that may be on
-    self.chainbutton.setToggleState(false);
-    self.junctionbutton.setToggleState(false);
-    self.motorbutton.setToggleState(false);
-    self.resistorbutton.setToggleState(false);
-    self.capacitorbutton.setToggleState(false);
-    self.inductorbutton.setToggleState(false);
-    self.phonographbutton.setToggleState(false);
-    self.diodebutton.setToggleState(false);
-    self.buttonbutton.setToggleState(false);
-    self.transistorbutton.setToggleState(false);
-    self.levelchangerbutton.setToggleState(false);
-    self.tilebutton.setToggleState(false);
-    self.interactbutton.setToggleState(false);
-    self.movebutton.setToggleState(false);
-    self.deletebutton.setToggleState(false);
-    self.editbutton.setToggleState(false);
-    // console.log("toggle state of inform: ", self.infobutton.getToggleState());
     let graybackground = controlscene.add.dom().createElement('div', 'background-color: rgba(0, 0, 0, 0.2); position: absolute; left: ' + controlscene.cameras.main.width / 2 + 'px; top: ' + controlscene.cameras.main.height / 2 + 'px; width: ' + controlscene.cameras.main.width + 'px; height: ' + controlscene.cameras.main.height + 'px', '');
     let form = `
             <div style="font-family: 'Roboto', Arial, sans-serif; font-size: 14px; position: absolute; transform: translate(-50%, -50%); box-sizing: border-box; background-color: rgba(255, 255, 255, 1); border-color: black; border-width: 1px; border-style: solid; border-radius: 10px; width: 80vw; padding: 20px; margin: 20px;" >
@@ -1679,51 +1677,15 @@ function onZoomOutClicked(name, newToggleState)
     // Stop resizing to the zoom extents.
     self.useZoomExtents = false;
 }
-// Kelly variable to toggle off the part picked but not dropped
-let previous_button_selected = '';
-let button_has_mouse_image = false;
-// console.log("GLOBAL previous part that was selected: ", previous_button_selected, " dropped: ", button_has_mouse_image);
 
-function onSwitchToggled(name, newToggleState)
-{
-    clearChainDots(chainDots.length);
+function setToInteractMode() {
+    clearAllToggleButtons();
+    mouseImage.setVisible(false);
+    self.interactbutton.setToggleState(true);
+    partManager.setToolMode.bind(partManager)('interact');
+}
 
-    // console.log("in on switch toggled function: ", name);
-    // console.log("IN ON TOGGLE, is mobile?", isMobile, " or is touch device? ", isTouchMobile);
-    // Kelly if statement to toggle off the part picked but not dropped
-    // console.log("button has mouse image? ", button_has_mouse_image);
-    if ( previous_button_selected === name && button_has_mouse_image === true ) {
-        // console.log("Clicked on same part button. MouseImage: ", mouseImage.visible );
-        // console.log("if statement, previous button selected is ", previous_button_selected, " and dropped is set to ", button_has_mouse_image);
-
-        self.chainbutton.setToggleState(false);
-        self.junctionbutton.setToggleState(false);
-        self.motorbutton.setToggleState(false);
-        self.resistorbutton.setToggleState(false);
-        self.capacitorbutton.setToggleState(false);
-        self.inductorbutton.setToggleState(false);
-        self.phonographbutton.setToggleState(false);
-        self.diodebutton.setToggleState(false);
-        self.buttonbutton.setToggleState(false);
-        self.transistorbutton.setToggleState(false);
-        self.levelchangerbutton.setToggleState(false);
-        self.tilebutton.setToggleState(false);
-        // self.infobutton.setToggleState(false);
-        self.interactbutton.setToggleState(false);
-        self.movebutton.setToggleState(false);
-        self.deletebutton.setToggleState(false);
-        self.editbutton.setToggleState(false);
-
-        mouseImage.setVisible(false);
-        // Kelly reset so that button can be used again
-        previous_button_selected = '';
-        button_has_mouse_image = false;
-        return;
-    }
-
-    previous_button_selected = name;    // now set variable to the part that was picked
-    button_has_mouse_image = true;
-
+function clearAllToggleButtons() {
     self.chainbutton.setToggleState(false);
     self.junctionbutton.setToggleState(false);
     self.motorbutton.setToggleState(false);
@@ -1736,146 +1698,248 @@ function onSwitchToggled(name, newToggleState)
     self.transistorbutton.setToggleState(false);
     self.levelchangerbutton.setToggleState(false);
     self.tilebutton.setToggleState(false);
-    // self.infobutton.setToggleState(false);
+
     self.interactbutton.setToggleState(false);
     self.movebutton.setToggleState(false);
     self.deletebutton.setToggleState(false);
     self.editbutton.setToggleState(false);
+}
+
+// Intended behavior: The interact button is the default button. It is selected when nothing else is.
+// After dropping a part, always switch back to interact button.
+// Start with the interact button toggled.
+function onSwitchToggled(name, newToggleState)
+{
+    clearChainDots(chainDots.length);
+
+    // console.log("in on switch toggled function: ", name);
+    // console.log("IN ON TOGGLE, is mobile?", isMobile, " or is touch device? ", isTouchMobile);
+
     partManager.setToolMode('default');
     partManager.cancelChain();
+
     // console.log("In onSwitchToggled function, passed in name: ", name);
     if (name === 'chain')
     {
-        dynamicPartsListForTouchDots = [...partManager.parts];
-        // console.log("dynamic parts list for touch dots on pointer down is: ", dynamicPartsListForTouchDots);
-        self.chainbutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        // if ( isMobile || isTouchMobile ) {
-            showPossibleChainConnections();
+        if (!self.chainbutton.getToggleState()) {
+            dynamicPartsListForTouchDots = [...partManager.parts];
+            // console.log("dynamic parts list for touch dots on pointer down is: ", dynamicPartsListForTouchDots);
 
-        // }
+            clearAllToggleButtons();
+            self.chainbutton.setToggleState(true);
+            mouseImage.setVisible(false);
+            // if ( isMobile || isTouchMobile ) {
+            showPossibleChainConnections();
+            // }
+        }
+        else {
+            setToInteractMode();
+        }
     }
     else if (name === 'junction')
     {
-        self.junctionbutton.setToggleState(true);
-        mouseImage.setTexture('junction');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.junctionbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.junctionbutton.setToggleState(true);
+            mouseImage.setTexture('junction');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'motor')
     {
-        self.motorbutton.setToggleState(true);
-        mouseImage.setTexture('motor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.motorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.motorbutton.setToggleState(true);
+            mouseImage.setTexture('motor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'resistor')
     {
-        self.resistorbutton.setToggleState(true);
-        mouseImage.setTexture('resistor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.resistorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.resistorbutton.setToggleState(true);
+            mouseImage.setTexture('resistor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'capacitor')
     {
-        self.capacitorbutton.setToggleState(true);
-        mouseImage.setTexture('capacitor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.capacitorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.capacitorbutton.setToggleState(true);
+            mouseImage.setTexture('capacitor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'inductor')
     {
-        self.inductorbutton.setToggleState(true);
-        mouseImage.setTexture('inductor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.inductorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.inductorbutton.setToggleState(true);
+            mouseImage.setTexture('inductor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'phonograph')
     {
-        self.phonographbutton.setToggleState(true);
-        mouseImage.setTexture('phonograph');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.phonographbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.phonographbutton.setToggleState(true);
+            mouseImage.setTexture('phonograph');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'diode')
     {
-        self.diodebutton.setToggleState(true);
-        mouseImage.setTexture('diode');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.diodebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.diodebutton.setToggleState(true);
+            mouseImage.setTexture('diode');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'button')
     {
-        self.buttonbutton.setToggleState(true);
-        mouseImage.setTexture('button');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.buttonbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.buttonbutton.setToggleState(true);
+            mouseImage.setTexture('button');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'transistor')
     {
-        self.transistorbutton.setToggleState(true);
-        mouseImage.setTexture('transistor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.transistorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.transistorbutton.setToggleState(true);
+            mouseImage.setTexture('transistor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'level-changer')
     {
-        self.levelchangerbutton.setToggleState(true);
-        mouseImage.setTexture('level-changer');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.levelchangerbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.levelchangerbutton.setToggleState(true);
+            mouseImage.setTexture('level-changer');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'tile')
     {
-        self.tilebutton.setToggleState(true);
-        mouseImage.setTexture('tile');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        if ( !isMobile || !isTouchMobile ) {
-            mouseImage.setVisible(true);
+        if (!self.tilebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.tilebutton.setToggleState(true);
+            mouseImage.setTexture('tile');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (!isMobile || !isTouchMobile) {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
         }
     }
     else if (name === 'interact') {
-        self.interactbutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('interact');
+        // Can't deselect this one by clicking on it twice.
+        setToInteractMode();
     }
     else if (name === 'move')
     {
-        self.movebutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('move');
+        if (!self.movebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.movebutton.setToggleState(true);
+            mouseImage.setVisible(false);
+            partManager.setToolMode.bind(partManager)('move');
+        }
+        else {
+            setToInteractMode();
+        }
     }
     else if (name === 'delete')
     {
-        self.deletebutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('delete');
+        if (!self.deletebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.deletebutton.setToggleState(true);
+            mouseImage.setVisible(false);
+            partManager.setToolMode.bind(partManager)('delete');
+        }
+        else {
+            setToInteractMode();
+        }
     }
     else if (name === 'edit')
     {
-        self.editbutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('edit');
+        if (!self.editbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.editbutton.setToggleState(true);
+            mouseImage.setVisible(false);
+            partManager.setToolMode.bind(partManager)('edit');
+        }
+        else {
+            setToInteractMode();
+        }
     }
 }
 
@@ -2162,74 +2226,116 @@ function onPointerMove(pointer) {
         }
     }
 
+    function onMouseWheel(pointer, gameObjects, deltaX, deltaY, deltaZ)
+    {
+        let camera = this.cameras.main;
+
+        let zoomFactor = Math.pow(10, -deltaY/2000);
+        // Find the center between the two pinch points - this is the point we want to zoom in and out of.
+        // In screen units, not world units.
+        let pinchCenterPoint = {
+            x: pointer.x,
+            y: pointer.y
+        };
+        let pinchCenterWorldPoint = camera.getWorldPoint(pinchCenterPoint.x, pinchCenterPoint.y);
+
+        //this.backgroundGrid.fillStyle(0xFF0000, 0.35);
+        //this.backgroundGrid.fillEllipse(pinchCenterWorldPoint.x, pinchCenterWorldPoint.y, 2, 2);
+
+        let worldCenterPoint = camera.midPoint;
+
+        //this.backgroundGrid.fillStyle(0x00FF00, 0.35);
+        //this.backgroundGrid.fillEllipse(worldCenterPoint.x, worldCenterPoint.y, 2, 2);
+
+        let distanceFromCenter = {
+            x: pinchCenterWorldPoint.x - worldCenterPoint.x,
+            y: pinchCenterWorldPoint.y - worldCenterPoint.y
+        };
+
+        let newDistanceFromCenter = {
+            x: distanceFromCenter.x * zoomFactor,
+            y: distanceFromCenter.y * zoomFactor
+        };
+
+        let currentZoom = camera.zoom;
+        let newZoom = camera.zoom * zoomFactor;
+
+        // Check to see if the image is too small to fill the screen.
+        let screenWidth = self.cameras.main.width;
+        let screenHeight = self.cameras.main.height;
+
+        if (mapWidth * newZoom < screenWidth || mapHeight * newZoom < screenHeight) {
+            newZoom = currentZoom;
+        }
+
+        // Limit zooming in too far
+        if (newZoom > 10)
+            newZoom = 10;
+
+        camera.setZoom(newZoom);
+        camera.centerOn(worldCenterPoint.x + (newDistanceFromCenter.x - distanceFromCenter.x), worldCenterPoint.y + (newDistanceFromCenter.y - distanceFromCenter.y));
+
+        // Stop resizing window to the zoom extents.
+        self.useZoomExtents = false;
+    }
+
     function onPointerDown(pointer, currentlyOver) {
         let worldPointer = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
         // let chainLevel = -1;
-        button_has_mouse_image = false;
 
         // console.log("dynamic list: ", dynamicPartsListForTouchDots);
         // Drop a part if we've got a part selected
         if (this.junctionbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('junction', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.junctionbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            // Turn the button off after placing a part
+            setToInteractMode();
         } else if (this.buttonbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('button', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.buttonbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.resistorbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('resistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.resistorbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.capacitorbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('capacitor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.capacitorbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.diodebutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('diode', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.diodebutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.transistorbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('transistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.transistorbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.levelchangerbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('level-changer', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.levelchangerbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.phonographbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('phonograph', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-            this.phonographbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.motorbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, tileSpacing);
             partManager.addPart('motor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
             // Update all the tile connectors
             partManager.updateTileConnectors();
             // Kelly testing to get rid of hover image after pointer down...
-            this.motorbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.inductorbutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
             partManager.addPart('inductor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
             // Kelly testing to get rid of hover image after pointer down...
-            this.inductorbutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.tilebutton.getToggleState()) {
             var snapPosition = PartBase.getSnapPosition(worldPointer, tileSpacing);
             partManager.addPart('tile', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
             // Update all the tile connectors
             partManager.updateTileConnectors();
-            this.tilebutton.setToggleState(false);
-            mouseImage.setVisible(false);
+            setToInteractMode();
         } else if (this.chainbutton.getToggleState()) {         // on POINTER DOWN - BUILDING CHAIN
             // Draw a chain if the chain button is selected
             if (partManager.isInTheMiddleOfBuildingAChain()) {
@@ -2292,6 +2398,7 @@ function onPointerMove(pointer) {
                             } else {
                                 // console.log("in angle if, else, to close chain.");
                                 partManager.closeChain();
+                                setToInteractMode();
                             }
                         }
                     } else {
@@ -2307,6 +2414,7 @@ function onPointerMove(pointer) {
                             } else {
                                 // console.log("in second angle if, else, to close chain.");
                                 partManager.closeChain();
+                                setToInteractMode();
                             }
                         }
                     }
@@ -2649,9 +2757,7 @@ function onPointerMove(pointer) {
         this.backgroundGrid = this.add.graphics();
 
         this.backgroundGrid.lineStyle(1, 0x000000, 0.05);
-        this.backgroundGrid.beginPath();
-        this.backgroundGrid.arc(100, 100, 50, 45 * (2 * Math.PI / 360), 90 * (2 * Math.PI / 360), false);
-        this.backgroundGrid.stroke();
+
         // First draw vertical lines
         // Middle to right
         for (var x = 0; x <= mapWidth; x += gridSpacing) {
@@ -2728,6 +2834,7 @@ function onPointerMove(pointer) {
             popupLevelChooser = null;
             disablePointerOverEvent = false;
         }
+        setToInteractMode();
     }
 
     function getZoomExtents() {
@@ -2942,7 +3049,7 @@ function onPointerMove(pointer) {
     function positionLeftSideButtons() {
         let leftMargin = 6;
         let topMargin = 6;
-        // let spaceHeight = this.cameras.main.height;
+        let spaceHeight = this.cameras.main.height;
 
         let buttons = [this.chainbutton,
             this.motorbutton,
@@ -2957,17 +3064,35 @@ function onPointerMove(pointer) {
             this.transistorbutton,
             this.levelchangerbutton
         ];
-        let xPos = (buttonContainerHeight / 2) + leftMargin;
-        let yPos = (buttonContainerHeight / 2) + topMargin;
-        // buttonHeight = buttonContainerHeight * .9;
-        // let xPos = (buttonWidth /2) + leftMargin;
-        // let yPos = topMargin + (buttonHeight /2);
+
+        let buttonsPerColumn = Math.floor((spaceHeight - (topMargin * 2) - buttonHeight) / (buttonHeight + 10)) + 1;
+        let numColumns = Math.ceil(buttons.length / buttonsPerColumn);
+        let remainder = buttons.length - (buttonsPerColumn * (numColumns - 1));
+
+        //let xPos = (buttonContainerHeight / 2) + leftMargin;
+        //let yPos = (buttonContainerHeight / 2) + topMargin;
+
+        let xPos = (buttonWidth / 2) + leftMargin;
+        let yPos = topMargin + (buttonHeight /2);
+
         // console.log("POSITION LEFT SIDE BUTTONS - innerHeight: ", window.innerHeight, " buttonContainerHeight: ", buttonContainerHeight, " top margin: ", topMargin, " x pos: ", xPos, " y pos: ", yPos);
         // console.log("POSITION LEFT SIDE BUTTONS - buttonHeight: ", buttonHeight);
+
         for (let i = 0; i < buttons.length; i++) {
+            buttons[i].setPosition(xPos, yPos);
+            yPos += buttonHeight + 10;
+            if (yPos > spaceHeight - (buttonHeight / 2) + topMargin) {
+                yPos = topMargin + (buttonHeight / 2);
+                xPos += buttonWidth + 10;
+            }
+        }
+
+        /*for (let i = 0; i < buttons.length; i++) {
             // console.log("IN BUTTON FOR LOOP - button: ", buttons[i].name, " xPos:", xPos, " yPos: ", yPos);
             buttons[i].setPosition(xPos, yPos);
-            yPos += buttonContainerHeight;
+            yPos += buttonHeight + 10;
+
+
 
             if (yPos > window.innerHeight - (buttonContainerHeight / 2) - topMargin)
                 // if (yPos > (window.innerHeight - 15) - topMargin)
@@ -2977,7 +3102,7 @@ function onPointerMove(pointer) {
                 xPos += buttonWidth + 10;
                 // console.log("IN BUTTON LOOP IF - after new coordinates, yPos: ", yPos, " xPos: ", xPos);
             }
-        }
+        }*/
     }
 
     function positionRightSideButtons() {
