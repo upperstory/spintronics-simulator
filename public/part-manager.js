@@ -52,6 +52,7 @@ export class PartManager {
 
     addPart(partType, x, y, value = null)
     {
+        // console.log("Part Manager, add part function, parts: ", this.parts);
         if (partType === 'junction') {
             var newPart = new JunctionPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
@@ -210,7 +211,6 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
-
         return null;
     }
 
@@ -269,8 +269,9 @@ export class PartManager {
     {
         let retVal = {partIndex: -1, cw: false, level: 0};
 
-        if (this.chainBeingBuilt == null)
+        if (this.chainBeingBuilt == null) {
             return retVal;
+        }
 
         for (let i = 0; i < this.parts.length; i++)
         {
@@ -344,9 +345,13 @@ export class PartManager {
 
     addChainConnection(partIndex, level, cw)
     {
-        // console.log("Adding chain to part with this index: ", partIndex);
+        console.log("Adding chain to part with this index: ", partIndex);
         this.chainBeingBuilt.addConnection(partIndex, this.parts[partIndex], level, cw);
-
+        // console.log("this chain being built, after add connection: ", this.chainBeingBuilt.connections);
+        // console.log("this chain being built, after add connection: ", this.chains.connections);
+        // let showTouchDotsOnTheseSprocketsOnly = [];
+        // showTouchDotsOnTheseSprocketsOnly[partIndex].usedlevel = level;
+        // console.log("for part with index: ", partIndex, " show on these sprockets: ", showTouchDotsOnTheseSprocketsOnly[partIndex].usedlevel);
 
         // console.log("chain connection array in part manager: ", chainConnectionArray);
         this.chainBeingBuilt.redrawChainGraphics();
@@ -354,7 +359,12 @@ export class PartManager {
         // console.log("now all parts minus those with connections: ", showTouchDotsOnThesePartsOnly);
         // console.log("and all parts on board: ", this.parts);
         // return showTouchDotsOnThesePartsOnly;
+        let getAllPartsWithUsedSprocketLevels = this.chainBeingBuilt.connections;
+        // console.log("get all parts with used sprockets: ", getAllPartsWithUsedSprocketLevels);
+        return getAllPartsWithUsedSprocketLevels;
     }
+
+
 
     getLengthOfChainBeingBuilt()
     {
@@ -413,9 +423,9 @@ export class PartManager {
         else if (this.toolMode === 'interact')
         {
             // The button part should change state if the center of it is clicked in Interact mode.
-            if (part.partType === 'button')
+            if (part.partType === 'button') {
                 part.clickedInInteractMode(pointer);
-
+            }
         }
     }
 
@@ -645,10 +655,11 @@ export class PartManager {
     {
         let retVal = [];
         let thisPart = this.parts[partIndex];
-        let thisRadius = thisPart.sprocketRadius[level];
+        // let thisRadius = thisPart.sprocketRadius[level];
 
         for (let l = 0; l < thisPart.sprocketRadius.length; l++)
         {
+            // console.log("In get all levels function, loop through part sprocket radius length.");
             // Check each level on this part.
             // Does the sprocket exist?
             if (!thisPart.sprocketExists[l]) {
@@ -657,14 +668,18 @@ export class PartManager {
 
             // Is there a chain already on it?
             let sprocketAlreadyUsed = false;
+            // console.log('chains length: ', this.chains.length);
             for (let i = 0; i < this.chains.length; i++)
             {
+                // console.log("In get all levels function, loop through chains length.");
                 let thisChain = this.chains[i];
                 for (let j = 0; j < thisChain.connections.length; j++)
                 {
+                    // console.log("now loop through chain connections length.");
                     let thisConnection = thisChain.connections[j];
                     if (thisConnection.part === thisPart && thisConnection.level === l) {
                         sprocketAlreadyUsed = true;
+                        // console.log("sprocket already used is: ", sprocketAlreadyUsed);
                         break;
                     }
                 }
@@ -682,9 +697,10 @@ export class PartManager {
             if (thisPart.sprocketRadius[level] !== thisPart.sprocketRadius[l]) {
                 continue;
             }
+            // console.log("part is: ", thisPart, " with sprocket index: ", l, " and return value from get all available levels: ", retVal);
             retVal.push(l);
         }
-
+        // console.log("------*****-----*****------");
         return retVal;
     }
 
@@ -699,54 +715,73 @@ export class PartManager {
     // This function gives you the sprocket at the correct level if it exists. It also checks to make sure you're not clicking on the same sprocket you're currently on.
     getNextAllowedSprocketAtPoint (x, y)
     {
-        let nextSprocket = this.getSprocketAtPoint(x, y);
-        if (nextSprocket == null)
+        // console.log("dotpart: ", dotpart);
+        let nextSprocket = '';
+
+        // if ( findSprocketCenter ) {
+            nextSprocket = this.getSprocketAtPoint(x, y);
+            // console.log("if find sprocket center is true, next sprocket is: ", nextSprocket);
+        // } else {
+        //     nextSprocket = { partIndex: dotpartindex, level: 0 };
+            // console.log("if find sprocket center is false, next sprocket is: ", nextSprocket);
+        // }
+
+        if (nextSprocket == null) {
             return null;
-
-        let currentChainLevel = this.chainBeingBuilt.connections[0].level;
-        let nextPart = this.parts[nextSprocket.partIndex];
-        let lastChainPart = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
-
-        // Check to make sure it's not the same part that it's currently on.
-        if (nextPart === lastChainPart)
-            return null;
-
-        // Check to make sure it's on the correct level.
-        if (currentChainLevel !== nextSprocket.level)
-        {
-            // Well this one's not at the correct level, but is there another sprocket with the same radius that is at the correct level?
-            if (nextPart.sprocketRadius[currentChainLevel] === nextPart.sprocketRadius[nextSprocket.level])
-                nextSprocket.level = currentChainLevel;
-            else
-                return null;
         }
 
-        // Check to make sure there's not already a connection from another chain to this one.
-        for (let i = 0; i < this.chains.length; i++)
-        {
-            let thisChain = this.chains[i];
-            for (let j = 0; j < thisChain.connections.length; j++)
-            {
-                let thisConnection = thisChain.connections[j];
-                if (thisConnection.part === nextPart && thisConnection.level === nextSprocket.level)
-                {
+        // if ( !findSprocketCenter ) {
+            // console.log("in not find sprocket center");
+            let currentChainLevel = this.chainBeingBuilt.connections[0].level;
+            // console.log("current chain level: ", currentChainLevel);
+            let nextPart = this.parts[nextSprocket.partIndex];
+            // console.log("next part: ", nextPart);
+            let lastChainPart = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
+            // console.log("next part: ", nextPart, " and last chain part: ", lastChainPart);
+            // Check to make sure it's not the same part that it's currently on.
+            if (nextPart === lastChainPart) {
+                // console.log("next equals last!");
+                return null;
+            }
+
+            // Check to make sure it's on the correct level.
+            if (currentChainLevel !== nextSprocket.level) {
+                // Well this one's not at the correct level, but is there another sprocket with the same radius that is at the correct level?
+                if (nextPart.sprocketRadius[currentChainLevel] === nextPart.sprocketRadius[nextSprocket.level]) {
+                    // console.log("corrected current level to be same on next part");
+                    nextSprocket.level = currentChainLevel;
+                    // console.log("after correcting the level: ", nextSprocket);
+                } else {
+                    return null;
+                }
+
+            }
+
+            // Check to make sure there's not already a connection from another chain to this one.
+            // console.log("chains length: ", this.chains.length);
+            for (let i = 0; i < this.chains.length; i++) {
+                // console.log("In check to see if chain already exists on sprocket");
+                let thisChain = this.chains[i];
+                for (let j = 0; j < thisChain.connections.length; j++) {
+                    let thisConnection = thisChain.connections[j];
+                    if (thisConnection.part === nextPart && thisConnection.level === nextSprocket.level) {
+                        console.log("found sprocket that already has a chain on it!");
+                        return null;
+                    }
+                }
+            }
+
+            // Check to make sure there's not already a connection from this chain to this sprocket.
+            for (let j = 1; j < this.chainBeingBuilt.connections.length; j++) {
+                let thisConnection = this.chainBeingBuilt.connections[j];
+                if (thisConnection.part === nextPart && thisConnection.level === nextSprocket.level) {
                     return null;
                 }
             }
-        }
-
-        // Check to make sure there's not already a connection from this chain to this sprocket.
-        for (let j = 1; j < this.chainBeingBuilt.connections.length; j++)
-        {
-            let thisConnection = this.chainBeingBuilt.connections[j];
-            if (thisConnection.part === nextPart && thisConnection.level === nextSprocket.level)
-            {
-                return null;
-            }
-        }
-
+        // }
         // This is a valid potential connection
         return nextSprocket;
+
     }
 
     // Returns {partIndex, level} if the mouse is close or null if not.
@@ -759,8 +794,10 @@ export class PartManager {
 
             for (var i = 0; i < part.sprocketExists.length; i++)
             {
-                if (part.sprocketExists[i] === false)
+                // console.log("In Part Manager, sprocket exists loop, i: ", i, " and part sprocket exists: ", part.sprocketExists[i]);
+                if (part.sprocketExists[i] === false) {
                     continue;
+                }
 
                 var sprocketCenter = {x: part.x + part.sprocketCenter[i].x, y: part.y + part.sprocketCenter[i].y};
                 var sprocketRadius = part.sprocketRadius[i];
@@ -789,7 +826,7 @@ export class PartManager {
             x: part.x + part.sprocketCenter[level].x,
             y: part.y + part.sprocketCenter[level].y,
             radius: part.sprocketRadius[level],
-            thickness: this.sprocketTolerance * 2,
+            thickness: this.sprocketTolerance * 2
         };
 
         return bounds;
@@ -935,7 +972,7 @@ export class PartManager {
             let chainObject = {
                 connections: connectionsArray
             };
-
+            // console.log("In Part Manager, serialize chains function. Chain Object is: ", chainObject);
             chainsArray.push(chainObject);
         }
 

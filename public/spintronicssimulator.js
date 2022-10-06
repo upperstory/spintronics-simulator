@@ -146,6 +146,8 @@ let popupLevelChooser = null;
 let controlscene = null;
 let partsCanBeConnected = null;
 let dynamicPartsListForTouchDots = null;
+let addThisPartAndLeveltoConnectionsGrid = {};
+let sprocketsWithConnectionsGridArray = [];
 
 function preload ()
 {
@@ -1798,16 +1800,27 @@ function showPossibleChainConnections() {
     // now loop through the sprockets on this part - if different, then draw another dot
     let thisRadius = 0;
     let sprocketBounds = [];
+    let checkavailablelevels = '';
+
     for (let i = 0; i < allPartsOnBoard.length; i++) {
-        for (let k = 0; k < 3; k++ ) {
-            sprocketBounds[[i][k]] = partManager.getSprocketBounds(i, k);
-            // console.log("sprocket bounds when i: ", i, " and k: ", k, " is - ", sprocketBounds[[i][k]]);
-            if ( thisRadius !== sprocketBounds[[i][k]].radius) {
-                drawTouchDots.bind(self)(sprocketBounds[[i][k]].x, sprocketBounds[[i][k]].y, sprocketBounds[[i][k]].radius, 0, sprocketBounds[[i][k]].cw, false, null, false);
-            }
-            thisRadius = sprocketBounds[[i][k]].radius;
+        checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+        // console.log("part index: ", i, " in show possible touch dots on chain button clicked. Available levels: ", checkavailablelevels, " and length: ", checkavailablelevels.length);
+
+        if (checkavailablelevels.length > 0 ) {
+            sprocketBounds[i] = partManager.getSprocketBounds(i, 0);
+            drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
         }
-        thisRadius = 0;
+
+        // for (let k = 0; k < 3; k++ ) {
+            // sprocketBounds[[i][k]] = partManager.getSprocketBounds(i, k);
+            // console.log("sprocket bounds when i: ", i, " and k: ", k, " is - ", sprocketBounds[[i][k]]);
+            // if ( thisRadius !== sprocketBounds[[i][k]].radius) {
+            //     drawTouchDots.bind(self)(sprocketBounds[[i][k]].x, sprocketBounds[[i][k]].y, sprocketBounds[[i][k]].radius, 0, sprocketBounds[[i][k]].cw, false, null, false);
+            // }
+            // thisRadius = sprocketBounds[[i][k]].radius;
+        // }
+        // thisRadius = 0;
+
     }
 }
 
@@ -1835,18 +1848,18 @@ function onPointerMove(pointer) {
             // Search for a part that has a sprocket circle on which the cursor is over.
             // console.log("x: ", worldPointer.x, " y: ", worldPointer.y);
             var nearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
-
-            if (nearestSprocket != null) {
+            // console.log("nearest sprocket on pointer move: ", nearestSprocket.level);
+            if (nearestSprocket != null) {    // only null if cursor not over a sprocket edge
                 // Check to see if there are any levels without a chain on the sprocket.
                 let availableLevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nearestSprocket.partIndex, nearestSprocket.level);
                 // console.log("available levels: ", availableLevels);
                 if (availableLevels.length > 0) { //partManager.isSprocketAvailable(nearestSprocket.partIndex, nearestSprocket.level)) {
                     // Draw a highlight circle where the sprocket is
-                    // console.log("in if, availablelevels.length: ", availableLevels.length);
+                    // console.log("in POINTER MOVE if levels > 0, availablelevels: ", availableLevels);
                     // console.log("if haven't drawn chain yet, sprocket bounds level: ", nearestSprocket.level);
                     var sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, nearestSprocket.level);
+                    // console.log("sprocket bounds: ", sprocketBounds);
 
-                    // sprocketBounds.thickness = 100;
                     // console.log("sprocket bounds x: ", sprocketBounds.x, "radius: ", sprocketBounds.radius, " x: ", worldPointer.x, " y: ", worldPointer.y, " sprocketBounds x - radius = ", sprocketBounds.x - sprocketBounds.radius, " thickness: ", sprocketBounds.thickness, " touchpointweight: ", sprocketBounds.touchpointweight);
                     //Kelly added don't draw any arrows if on mobile or touchscreen (no hover)
                     if (!isMobile || !isTouchMobile) {
@@ -1861,7 +1874,7 @@ function onPointerMove(pointer) {
             }
         } else {
             // We have a chain started. Now we need to draw the next part highlighted.
-            var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+            var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y, true, null);
             // console.log("nearest sprocket part is: ", nearestSprocket);
             // console.log("else have started drawing chain, nearest sprocket level after starting chain...", nearestSprocket.level);
             if (nearestSprocket != null) {
@@ -1938,7 +1951,7 @@ function onPointerMove(pointer) {
     // Kelly added function to show touch dots where to connect chain (on mobile)
     function drawTouchDots(centerX, centerY, radius, angle, cw, ismidchain, islevel, isfirstconnection) {
         // console.log("This part centerx: ", centerX, " and this part centery: ", centerY);
-        console.log("in draw touch dots function...", isfirstconnection, " and cw is: ", cw);
+        // console.log("in draw touch dots function...", isfirstconnection, " and cw is: ", cw);
 
         if (ismidchain) {
             // console.log("in draw touch dots function, in if ismidchain true");
@@ -1961,15 +1974,11 @@ function onPointerMove(pointer) {
             if (isfirstconnection) {
                 chainDots[drawn].fillStyle(0x00FF00, 0.65);
                 chainDots[drawn].fillCircle(myPointX, myPointY, 20);
-            // } else if (isfirstconnection === 'first') {
-            //     chainDots[drawn].fillStyle(0xFF0000, 0.65);
-            //     chainDots[drawn].fillCircle(myPointX, myPointY, 20);
             } else {
                 chainDots[drawn].fillStyle(0x00FF00, 0.65);
                 chainDots[drawn].fillCircle(myPointX, myPointY, 20);
                 chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 20);
             }
-
 
         // drawing first dot connection points
         } else {
@@ -2136,10 +2145,11 @@ function onPointerMove(pointer) {
             this.tilebutton.setToggleState(false);
             mouseImage.setVisible(false);
         } else if (this.chainbutton.getToggleState()) {         // on POINTER DOWN - BUILDING CHAIN
+            let getSprocketsWithConnectionsOnLevels = [];
             // Draw a chain if the chain button is selected
             if (partManager.isInTheMiddleOfBuildingAChain()) {
-                // console.log("on pointer down, now in middle of building a chain...");
-                var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+                console.log("on pointer down, now in middle of building a chain...");
+                var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y, true, null);
                 // console.log("IN DOWN, nearest sprocket: ", nearestSprocket);
                 if (nearestSprocket != null) {
                     // Draw a highlight circle where the sprocket is
@@ -2148,7 +2158,7 @@ function onPointerMove(pointer) {
                     // Is this the very first sprocket in this chain?
                     let isFirstSprocket = false;
                     let firstSprocket = partManager.getInfoAboutFirstSprocketInChainBeingBuilt();
-                    console.log("first sprocket: ", firstSprocket);
+                    // console.log("first sprocket: ", firstSprocket);
                     dynamicPartsListForTouchDots[firstSprocket.partIndex] = 'first';
 
                     if (firstSprocket.partIndex === nearestSprocket.partIndex) {
@@ -2190,10 +2200,21 @@ function onPointerMove(pointer) {
 
                             //    Kelly added here to test finding connections
                             //     console.log("nearest sprocket: ", nearestSprocket);
-                                partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
+                            //     partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
+                                getSprocketsWithConnectionsOnLevels = partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
+                                console.log("get sprockets with connections on levels: ", getSprocketsWithConnectionsOnLevels);
+                                addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
+                                console.log("add this part and level to grid: ", addThisPartAndLeveltoConnectionsGrid);
+                                sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
+                                console.log("sprockets connections ARRAY: ", sprocketsWithConnectionsGridArray);
+                                // console.log("find used sprocket: ", getSprocketsWithConnectionsOnLevels[0].pindex);
+                                // for (let k = 0; k < getSprocketsWithConnectionsOnLevels.length; k++ ) {
+                                //     dynamicPartsListForTouchDots[getSprocketsWithConnectionsOnLevels[k].pindex] = null;
+                                // }
+                                // console.log("dynamic parts list: ", dynamicPartsListForTouchDots);
                                 dynamicPartsListForTouchDots[nearestSprocket.partIndex] = null;
                                 // console.log("In POINTER DOWN (not first part CW) - took out nearest part, now dynamic list is: ", dynamicPartsListForTouchDots);
-                                // console.log("This chain connection: ", partsCanBeConnected);
+
                             } else {
                                 // console.log("in angle if, else, to close chain.");
                                 partManager.closeChain();
@@ -2206,8 +2227,19 @@ function onPointerMove(pointer) {
                             // console.log("In if is NOT first sprocket and not cw.");
                             if (!isFirstSprocket) {
                                 // console.log("In if is NOT first sprocket (add chain connection).");
-                                partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, false);
+                                // partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, false);
+                                getSprocketsWithConnectionsOnLevels = partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
+                                console.log("get sprockets with connections on levels: ", getSprocketsWithConnectionsOnLevels);
+                                addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
+                                console.log("add this part and level to grid: ", addThisPartAndLeveltoConnectionsGrid);
+                                sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
+                                console.log("sprockets connections ARRAY: ", sprocketsWithConnectionsGridArray);
+                                // for (let m = 0; m < getSprocketsWithConnectionsOnLevels.length; m++ ) {
+                                //     dynamicPartsListForTouchDots[getSprocketsWithConnectionsOnLevels[m].pindex] = null;
+                                // }
+                                // console.log("dynamic parts list: ", dynamicPartsListForTouchDots);
                                 dynamicPartsListForTouchDots[nearestSprocket.partIndex] = null;
+
                                 // console.log("In POINTER DOWN (not first part CCW) - took out nearest part, now dynamic list is: ", dynamicPartsListForTouchDots);
                             } else {
                                 // console.log("in second angle if, else, to close chain.");
@@ -2224,88 +2256,115 @@ function onPointerMove(pointer) {
                     let nextSprocketBounds = [];
                     let getFirstChainPointx = [];
                     let getFirstChainPointy = [];
+                    let thisavailablelevels = [];
+                    // let findOpenLevel = [];
 
                     getLastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
 
-                    for (let m = 0; m < dynamicPartsListForTouchDots.length; m++) {
+                    // console.log("POINTER DOWN, adding MIDCHAIN, get last sprocket bounds: ", getLastSprocketBounds);
+                    if ( getLastSprocketBounds != null ) {
+                        // console.log("MIDCHAIN");
+                        for (let m = 0; m < dynamicPartsListForTouchDots.length; m++) {
 
-                        nextSprocketBounds[m] = partManager.getSprocketBounds(m, chosenLevel);
-                        // console.log("Next sprocket bounds in loop: ", nextSprocketBounds[m]);
+                            nextSprocketBounds[m] = partManager.getSprocketBounds(m, chosenLevel);
+                            thisavailablelevels[m] = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(m, 0);
+                            // console.log("loop index: ", m, " and this available levels: ", thisavailablelevels[m]);
+                            // Kelly trying to find parts with sprocket levels already taken so that no touch dot is drawn
+                            // findOpenLevel[m] = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, false, m);
+                            // console.log("IN DOWN, find open level: ", findOpenLevel);
 
-                        let getDistance = Math.sqrt(Math.pow(getLastSprocketBounds.x - nextSprocketBounds[m].x, 2) + Math.pow(getLastSprocketBounds.y - nextSprocketBounds[m].y, 2));
-                        let getYdiff = getLastSprocketBounds.y - nextSprocketBounds[m].y;
-                        let getAngle = Phaser.Math.RadToDeg(Math.asin(getYdiff / getDistance));
+                            // if ( findOpenLevel[m] != null ) {
 
-                        // Kelly - this seems to be working to find the chain point to draw a new angle between the next part
-                        if (getLastSprocketBounds.x > nextSprocketBounds[m].x) {
-                            // console.log("get last sprocket bounds x IS > next sprocket bounds index m.");
-                            if (partClickedForLevelSelect.cw) {
-                                // console.log("clicked part x is > next part x - cw");
-                                getAngle = getAngle + 90;
-                            } else {
-                                // console.log("clicked part x is > next part x - ccw");
-                                getAngle = getAngle - 90;
-                            }
-                        } else {
-                            // console.log("ELSE: get last sprocket bounds x IS NOT > next sprocket bounds index m.");
-                            if (partClickedForLevelSelect.cw) {
-                                // console.log("clicked part x is < next part x - cw");
-                                // angle = angle - 90;
-                                getAngle = 270 - getAngle;
-                            } else {
-                                // console.log("clicked part x is < next part x - ccw");
-                                getAngle = 90 - getAngle;
-                            }
-                        }
-                        // console.log("getAngle: ", getAngle);
-                        getAngle = Phaser.Math.DegToRad(getAngle);
-                        getFirstChainPointx[m] = getLastSprocketBounds.x + getLastSprocketBounds.radius * Math.cos(getAngle);
-                        getFirstChainPointy[m] = getLastSprocketBounds.y + getLastSprocketBounds.radius * Math.sin(getAngle);
+                                // console.log("part index ", m, " POINTER DOWN, adding MIDCHAIN, this available levels with part index in loop: ", thisavailablelevels);
+                                // console.log("part index ", m, " POINTER DOWN, adding MIDCHAIN, next sprocket bounds in loop: ", nextSprocketBounds[m]);
 
-                        let newdistance = Math.sqrt(Math.pow(getFirstChainPointx[m] - nextSprocketBounds[m].x, 2) + Math.pow(getFirstChainPointy[m] - nextSprocketBounds[m].y, 2));
-                        let newydiff = getFirstChainPointy[m] - nextSprocketBounds[m].y;
-                        let newangle = Phaser.Math.RadToDeg(Math.asin(newydiff / newdistance));
-                        // console.log("new angle is: ", Math.ceil(newangle));
+                                // Kelly adding text check for available levels to draw touch dots
+                                // if ( thisavailablelevels.length > 0 ) {
+                                //     // console.log("part index: ", m, " IN IF, this available levels length > 0, ", thisavailablelevels.length);
+                                // } else {
+                                //     // dynamicPartsListForTouchDots[m] = null;
+                                //     // console.log("part index: ", m, " IN ELSE, length level not greater than zero.");
+                                // }
 
-                        if (getFirstChainPointx[m] > nextSprocketBounds[m].x) {
-                            // console.log("in if - get first chain point x is > next sprocket bounds index m.");
-                            if (partClickedForLevelSelect.cw) {
-                                // console.log("from new point: clicked part x is > next part x - cw");
-                                newangle = newangle + 90;
-                            } else {
-                                // console.log("from new point: clicked part x is > next part x - ccw");
-                                newangle = newangle - 90;
-                            }
-                        } else {
-                            // console.log("in else - get first chain point x is NOT > next sprocket bounds index m.");
-                            if (partClickedForLevelSelect.cw) {
-                                // console.log("from new point: clicked part x is < next part x - cw");
-                                // angle = angle - 90;
-                                newangle = 270 - newangle;
-                            } else {
-                                // console.log("from new point: clicked part x is < next part x - ccw");
-                                newangle = 90 - newangle;
-                            }
-                        }
-                        // console.log("New Parts List for Dots: ", dynamicPartsListForTouchDots[m]);
-                        // let getLevelsOnPart =  partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nextSprocketBounds[m]);
-                        console.log("Chosen level before draw dots: ", chosenLevel);
-                        if (dynamicPartsListForTouchDots[m] === 'first') {
-                            drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, true);
-                       } else if ( dynamicPartsListForTouchDots[m] !== null ) {
-                            drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, false);
-                        }
+                                let getDistance = Math.sqrt(Math.pow(getLastSprocketBounds.x - nextSprocketBounds[m].x, 2) + Math.pow(getLastSprocketBounds.y - nextSprocketBounds[m].y, 2));
+                                let getYdiff = getLastSprocketBounds.y - nextSprocketBounds[m].y;
+                                let getAngle = Phaser.Math.RadToDeg(Math.asin(getYdiff / getDistance));
+
+                                // Kelly - this seems to be working to find the chain point to draw a new angle between the next part
+                                if (getLastSprocketBounds.x > nextSprocketBounds[m].x) {
+                                    // console.log("get last sprocket bounds x IS > next sprocket bounds index m.");
+                                    if (partClickedForLevelSelect.cw) {
+                                        // console.log("clicked part x is > next part x - cw");
+                                        getAngle = getAngle + 90;
+                                    } else {
+                                        // console.log("clicked part x is > next part x - ccw");
+                                        getAngle = getAngle - 90;
+                                    }
+                                } else {
+                                    // console.log("ELSE: get last sprocket bounds x IS NOT > next sprocket bounds index m.");
+                                    if (partClickedForLevelSelect.cw) {
+                                        // console.log("clicked part x is < next part x - cw");
+                                        // angle = angle - 90;
+                                        getAngle = 270 - getAngle;
+                                    } else {
+                                        // console.log("clicked part x is < next part x - ccw");
+                                        getAngle = 90 - getAngle;
+                                    }
+                                }
+                                // console.log("getAngle: ", getAngle);
+                                getAngle = Phaser.Math.DegToRad(getAngle);
+                                getFirstChainPointx[m] = getLastSprocketBounds.x + getLastSprocketBounds.radius * Math.cos(getAngle);
+                                getFirstChainPointy[m] = getLastSprocketBounds.y + getLastSprocketBounds.radius * Math.sin(getAngle);
+
+                                let newdistance = Math.sqrt(Math.pow(getFirstChainPointx[m] - nextSprocketBounds[m].x, 2) + Math.pow(getFirstChainPointy[m] - nextSprocketBounds[m].y, 2));
+                                let newydiff = getFirstChainPointy[m] - nextSprocketBounds[m].y;
+                                let newangle = Phaser.Math.RadToDeg(Math.asin(newydiff / newdistance));
+                                // console.log("new angle is: ", Math.ceil(newangle));
+
+                                if (getFirstChainPointx[m] > nextSprocketBounds[m].x) {
+                                    // console.log("in if - get first chain point x is > next sprocket bounds index m.");
+                                    if (partClickedForLevelSelect.cw) {
+                                        // console.log("from new point: clicked part x is > next part x - cw");
+                                        newangle = newangle + 90;
+                                    } else {
+                                        // console.log("from new point: clicked part x is > next part x - ccw");
+                                        newangle = newangle - 90;
+                                    }
+                                } else {
+                                    // console.log("in else - get first chain point x is NOT > next sprocket bounds index m.");
+                                    if (partClickedForLevelSelect.cw) {
+                                        // console.log("from new point: clicked part x is < next part x - cw");
+                                        // angle = angle - 90;
+                                        newangle = 270 - newangle;
+                                    } else {
+                                        // console.log("from new point: clicked part x is < next part x - ccw");
+                                        newangle = 90 - newangle;
+                                    }
+                                }
+                                // console.log("New Parts List for Dots: ", dynamicPartsListForTouchDots[m]);
+                                // let getLevelsOnPart =  partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nextSprocketBounds[m]);
+                                // console.log("Chosen level before draw dots: ", chosenLevel);
+                                if (dynamicPartsListForTouchDots[m] === 'first' && thisavailablelevels[m].length > 0) {
+                                    // console.log("IN FIRST and HAS LENGTH");
+                                    drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, true);
+                                } else if (dynamicPartsListForTouchDots[m] !== null && thisavailablelevels[m].length > 0) {
+                                    // console.log("IN NOT NULL PART and HAS LENGTH");
+                                    drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, false);
+                                }
+                            // }  // end of if to check for find open levels not null (draw touch dots)
+                        }  // end of if to check for nearest sprocket not null (draw highlights)
                     }  // end of loop to check each available part to draw touch dots
                 }  // end of if nearest sprocket is not null
             } else {   // FIRST CHAIN CONNECTION
-                console.log("on pointer down, adding chain to first part");
+                // console.log("on pointer down, adding chain to first part");
                 var nearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+                // console.log("POINTER DOWN, adding FIRST CHAIN, nearest sprocket: ", nearestSprocket);
                 chosenLevel = 0;
                 if (nearestSprocket != null) {
                     let availableLevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nearestSprocket.partIndex, nearestSprocket.level);
-                    console.log("available levels: ", availableLevels);
+                    // console.log("POINTER DOWN, adding FIRST CHAIN, available levels: ", availableLevels);
                     if (availableLevels.length > 0) {
-                     // console.log("available levels (length): ", availableLevels.length);
+                     // console.log("in POINTER DOWN, if levels > 0, available levels: ", availableLevels);
                      // let chosenLevel = 0;
                         if (availableLevels.length === 1) {
                             chosenLevel = availableLevels[0];
@@ -2324,7 +2383,7 @@ function onPointerMove(pointer) {
                             // We'll need to store nearestSprocket.partIndex and cw somewhere so that we can start a chain with the chosen level once it's been picked.
                             // Once an item has been selected on the popup menu, we'll need to destroy the popup menu and the modalBackground, too.
                             partClickedForLevelSelect.partIndex = nearestSprocket.partIndex;
-                            // console.log("part clicked for level select (part index) variable: ", partClickedForLevelSelect.partIndex);
+                            // console.log("part clicked for level select: ", partClickedForLevelSelect);
 
                             let sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, availableLevels[0]);
                             if (worldPointer.x < sprocketBounds.x) {
@@ -2343,18 +2402,21 @@ function onPointerMove(pointer) {
                             // We haven't yet chosen a level, so -1
                             chosenLevel = -1;
                         }
-                        // this is for the junction part where you don't need the popup level selector menu
+
+                        // this is for the junction/last level part where you don't need the popup level selector menu
                         if (chosenLevel >= 0) {
+                            console.log("In junction or last level.");
                             // Kelly added delete drawn dots for each part level
                             let numofdotpairs = chainDots.length;
-                            console.log("dot pairs in junction connection: ", numofdotpairs);
                             clearChainDots(numofdotpairs);
 
                             var thisnearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
                             partClickedForLevelSelect.partIndex = thisnearestSprocket.partIndex;
-                            console.log("in junction, chosen level greater than or equal to 0...part index is:  ", partClickedForLevelSelect.partIndex);
+                            // console.log("part clicked for level select: ", partClickedForLevelSelect);
+                            // console.log("in last level/junction, chosen level greater than or equal to 0, chosen level: ", chosenLevel);
                             partManager.startChain();
                             partManager.addChainConnection(partClickedForLevelSelect.partIndex, chosenLevel, partClickedForLevelSelect.cw);
+
                             let getThisSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
 
                             // console.log("get this sprocket bounds variable: ", getThisSprocketBounds);
@@ -2364,9 +2426,10 @@ function onPointerMove(pointer) {
                             let junctionChainPointy = [];
                             drawn = 0;
 
-                            for (var i = 0; i < allPartsOnBoard.length; i++) {
-                                if (i !== partClickedForLevelSelect.partIndex) {
-                                    console.log("in loop to determine dot placement...", chosenLevel);
+                            // for (var i = 0; i < allPartsOnBoard.length; i++) {
+                            for (var i = 0; i < dynamicPartsListForTouchDots.length; i++) {
+                                // if (i !== partClickedForLevelSelect.partIndex) {
+                                    // console.log("in loop to determine dot placement...", chosenLevel);
 
                                     toNextSprocketBoundsOfPart[i] = partManager.getSprocketBounds(i, chosenLevel);
                                     // Determine angle between the current part and the next one
@@ -2423,9 +2486,9 @@ function onPointerMove(pointer) {
                                             thisnewangle = 90 - thisnewangle;
                                         }
                                     }
-                                    console.log("iteration i: ", i);
+                                    // console.log("iteration i: ", i);
                                     drawTouchDots.bind(self)(toNextSprocketBoundsOfPart[i].x, toNextSprocketBoundsOfPart[i].y, toNextSprocketBoundsOfPart[i].radius, thisnewangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
-                                }
+                                // }
                             }
                         }
                         clearHighlight.bind(this)();
@@ -2442,7 +2505,7 @@ function onPointerMove(pointer) {
         let firstChainPointy = [];
         drawn = 0;
         chosenLevel = level;
-        // console.log("level in popup level selected function: ", chosenLevel);
+        console.log("level in popup level selected function: ", level);
 
         disablePointerOverEvent = false;
         popupLevelChooser = null;
@@ -2456,8 +2519,8 @@ function onPointerMove(pointer) {
             // // console.log("part clicked for level select cw is: ", partClickedForLevelSelect);
             // console.log("In popup level function, all parts on board: ", dynamicPartsListForTouchDots, " and length: ", dynamicPartsListForTouchDots.length);
             // console.log("In popup level function, parts manager parts: ", partManager.parts, " and length: ", partManager.parts.length);
-            // for (var i = 0; i < allPartsOnBoard.length; i++) {
-            for (var i = 0; i < partManager.parts.length; i++) {
+            for (var i = 0; i < allPartsOnBoard.length; i++) {
+            // for (var i = 0; i < partManager.parts.length; i++) {
                 // console.log("match? i: ", i, " and part clicked for level select: ", partClickedForLevelSelect.partIndex);
                 if (i !== partClickedForLevelSelect.partIndex) {
                     sprocketBounds[i] = partManager.getSprocketBounds(i, level);
