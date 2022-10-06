@@ -3,6 +3,7 @@ import { PartBase } from './parts/partbase.js';
 import { PartManager } from './part-manager.js';
 import { PopupLevelChooser } from './popup-level-chooser.js';
 import { PopupConfirmDeleteAll } from "./popup-confirm-delete-all.js";
+import { version } from "./constants.js";
 import { tileSpacing } from "./constants.js";
 import { isMobile } from "./constants.js";
 import { isTouchMobile } from "./constants.js";
@@ -235,7 +236,7 @@ function preload ()
     this.load.image('chain-icon', 'Images/chain-icon.png');
     this.load.image('tile-icon', 'Images/tile-icon.png');
 
-    this.load.image('info-icon', 'Images/info-icon.png');
+    this.load.image('help-icon', 'Images/help-icon.png');
     this.load.image('interact-icon', 'Images/hand-icon.png');
     this.load.image('move-icon', 'Images/move-icon.png');
     this.load.image('delete-icon', 'Images/remove-icon.png');
@@ -411,6 +412,15 @@ function create ()
     // Make visible or invisible to see debugging output.
     this.debugText.setVisible(false);
 
+    this.titleText = controlscene.add.text(10, 10, "Spintronics Simulator v" + version, {
+        font: '16px Roboto',
+        fontSize: '50px',
+        color: "rgb(20,20,20)",
+        fontStyle: 'strong',
+        align: 'right'
+    });
+    this.titleText.setVisible(false);
+
     // Create the button textures
     let graphics = controlscene.add.graphics();
     graphics.fillStyle(0xD1D3D4, 1);
@@ -484,8 +494,8 @@ function create ()
     let spaceWidth = this.cameras.main.width;
     let rightSideToolbarPositionX = spaceWidth - 13 - buttonWidth / 2;
 
-    this.infobutton = new ToggleButton(controlscene, 'inform', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'info-icon', onInfoBtnClicked, 'button-disabled-background');
-    this.infobutton.setTooltipString('Instructions', 'left');
+    this.helpbutton = new ToggleButton(controlscene, 'inform', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'help-icon', onHelpBtnClicked, 'button-disabled-background');
+    this.helpbutton.setTooltipString('Help', 'left');
 
     this.interactbutton = new ToggleButton(controlscene, 'interact', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'interact-icon', onSwitchToggled, 'button-disabled-background');
     this.interactbutton.setButtonType('toggle');
@@ -539,7 +549,7 @@ function create ()
         this.levelchangerbutton.setVisible(false);
         this.tilebutton.setVisible(false);
 
-        this.infobutton.setVisible(false);
+        this.helpbutton.setVisible(false);
         this.interactbutton.setVisible(false);
         this.movebutton.setVisible(false);
         this.deletebutton.setVisible(false);
@@ -736,6 +746,8 @@ function onFullEditorClicked (name, newToggleState)
 
     if (self.linkID != null && self.linkID > 0)
         window.open("https://simulator.spintronics.com?linkID=" + self.linkID, '_blank');
+    else
+        window.open("https://simulator.spintronics.com", '_blank');
 }
 
 function fallbackCopyTextToClipboard(text) {
@@ -1546,8 +1558,10 @@ function zoomOut()
 }
 
 // Kelly added button and function for an info/instructions screen overlay
-function onInfoBtnClicked(name, newToggleState) {
-    let graybackground = controlscene.add.dom().createElement('div', 'background-color: rgba(0, 0, 0, 0.2); position: absolute; left: ' + controlscene.cameras.main.width / 2 + 'px; top: ' + controlscene.cameras.main.height / 2 + 'px; width: ' + controlscene.cameras.main.width + 'px; height: ' + controlscene.cameras.main.height + 'px', '');
+function onHelpBtnClicked(name, newToggleState) {
+
+    window.open("https://www.upperstory.com/spintronics/simulator", '_blank');
+    /*let graybackground = controlscene.add.dom().createElement('div', 'background-color: rgba(0, 0, 0, 0.2); position: absolute; left: ' + controlscene.cameras.main.width / 2 + 'px; top: ' + controlscene.cameras.main.height / 2 + 'px; width: ' + controlscene.cameras.main.width + 'px; height: ' + controlscene.cameras.main.height + 'px', '');
     let form = `
             <div style="font-family: 'Roboto', Arial, sans-serif; font-size: 14px; position: absolute; transform: translate(-50%, -50%); box-sizing: border-box; background-color: rgba(255, 255, 255, 1); border-color: black; border-width: 1px; border-style: solid; border-radius: 10px; width: 80vw; padding: 20px; margin: 20px;" >
                 <h3 style="margin: 0 auto 10px auto; font-family: 'Roboto', Arial, sans-serif;">Simulator Info and Tips</h3>
@@ -1590,7 +1604,7 @@ function onInfoBtnClicked(name, newToggleState) {
     });
     graybackground.on('pointerover', (pointer, localx, localy, event) => {
         event.stopPropagation();
-    });
+    });*/
 }
 
 function onRemoveAllClicked(name, newToggleState) {
@@ -2861,6 +2875,9 @@ function onPointerMove(pointer) {
         dpr = window.devicePixelRatio;
         width = window.innerWidth * dpr;
         height = window.innerHeight * dpr;
+
+        this.titleText.setX(this.cameras.main.width - (this.titleText.width + 20));
+        this.titleText.setY(this.cameras.main.height - (this.titleText.height + 20));
         // console.log("RESIZED -- width: ", window.innerWidth, ", height: ", window.innerHeight, ", dpr: ", dpr);
 
 // let buttonWidth = 70;
@@ -2903,7 +2920,7 @@ function onPointerMove(pointer) {
         this.transistorbutton.destroy();
         this.levelchangerbutton.destroy();
         this.tilebutton.destroy();
-        this.infobutton.destroy();
+        this.helpbutton.destroy();
         this.interactbutton.destroy();
         this.tilebutton.destroy();
         this.movebutton.destroy();
@@ -2959,8 +2976,8 @@ function onPointerMove(pointer) {
         let spaceWidth = this.cameras.main.width;
         let rightSideToolbarPositionX = spaceWidth - 10 - buttonWidth / 2;
 
-        this.infobutton = new ToggleButton(controlscene, 'inform', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'info-icon', onInfoBtnClicked, 'button-disabled-background');
-        this.infobutton.setTooltipString('Instructions', 'left');
+        this.helpbutton = new ToggleButton(controlscene, 'inform', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'help-icon', onHelpBtnClicked, 'button-disabled-background');
+        this.helpbutton.setTooltipString('Instructions', 'left');
         this.interactbutton = new ToggleButton(controlscene, 'interact', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'interact-icon', onSwitchToggled, 'button-disabled-background');
         this.interactbutton.setButtonType('toggle');
         this.interactbutton.setTooltipString('Interact', 'left');
@@ -3114,8 +3131,7 @@ function onPointerMove(pointer) {
 
         let buttons;
         if (!this.viewOnly) {
-            buttons = [this.infobutton,
-                this.interactbutton,
+            buttons = [this.interactbutton,
                 this.movebutton,
                 this.deletebutton,
                 this.editbutton,
@@ -3124,7 +3140,8 @@ function onPointerMove(pointer) {
                 this.linkbutton,
                 this.savebutton,
                 this.loadbutton,
-                this.removeallbutton];
+                this.removeallbutton,
+                this.helpbutton];
         } else {
             buttons = [this.zoominbutton,
                 this.zoomoutbutton,
