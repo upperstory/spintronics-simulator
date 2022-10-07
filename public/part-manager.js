@@ -300,6 +300,7 @@ export class PartManager {
     closeChain()
     {
         console.log("In closeChain function in part manager...");
+        console.log("----------***----------");
         this.chainBeingBuilt.closeChain();
         this.createChainJoints(this.chainBeingBuilt);
         this.chains.push(this.chainBeingBuilt);
@@ -345,7 +346,7 @@ export class PartManager {
 
     addChainConnection(partIndex, level, cw)
     {
-        console.log("Adding chain to part with this index: ", partIndex);
+        // console.log("Adding chain to part with this index: ", partIndex);
         this.chainBeingBuilt.addConnection(partIndex, this.parts[partIndex], level, cw);
         // console.log("this chain being built, after add connection: ", this.chainBeingBuilt.connections);
         // console.log("this chain being built, after add connection: ", this.chains.connections);
@@ -359,9 +360,9 @@ export class PartManager {
         // console.log("now all parts minus those with connections: ", showTouchDotsOnThesePartsOnly);
         // console.log("and all parts on board: ", this.parts);
         // return showTouchDotsOnThesePartsOnly;
-        let getAllPartsWithUsedSprocketLevels = this.chainBeingBuilt.connections;
+        // let getAllPartsWithUsedSprocketLevels = this.chainBeingBuilt.connections;
         // console.log("get all parts with used sprockets: ", getAllPartsWithUsedSprocketLevels);
-        return getAllPartsWithUsedSprocketLevels;
+        // return getAllPartsWithUsedSprocketLevels;
     }
 
 
@@ -765,7 +766,7 @@ export class PartManager {
                 for (let j = 0; j < thisChain.connections.length; j++) {
                     let thisConnection = thisChain.connections[j];
                     if (thisConnection.part === nextPart && thisConnection.level === nextSprocket.level) {
-                        console.log("found sprocket that already has a chain on it!");
+                        // console.log("found sprocket that already has a chain on it!");
                         return null;
                     }
                 }
