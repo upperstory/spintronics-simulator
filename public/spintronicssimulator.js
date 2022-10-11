@@ -1743,7 +1743,7 @@ function onSwitchToggled(name, newToggleState)
                     dynamicPartsListForTouchDots.splice(j, 1);
                 }
             }
-            console.log("AFTER split chain button, dynamic parts list for touch dots is: ", dynamicPartsListForTouchDots);
+            // console.log("AFTER split chain button, dynamic parts list for touch dots is: ", dynamicPartsListForTouchDots);
 
             clearAllToggleButtons();
             self.chainbutton.setToggleState(true);
@@ -1975,28 +1975,65 @@ function showPossibleChainConnections() {
     //     }
     // }
     // now loop through the sprockets on this part - if different, then draw another dot
-
+    let thisRadius = '';
     let sprocketBounds = [];
-    let checkavailablelevels = '';
+    let checkavailablelevels = [];
+    // console.log("grid array of used sprockets: ", sprocketsWithConnectionsGridArray);
 
+    // Kelly testing loop to find part and level used...
+    for (let m = 0; m < sprocketsWithConnectionsGridArray.length; m++ ) {
+        if ( sprocketsWithConnectionsGridArray[m].pindex === 1 && sprocketsWithConnectionsGridArray[m].usedlevel === 1 ) {
+            // console.log("grid array part index 1 and level 1: ", sprocketsWithConnectionsGridArray[m].usedlevel);
+        } else {
+            // console.log("index: ", m, " in else, grid array is: ", sprocketsWithConnectionsGridArray[m]);
+        }
+    }
+    // console.log("dynamic parts list for dots: ", dynamicPartsListForTouchDots);
     for (let i = 0; i < dynamicPartsListForTouchDots.length; i++) {
-        checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+        checkavailablelevels = [];
+        let thispartname = dynamicPartsListForTouchDots[i].partType;
+        // checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+        if (thispartname === 'junction') {
+            console.log("found a junction!");
+            for (let j=0; j < 3; j++ ) {
+                let junctionavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, j);
+                console.log("junction level index: ", j, " junction available levels: ", junctionavailablelevels[0]);
+                if ( typeof junctionavailablelevels[0] !== 'undefined' ) {
+                    // console.log("type of is undefined match.");
+                    checkavailablelevels.push(junctionavailablelevels[0]);
+                    console.log("junction loop, check available levels array: ", checkavailablelevels);
+                }
+            }
+        } else {
+            console.log("index: ", i, " in else.");
+            checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+        }
+        // console.log("index: ", i, " check available levels: ", checkavailablelevels);
 
         if (checkavailablelevels.length > 0 ) {
-            sprocketBounds[i] = partManager.getSprocketBounds(i, 0);
-            drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
+            // sprocketBounds[i] = partManager.getSprocketBounds(i, 0);
+            for (let n=0; n < checkavailablelevels.length; n++ ) {
+                sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[n]);
+                drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
+            }
         }
-
-        // for (let k = 0; k < 3; k++ ) {
-            // sprocketBounds[[i][k]] = partManager.getSprocketBounds(i, k);
-            // console.log("sprocket bounds when i: ", i, " and k: ", k, " is - ", sprocketBounds[[i][k]]);
-            // if ( thisRadius !== sprocketBounds[[i][k]].radius) {
-            //     drawTouchDots.bind(self)(sprocketBounds[[i][k]].x, sprocketBounds[[i][k]].y, sprocketBounds[[i][k]].radius, 0, sprocketBounds[[i][k]].cw, false, null, false);
-            // }
-            // thisRadius = sprocketBounds[[i][k]].radius;
+        // for (let m = 0; m < sprocketsWithConnectionsGridArray; m++ ) {
+        //
         // }
-        // thisRadius = 0;
 
+        // if (checkavailablelevels.length > 0 ) {
+        //     for (let k = 0; k < 3; k++) {
+        //         sprocketBounds[[i][k]] = partManager.getSprocketBounds(i, k);
+        //         console.log("sprocket bounds when i: ", i, " and k: ", k, " is - ", sprocketBounds[[i][k]]);
+        //         if (thisRadius !== sprocketBounds[[i][k]].radius) {
+        //             // if ( sprocketsWithConnectionsGridArray[m].usedlevel === chosenLevel ) {
+        //                 drawTouchDots.bind(self)(sprocketBounds[[i][k]].x, sprocketBounds[[i][k]].y, sprocketBounds[[i][k]].radius, 0, sprocketBounds[[i][k]].cw, false, null, false);
+        //             // }
+        //         }
+        //         thisRadius = sprocketBounds[[i][k]].radius;
+        //     }
+        //     thisRadius = 0;
+        // }
     }
 }
 
@@ -2409,6 +2446,7 @@ function onPointerMove(pointer) {
                                 // console.log("In if is NOT first sprocket (add chain connection).");
 
                             //    Kelly added here to test finding connections
+                            //     partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
                                 partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
                                 addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
                                 // console.log("add this part and level to grid: ", addThisPartAndLeveltoConnectionsGrid);
@@ -2434,7 +2472,6 @@ function onPointerMove(pointer) {
                                 // console.log("add this part and level to grid: ", addThisPartAndLeveltoConnectionsGrid);
                                 sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
                                 // console.log("sprockets connections ARRAY: ", sprocketsWithConnectionsGridArray);
-
                                 setToInteractMode();
                             }
                         }
@@ -2443,7 +2480,7 @@ function onPointerMove(pointer) {
                         if (!(isFirstSprocket && firstSprocket.cw === true)) {
                             // console.log("In if is NOT first sprocket and not cw.");
                             if (!isFirstSprocket) {
-                                partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
+                                partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, false);
                                 addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
                                 // console.log("add this part and level to grid: ", addThisPartAndLeveltoConnectionsGrid);
                                 sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
@@ -2469,7 +2506,6 @@ function onPointerMove(pointer) {
                                 // console.log("add this part and level to grid: ", addThisPartAndLeveltoConnectionsGrid);
                                 sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
                                 // console.log("sprockets connections ARRAY: ", sprocketsWithConnectionsGridArray);
-
                                 setToInteractMode();
                             }
                         }

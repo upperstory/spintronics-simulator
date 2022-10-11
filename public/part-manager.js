@@ -299,8 +299,8 @@ export class PartManager {
 
     closeChain()
     {
-        console.log("In closeChain function in part manager...");
-        console.log("----------***----------");
+        // console.log("In closeChain function in part manager...");
+        console.log("----------***CLOSE CHAIN***----------");
         this.chainBeingBuilt.closeChain();
         this.createChainJoints(this.chainBeingBuilt);
         this.chains.push(this.chainBeingBuilt);
@@ -375,15 +375,6 @@ export class PartManager {
         }
         return 0;
     }
-
-    // Kelly added this function to get the list of parts having connections for drawing touch dots
-    // getPartsWithChainConnections() {
-    //     console.log("in part manager, function to get parts with connections: ", chain.connections);
-    //     if ( this.connections.length != null ) {
-    //         return this.connections;
-    //     }
-    //     return -1;
-    // }
 
     getLevelOfChainBeingBuilt()
     {
