@@ -1652,7 +1652,7 @@ function onRemoveAllClicked(name, newToggleState) {
             graybackground.destroy();
             // Remove all the chains.
             partManager.deleteAllChains();
-            // Remove all the parts.
+            // Remove all the parts and tiles.
             partManager.deleteAllParts();
             // clearHighlight.bind(self)();
             clearChainDots(chainDots.length);
@@ -1975,6 +1975,7 @@ function showPossibleChainConnections() {
     let checkavailablelevels = [];
 
     allPartsOnBoard = partManager.parts;
+    // allPartsOnBoard = [...partManager.parts];
     // take out any tiles and tile connectors
     for (var j = allPartsOnBoard.length - 1; j >= 0; j-- ) {
         if (allPartsOnBoard[j].partType === 'tile' || allPartsOnBoard[j].partType === 'tile-connector') {
@@ -1992,12 +1993,14 @@ function showPossibleChainConnections() {
     // }
     // console.log("dynamic parts list for dots: ", dynamicPartsListForTouchDots);
     // console.log("all parts on board parts: ", allPartsOnBoard);
+    // for (let i = 0; i < partManager.parts.length; i++) {
     // for (let i = 0; i < dynamicPartsListForTouchDots.length; i++) {
     for (let i = 0; i < allPartsOnBoard.length; i++) {
         console.log("index: ", i);
         checkavailablelevels = [];   // empty array before finding the part's used sprockets
         // let thispartname = dynamicPartsListForTouchDots[i].partType;  // need to find any junctions, which are checked differently
         let thispartname = allPartsOnBoard[i].partType;
+        // let thispartname = partManager.parts[i].partType;
         console.log("this part name: ", thispartname);
         // checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
         if (thispartname === 'junction') {

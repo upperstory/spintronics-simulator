@@ -20,6 +20,8 @@ import { tileSpacing } from './constants.js';
 export class PartManager {
     parts = [];
     chains = [];
+    // Kelly added tiles array
+    tiles = [];
     chainBeingBuilt = null;
     scene = null;
     // sprocketTolerance = 5; Kelly added larger tolerance to more easily connect with mouse or touch
@@ -204,11 +206,13 @@ export class PartManager {
             newPart.setDragCallback(this.onPartDrag, this);
             newPart.setDragEndCallback(this.onPartDragEnd, this);
             this.parts.push(newPart);
+            this.tiles.push(newPart);
             return newPart;
         }
         else if (partType === 'tile-connector') {
             var newPart = new TileConnectorPart(this.scene, x, y, this.world);
             this.parts.push(newPart);
+            this.tiles.push(newPart);
             return newPart;
         }
         return null;
@@ -228,6 +232,15 @@ export class PartManager {
                 i--;
             }
         }
+        // for (let j = 0; j < this.tiles.length; j++)
+        // {
+        //     if (this.tiles[j].partType === 'tile-connector') {
+        //         // Now destroy the part
+        //         this.tiles[j].destroy();
+        //         this.tiles.splice(j, 1);
+        //         j--;
+        //     }
+        // }
         // Iterate through all the tiles. For each tile, iterate through all other tiles, looking for adjacent tiles.
         for (let i = 0; i < this.parts.length; i++)
         {
@@ -248,6 +261,8 @@ export class PartManager {
                             var newPart = new TileConnectorPart(this.scene, 0, 0, this.world);
                             newPart.setJoiningTiles(this.parts[i], this.parts[j]);
                             this.parts.push(newPart);
+                        //    Kelly added pushing to new tiles array
+                        //     this.tiles.push(newPart);
                         }
 
                     }
@@ -389,17 +404,26 @@ export class PartManager {
 
         if (this.toolMode === 'delete')
         {
-            let partIndex = 0;
-            //Get the part index.
-            for (let i = 0; i < this.parts.length; i++)
-            {
-                if (this.parts[i] === part) {
-                    partIndex = i;
+            // if ( part.partType === 'tile') {
+            //     console.log("clicked on tile part!");
+            //     let tileIndex = 0;
+            //     for ( let j = 0; j < this.tiles.length; j++ ) {
+            //         if (this.tiles[j] === part) {
+            //             tileIndex = j;
+            //         }
+            //     }
+            //     this.deleteTile(tileIndex);
+            // } else {
+                let partIndex = 0;
+                //Get the part index.
+                for (let i = 0; i < this.parts.length; i++) {
+                    if (this.parts[i] === part) {
+                        partIndex = i;
+                    }
                 }
-            }
 
-            this.deletePart(partIndex);
-        }
+                this.deletePart(partIndex);
+            }
         else if (this.toolMode === 'edit')
         {
             let partIndex = 0;
@@ -464,9 +488,19 @@ export class PartManager {
         // Now destroy the part
         this.parts[partIndex].destroy();
         this.parts.splice(partIndex, 1);
+
         // Update all the tile connectors
         this.updateTileConnectors();
     }
+
+    // deleteTile(tileIndex) {
+    //     // Kelly added destroy tiles
+    //     this.tiles[tileIndex].destroy();
+    //     this.tiles.splice(tileIndex, 1);
+    //
+    //     // Update all the tile connectors
+    //     this.updateTileConnectors();
+    // }
 
     onChainClicked(chain, pointer)
     {
@@ -515,10 +549,19 @@ export class PartManager {
 
     deleteAllParts()
     {
+        // console.log("In part manager, delete all parts function...");
+
         while(this.parts.length > 0)
         {
+            // console.log("this parts and length: ", this.parts, " & ", this.parts.length);
             this.deletePart(0);
         }
+    //    Kelly added to also remove tiles that were taken out of parts manager in spintronicssimulatr js file
+    //     while(this.tiles.length > 0)
+    //     {
+    //         // console.log("this tiles and length: ", this.tiles, " & ", this.tiles.length);
+    //         this.deleteTile(0);
+    //     }
     }
 
     // Add a chain from file
@@ -645,7 +688,7 @@ export class PartManager {
 
     getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(partIndex, level)
     {
-        // console.log("In get all levels function in part manager...", partIndex, " & ", level);
+        console.log("In get all levels function in part manager...", partIndex, " & ", level);
         let retVal = [];
         let thisPart = this.parts[partIndex];
         // console.log("in function, now this part is: ", thisPart);
