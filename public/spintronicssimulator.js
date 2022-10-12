@@ -1974,6 +1974,14 @@ function showPossibleChainConnections() {
     let sprocketBounds = [];
     let checkavailablelevels = [];
 
+    allPartsOnBoard = partManager.parts;
+    // take out any tiles and tile connectors
+    for (var j = allPartsOnBoard.length - 1; j >= 0; j-- ) {
+        if (allPartsOnBoard[j].partType === 'tile' || allPartsOnBoard[j].partType === 'tile-connector') {
+            allPartsOnBoard.splice(j, 1);
+        }
+    }
+
     // Kelly testing loop to find part and level used using connections grid array
     // for (let m = 0; m < sprocketsWithConnectionsGridArray.length; m++ ) {
     //     if ( sprocketsWithConnectionsGridArray[m].pindex === 1 && sprocketsWithConnectionsGridArray[m].usedlevel === 1 ) {
@@ -1983,9 +1991,14 @@ function showPossibleChainConnections() {
     //     }
     // }
     // console.log("dynamic parts list for dots: ", dynamicPartsListForTouchDots);
-    for (let i = 0; i < dynamicPartsListForTouchDots.length; i++) {
+    // console.log("all parts on board parts: ", allPartsOnBoard);
+    // for (let i = 0; i < dynamicPartsListForTouchDots.length; i++) {
+    for (let i = 0; i < allPartsOnBoard.length; i++) {
+        console.log("index: ", i);
         checkavailablelevels = [];   // empty array before finding the part's used sprockets
-        let thispartname = dynamicPartsListForTouchDots[i].partType;  // need to find any junctions, which are checked differently
+        // let thispartname = dynamicPartsListForTouchDots[i].partType;  // need to find any junctions, which are checked differently
+        let thispartname = allPartsOnBoard[i].partType;
+        console.log("this part name: ", thispartname);
         // checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
         if (thispartname === 'junction') {
             // found a part that is a junction
@@ -2007,7 +2020,7 @@ function showPossibleChainConnections() {
             // get available sprockets for this part that is not a junction (all others) by sending in level 0
             checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
         }
-        // console.log("index: ", i, " check available levels: ", checkavailablelevels);
+        console.log("index: ", i, " check available levels: ", checkavailablelevels);
 
         // now we know what sprocket levels are available, so we can make sure at least one is available on each part
         if (checkavailablelevels.length > 0 ) {
@@ -2642,7 +2655,7 @@ function onPointerMove(pointer) {
                             drawn = 0;
 
                             getThisSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
-                            console.log("get last sprocket bounds of chain being built: ", getThisSprocketBounds);
+                            // console.log("get last sprocket bounds of chain being built: ", getThisSprocketBounds);
 
 
                             // for (var i = 0; i < allPartsOnBoard.length; i++) {
@@ -2654,7 +2667,7 @@ function onPointerMove(pointer) {
                                     let thisdistance = Math.sqrt(Math.pow(getThisSprocketBounds.x - toNextSprocketBoundsOfPart[i].x, 2) + Math.pow(getThisSprocketBounds.y - toNextSprocketBoundsOfPart[i].y, 2));
                                     let thisydiff = getThisSprocketBounds.y - toNextSprocketBoundsOfPart[i].y;
                                     let thisangle = Phaser.Math.RadToDeg(Math.asin(thisydiff / thisdistance));
-                                    console.log("old angle is: ", Math.ceil(thisangle));
+                                    // console.log("old angle is: ", Math.ceil(thisangle));
 
                                     // Kelly - this seems to be working to find the chain point to draw a new angle between the next part
                                     if (getThisSprocketBounds.x > toNextSprocketBoundsOfPart[i].x) {
@@ -2674,7 +2687,7 @@ function onPointerMove(pointer) {
                                             // console.log("original angle: ", thisangle);
                                         }
                                     }
-                                    console.log("old transformed angle is: ", Math.ceil(thisangle));
+                                    // console.log("old transformed angle is: ", Math.ceil(thisangle));
                                     thisangle = Phaser.Math.DegToRad(thisangle);
                                     junctionChainPointx = getThisSprocketBounds.x + getThisSprocketBounds.radius * Math.cos(thisangle);
                                     junctionChainPointy = getThisSprocketBounds.y + getThisSprocketBounds.radius * Math.sin(thisangle);
@@ -2682,7 +2695,7 @@ function onPointerMove(pointer) {
                                     let thisnewdistance = Math.sqrt(Math.pow(junctionChainPointx - toNextSprocketBoundsOfPart[i].x, 2) + Math.pow(junctionChainPointy - toNextSprocketBoundsOfPart[i].y, 2));
                                     let thisnewydiff = junctionChainPointy - toNextSprocketBoundsOfPart[i].y;
                                     let thisnewangle = Phaser.Math.RadToDeg(Math.asin(thisnewydiff / thisnewdistance));
-                                    console.log("new angle is: ", Math.ceil(thisnewangle));
+                                    // console.log("new angle is: ", Math.ceil(thisnewangle));
 
                                     if (junctionChainPointx > toNextSprocketBoundsOfPart[i].x) {
                                         if (partClickedForLevelSelect.cw) {
@@ -2701,7 +2714,7 @@ function onPointerMove(pointer) {
                                             // console.log("new calculated angle: ", thisnewangle);
                                         }
                                     }
-                                    console.log("new transformed angle is: ", Math.ceil(thisnewangle));
+                                    // console.log("new transformed angle is: ", Math.ceil(thisnewangle));
                                     // console.log("----++++++-----++++++------");
                                     console.log("this part index: ", i);
                                     console.log("----++++++-----++++++------");

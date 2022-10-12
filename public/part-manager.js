@@ -645,16 +645,19 @@ export class PartManager {
 
     getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(partIndex, level)
     {
+        // console.log("In get all levels function in part manager...", partIndex, " & ", level);
         let retVal = [];
         let thisPart = this.parts[partIndex];
+        // console.log("in function, now this part is: ", thisPart);
         // let thisRadius = thisPart.sprocketRadius[level];
-
+        // console.log("sprocket radius length: ", thisPart.sprocketExists);
         for (let l = 0; l < thisPart.sprocketRadius.length; l++)
         {
             // console.log("In get all levels function, loop through part sprocket radius length.");
             // Check each level on this part.
             // Does the sprocket exist?
             if (!thisPart.sprocketExists[l]) {
+                // console.log("in continue");
                 continue;
             }
 
