@@ -2672,10 +2672,11 @@ function onPointerMove(pointer) {
                             getThisSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
                             // console.log("get last sprocket bounds of chain being built: ", getThisSprocketBounds);
 
-
+                            console.log("IN LAST LEVEL CHAIN - dynamic list: ", dynamicPartsListForTouchDots);
                             // for (var i = 0; i < allPartsOnBoard.length; i++) {
                             for (var i = 0; i < dynamicPartsListForTouchDots.length; i++) {
-
+                                if (dynamicPartsListForTouchDots[i].hasChainConnection !== 'na') {
+                                    console.log("part index:", i, " BYPASS MATCHED TILE OR CONNECTOR!");
                                     toNextSprocketBoundsOfPart[i] = partManager.getSprocketBounds(i, chosenLevel);
                                     // Determine angle between the current part and the next one
                                     // console.log("last sprocket bounds: ", getThisSprocketBounds);
@@ -2738,6 +2739,7 @@ function onPointerMove(pointer) {
                                     // console.log("this new angle: ", thisnewangle);
                                     // console.log("to next sprocket bounds of part: ", toNextSprocketBoundsOfPart[i]);
                                     drawTouchDots.bind(self)(toNextSprocketBoundsOfPart[i].x, toNextSprocketBoundsOfPart[i].y, toNextSprocketBoundsOfPart[i].radius, thisnewangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
+                                }
                             }
                         }
                         clearHighlight.bind(this)();
