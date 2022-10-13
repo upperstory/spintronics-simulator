@@ -11,7 +11,7 @@ export class ResistorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'resistor';
-
+        this.hasChainConnection = 'open';
         // Set the starting resistance
         this.resistance = 1000; // 1000 ohms default
 

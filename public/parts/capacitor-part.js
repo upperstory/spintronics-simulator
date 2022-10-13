@@ -15,6 +15,7 @@ export class CapacitorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'capacitor';
+        this.hasChainConnection = 'open';
         this.partImage = scene.add.image(this.x, this.y,'capacitor-sprocket');
         this.partImage.setScale(0.5);
         this.partImage.setDepth(10);

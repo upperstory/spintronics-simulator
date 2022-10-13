@@ -32,7 +32,7 @@ export class JunctionPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'junction';
-
+        this.hasChainConnection = 'open';
         // Create the images for this part
         this.partImage = scene.add.image(this.x, this.y,'junction-bottom');
         this.partImage.setScale(0.5);

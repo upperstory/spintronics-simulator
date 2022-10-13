@@ -12,6 +12,7 @@ export class TransistorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'transistor';
+        this.hasChainConnection = 'open';
         this.partImage = scene.add.image(this.x, this.y,'transistor-gate');
         this.partImage.setScale(0.5);
         this.partImage.setDepth(8);

@@ -7,7 +7,7 @@ export class TilePart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'tile';
-
+        this.hasChainConnection = 'na';
         // Create the resistor image
         this.partImageOffset = {x: 0, y: 0};
         this.partImage = scene.add.image(this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile');

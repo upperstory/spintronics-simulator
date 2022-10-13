@@ -9,7 +9,7 @@ export class DiodePart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'diode';
-
+        this.hasChainConnection = 'open';
         this.partImage = scene.add.image(this.x, this.y,'diode-sprocket');
         this.partImage.setScale(0.5);
         this.partImage.setDepth(10);

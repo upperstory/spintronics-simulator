@@ -14,7 +14,7 @@ export class MotorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'motor';
-
+        this.hasChainConnection = 'open';
         this.isShorted = false;
         this.buttonWidth = 300;
         this.buttonHeight = 50;

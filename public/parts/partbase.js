@@ -16,6 +16,7 @@ export class PartBase extends Phaser.GameObjects.Container
     partCenterX = 0;
     partCenterY = 0;
     partType = 'undefined';
+    hasChainConnection = 'undefined';
     partImage;
     pointerDownCallback = null;
     pointerMoveCallback = null;

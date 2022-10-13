@@ -7,7 +7,7 @@ export class TileConnectorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'tile-connector';
-
+        this.hasChainConnection = 'na';
         this.partImageOffset = {x: 0, y: 0};
         this.partImage = scene.add.image(this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile-connector');
         this.partImage.setScale(0.5);

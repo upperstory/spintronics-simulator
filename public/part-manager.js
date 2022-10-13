@@ -688,7 +688,7 @@ export class PartManager {
 
     getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(partIndex, level)
     {
-        console.log("In get all levels function in part manager...", partIndex, " & ", level);
+        // console.log("In get all levels function in part manager...", partIndex, " & ", level);
         let retVal = [];
         let thisPart = this.parts[partIndex];
         // console.log("in function, now this part is: ", thisPart);
@@ -857,9 +857,9 @@ export class PartManager {
 
     getSprocketBounds(partIndex, level)
     {
-        // console.log("In part-manager.js function getSprocketBounds - partIndex & level: ", partIndex, " & ", level);
+        // console.log("In part manager, function getSprocketBounds - partIndex & level: ", partIndex, " & ", level);
         const part = this.parts[partIndex];
-        // console.log("in part-manager.js function getSprocketBounds - part: ", part);
+        // console.log("in part manager, function getSprocketBounds - part: ", part);
         let bounds = {
             x: part.x + part.sprocketCenter[level].x,
             y: part.y + part.sprocketCenter[level].y,
