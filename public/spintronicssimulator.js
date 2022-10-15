@@ -1737,7 +1737,7 @@ function onSwitchToggled(name, newToggleState)
     {
         if (!self.chainbutton.getToggleState()) {
             dynamicPartsListForTouchDots = [...partManager.parts];
-
+            // reset parts list
             for ( let k = 0; k < dynamicPartsListForTouchDots.length; k++ ) {
                 if ( dynamicPartsListForTouchDots[k].hasChainConnection === 'first' || dynamicPartsListForTouchDots[k].hasChainConnection === 'taken' )
                 {
@@ -1745,6 +1745,9 @@ function onSwitchToggled(name, newToggleState)
                 }
                 console.log("CHAIN TOGGLE BUTTON - part has connection: ", dynamicPartsListForTouchDots[k].partType, " ", dynamicPartsListForTouchDots[k].hasChainConnection);
             }
+            // reset chain connection object
+            sprocketsWithConnectionsGridArray = [];
+
             // chosenlevelsprocketonnextpartisopen = false;
             // console.log("BEFORE split chain button, dynamic parts list for touch dots is: ", dynamicPartsListForTouchDots);
 
@@ -1994,13 +1997,13 @@ function showPossibleChainConnections() {
             for (let j=0; j < 3; j++ ) {  // loop through the 3 levels of sprockets
                 // for each junction sprocket level, find out if it is available
                 let junctionavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, j);
-                console.log("junction level index: ", j, " junction available levels: ", junctionavailablelevels[0]);
+                // console.log("junction level index: ", j, " junction available levels: ", junctionavailablelevels[0]);
                 // now if the sprocket level is used, check for type of undefined. If not undefined...
                 if ( typeof junctionavailablelevels[0] !== 'undefined' ) {
-                    console.log("type of is NOT undefined match.");
+                    // console.log("type of is NOT undefined match.");
                     // we know there is only one array element per junction sprocket - if it has a value, push to checkavailable levels array
                     checkavailablelevels.push(junctionavailablelevels[0]);
-                    console.log("junction loop, check available levels array: ", checkavailablelevels);
+                    // console.log("junction loop, check available levels array: ", checkavailablelevels);
                 }
             }
         } else {
@@ -2365,6 +2368,11 @@ function onPointerMove(pointer) {
             if (partManager.isInTheMiddleOfBuildingAChain()) {
                 console.log("on pointer down, now in middle of building a chain...");
 
+                for( let d=0; d<dynamicPartsListForTouchDots.length; d++) {
+                    console.log("MIDCHAIN AFTER FIRST - parts list chain connection: ", dynamicPartsListForTouchDots[d].partType, " ", dynamicPartsListForTouchDots[d].hasChainConnection)
+                }
+
+
                 var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y, true, null);
                 // console.log("IN DOWN, nearest sprocket: ", nearestSprocket);
                 if (nearestSprocket != null) {
@@ -2374,7 +2382,7 @@ function onPointerMove(pointer) {
                     // Is this the very first sprocket in this chain?
                     let isFirstSprocket = false;
                     let firstSprocket = partManager.getInfoAboutFirstSprocketInChainBeingBuilt();
-                    // console.log("first sprocket: ", firstSprocket);
+                    console.log("first sprocket: ", firstSprocket);
                     dynamicPartsListForTouchDots[firstSprocket.partIndex].hasChainConnection = 'first';
 
                     if (firstSprocket.partIndex === nearestSprocket.partIndex) {
@@ -2493,7 +2501,7 @@ function onPointerMove(pointer) {
                         // console.log("MIDCHAIN");
                         // console.log("dynamic parts list MIDCHAIN: ", dynamicPartsListForTouchDots);
                         for (let m = 0; m < dynamicPartsListForTouchDots.length; m++) {
-                            console.log("this part: ", dynamicPartsListForTouchDots[m].partType, " has chain connection attribute is: ", dynamicPartsListForTouchDots[m].hasChainConnection);
+                            // console.log("this part: ", dynamicPartsListForTouchDots[m].partType, " has chain connection attribute is: ", dynamicPartsListForTouchDots[m].hasChainConnection);
                             thisavailablelevels = [];   // empty array before finding the part's used sprockets
                             // console.log("dynamic parts: ", dynamicPartsListForTouchDots[m].hasChainConnection);
                             if ( dynamicPartsListForTouchDots[m].hasChainConnection !== 'na' ) {
@@ -2501,7 +2509,7 @@ function onPointerMove(pointer) {
                                 nextSprocketBounds[m] = partManager.getSprocketBounds(m, chosenLevel);
 
                                 if (dynamicPartsListForTouchDots[m].partType === 'junction') {
-                                    console.log("MIDCHAIN - found junction part type!");
+                                    // console.log("MIDCHAIN - found junction part type!");
                                     // found a part that is a junction
                                     for (let j=0; j < 3; j++ ) {  // loop through the 3 levels of sprockets
                                         // for each junction sprocket level, find out if it is available
@@ -2512,7 +2520,7 @@ function onPointerMove(pointer) {
                                             // console.log("type of is NOT undefined match.");
                                             // we know there is only one array element per junction sprocket - if it has a value, push to checkavailable levels array
                                             thisavailablelevels.push(junctionavailablelevels[0]);
-                                            console.log("MIDCHAIN junction loop, check available levels array: ", thisavailablelevels);
+                                            // console.log("MIDCHAIN junction loop, check available levels array: ", thisavailablelevels);
                                         }
                                     }
                                 } else {
@@ -2521,7 +2529,7 @@ function onPointerMove(pointer) {
                                     // get available sprockets for this part that is not a junction (all others) by sending in level 0
                                     thisavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(m, 0);
                                 }
-                                console.log("MIDCHAIN - part index: ", m, " part type: ", dynamicPartsListForTouchDots[m].partType, " the available levels are: ", thisavailablelevels, " and chosen level: ", chosenLevel);
+                                console.log("MIDCHAIN - part index: ", m, " part type: ", dynamicPartsListForTouchDots[m].partType, " the available levels are: ", thisavailablelevels, " and chosen level: ", chosenLevel, " and chain connection: ", dynamicPartsListForTouchDots[m].hasChainConnection);
                                 // Kelly trying to find parts with sprocket levels already taken so that no touch dot is drawn
 
                                 let getDistance = Math.sqrt(Math.pow(getLastSprocketBounds.x - nextSprocketBounds[m].x, 2) + Math.pow(getLastSprocketBounds.y - nextSprocketBounds[m].y, 2));
@@ -2674,11 +2682,11 @@ function onPointerMove(pointer) {
                             for (var i = 0; i < dynamicPartsListForTouchDots.length; i++) {
                                 thisavailablelevels = [];
                                 if (dynamicPartsListForTouchDots[i].hasChainConnection !== 'na') {
-                                    console.log("ONLY LEVEL part index:", i, " PART TYPE: ", dynamicPartsListForTouchDots[i].partType, " BYPASSED PAST TILE!");
+                                    // console.log("ONLY LEVEL part index:", i, " PART TYPE: ", dynamicPartsListForTouchDots[i].partType, " and has chain connection: ", dynamicPartsListForTouchDots[i].hasChainConnection);
                                     toNextSprocketBoundsOfPart[i] = partManager.getSprocketBounds(i, chosenLevel);
 
                                     if (dynamicPartsListForTouchDots[i].partType === 'junction') {
-                                        console.log("FIRST CONNECTION - found junction part type!");
+                                        // console.log("FIRST CONNECTION - found junction part type!");
                                         // found a part that is a junction
                                         for (let j=0; j < 3; j++ ) {  // loop through the 3 levels of sprockets
                                             // for each junction sprocket level, find out if it is available
@@ -2689,7 +2697,7 @@ function onPointerMove(pointer) {
                                                 // console.log("type of is NOT undefined match.");
                                                 // we know there is only one array element per junction sprocket - if it has a value, push to checkavailable levels array
                                                 thisavailablelevels.push(junctionavailablelevels[0]);
-                                                console.log("junction loop, check available levels array: ", thisavailablelevels);
+                                                // console.log("junction loop, check available levels array: ", thisavailablelevels);
                                             }
                                         }
                                     } else {
