@@ -232,15 +232,6 @@ export class PartManager {
                 i--;
             }
         }
-        // for (let j = 0; j < this.tiles.length; j++)
-        // {
-        //     if (this.tiles[j].partType === 'tile-connector') {
-        //         // Now destroy the part
-        //         this.tiles[j].destroy();
-        //         this.tiles.splice(j, 1);
-        //         j--;
-        //     }
-        // }
         // Iterate through all the tiles. For each tile, iterate through all other tiles, looking for adjacent tiles.
         for (let i = 0; i < this.parts.length; i++)
         {
@@ -404,26 +395,16 @@ export class PartManager {
 
         if (this.toolMode === 'delete')
         {
-            // if ( part.partType === 'tile') {
-            //     console.log("clicked on tile part!");
-            //     let tileIndex = 0;
-            //     for ( let j = 0; j < this.tiles.length; j++ ) {
-            //         if (this.tiles[j] === part) {
-            //             tileIndex = j;
-            //         }
-            //     }
-            //     this.deleteTile(tileIndex);
-            // } else {
-                let partIndex = 0;
-                //Get the part index.
-                for (let i = 0; i < this.parts.length; i++) {
-                    if (this.parts[i] === part) {
-                        partIndex = i;
-                    }
+            let partIndex = 0;
+            //Get the part index.
+            for (let i = 0; i < this.parts.length; i++) {
+                if (this.parts[i] === part) {
+                    partIndex = i;
                 }
-
-                this.deletePart(partIndex);
             }
+
+            this.deletePart(partIndex);
+        }
         else if (this.toolMode === 'edit')
         {
             let partIndex = 0;
@@ -493,19 +474,11 @@ export class PartManager {
         this.updateTileConnectors();
     }
 
-    // deleteTile(tileIndex) {
-    //     // Kelly added destroy tiles
-    //     this.tiles[tileIndex].destroy();
-    //     this.tiles.splice(tileIndex, 1);
-    //
-    //     // Update all the tile connectors
-    //     this.updateTileConnectors();
-    // }
-
     onChainClicked(chain, pointer)
     {
         if (this.toolMode === 'delete')
         {
+            console.log("In delete tool, on chain clicked: ", chain);
             let chainIndex = 0;
             //Get the part index.
             for (let i = 0; i < this.chains.length; i++)
@@ -521,7 +494,7 @@ export class PartManager {
 
     deleteChain(chainIndex)
     {
-        // console.log("...now in deletechain called from deleteAllChains...", chainIndex);
+        console.log("...now in deletechain called from deleteAllChains...", chainIndex);
         this.deleteChainJoints(this.chains[chainIndex]);
 
         // Adjust all the chains to get rid of the connection.
