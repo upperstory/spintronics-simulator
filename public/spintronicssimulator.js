@@ -134,6 +134,7 @@ let partClickedForLevelSelect = {partIndex: -1, cw: false};
 
 let partManager = null;
 let chainDots = [];
+let chainArrows = [];
 let allPartsOnBoard = [];
 let chosenLevel = -1;
 let getLastSprocketBounds = '';
@@ -2146,9 +2147,10 @@ function onPointerMove(pointer) {
     // pass in part center x point, part center y point, part sprocket radius, angle to last part or 0, if it is midchain (meaning dots get turned for
     // the angle from last part to new part), islevel (?? being used ??), and isfirstconnection (only draw the one dot instead of two)
     function drawTouchDots(centerX, centerY, radius, angle, cw, ismidchain, islevel, isfirstconnection) {
-        // console.log("in draw touch dots function...", isfirstconnection, " and cw is: ", cw);
+        console.log("in draw touch dots function...is mid chain is: ", ismidchain, " and cw is: ", cw, " first connection is: ", isfirstconnection);
 
         if (ismidchain) {
+            console.log("DRAW TOUCH DOTS FUNCTION - MIDCHAIN");
 
             angle = Phaser.Math.DegToRad(angle);
             // these points are the first new points to show where to attach the chain
@@ -2177,90 +2179,122 @@ function onPointerMove(pointer) {
                 chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 20);
             }
             // Kelly adding to try a touch arrow -------------------------------------------------------->
-            // let thickness = 15;
-            // const arrowOffset = 10;
-            // const arrowAngleExtents = 30;
-            // const arrowHeadThickness = 26;
-            // let arrowangle = Phaser.Math.RadToDeg(angle);
-            //
-            // this.chainArrows = this.add.graphics(0, 0, true);
-            // // Set to the top-most depth
-            // this.chainArrows.setDepth(20);
-            // this.chainArrows.lineStyle(thickness, 0xFF0000, 0.65);
-            // this.chainArrows.fillStyle(0xFF0000, 0.65);
-            //
-            // if (cw) {
-            //     console.log("DRAW RED ARCS IF");
-            //     this.chainArrows.beginPath();
-            //     this.chainArrows.arc(centerX,
-            //         centerY,
-            //         radius + arrowOffset,
-            //         Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
-            //         Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
-            //         false);
-            //     this.chainArrows.strokePath();
-            //
-            //     this.chainArrows.beginPath();
-            //     this.chainArrows.arc(centerX,
-            //         centerY,
-            //         radius + arrowOffset,
-            //         Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
-            //         Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
-            //         false);
-            //     this.chainArrows.strokePath();
-            //     //     // We want a constant length of our arrow head: 18 px.
-            //     //     // Find circumference:
-            //     let circumference = 2 * Math.PI * (arrowOffset + radius);
-            //     let fractionOfCircumference = (18 / circumference) * 360;
-            //     let arrowTop = {
-            //         x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-            //         y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-            //     };
-            //     let arrowLeft = {
-            //         x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-            //         y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-            //     };
-            //     let arrowRight = {
-            //         x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-            //         y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-            //     };
-            //     this.chainArrows.fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
-            //
-            // } else {
-            //     // Now draw arrow
-            //     console.log("DRAW RED ARCS ELSE");
-            //     this.chainArrows.beginPath();
-            //     this.chainArrows.arc(centerX,
-            //         centerY,
-            //         radius + arrowOffset,
-            //         Phaser.Math.DegToRad((arrowangle - 180) - arrowAngleExtents),
-            //         Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents),
-            //         // Phaser.Math.DegToRad((-angle - 90) - arrowAngleExtents),
-            //         // Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents),
-            //         false);
-            //     this.chainArrows.strokePath();
-            //     // We want a constant length of our arrow head: 18 px.
-            //     // Find circumference:
-            //     let circumference = 2 * Math.PI * (arrowOffset + radius);
-            //     let fractionOfCircumference = (18 / circumference) * 360;
-            //     let arrowTop = {
-            //         x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-            //         y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-            //     };
-            //     let arrowLeft = {
-            //         x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-            //         y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-            //     };
-            //     let arrowRight = {
-            //         x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-            //         y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-            //     };
-            //     this.chainArrows.fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
-            // }
+            let thickness = 10;
+            const arrowOffset = 0;
+            const arrowAngleExtents = 30;
+            const arrowHeadThickness = 26;
+            let arrowangle = Phaser.Math.RadToDeg(angle);
+
+            chainArrows[drawn] = this.add.graphics(0, 0, true);
+            // Set to the top-most depth
+            chainArrows[drawn].setDepth(20);
+            chainArrows[drawn].lineStyle(thickness, 0x00FF00, 1.0);
+            chainArrows[drawn].fillStyle(0x00FF00, 1.0);
+
+            if (cw) {
+                console.log("DRAW ARCS and ARROW IF");
+
+                // draw first side arc and arrow head
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
+
+                // draw opposite side arc and arrow head
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
+                //     // We want a constant length of our arrow head: 18 px.
+                //     // Find circumference:
+                let circumference = 2 * Math.PI * (arrowOffset + radius);
+                let fractionOfCircumference = (18 / circumference) * 360;
+                let arrowTop = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                };
+                let arrowLeft = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                };
+                let arrowRight = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                };
+                chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+                console.log("IF arrow: ", arrowTop, arrowLeft, arrowRight);
+            } else {
+                // Now draw arrow
+                console.log("DRAW ARCS and ARROWS ELSE");
+
+                // draw first side arc and arrow head
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
+
+                // draw opposite side arc and arrow head
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
+
+                // We want a constant length of our arrow head: 18 px.
+                // Find circumference:
+                let circumference = 2 * Math.PI * (arrowOffset + radius);
+                let fractionOfCircumference = (18 / circumference) * 360;
+
+                let arrowTop = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                };
+                let arrowLeft = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                };
+                let arrowRight = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                };
+                chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+                console.log("ELSE arrow: ", arrowTop, arrowLeft, arrowRight);
+
+                let oppositeArrowTop = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                };
+                let oppositeArrowLeft = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                };
+                let oppositeArrowRight = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                };
+                chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+                console.log("ELSE opposite arrow: ", oppositeArrowTop, oppositeArrowLeft, oppositeArrowRight);
+            }
             // Kelly end of touch arrows -------------------------------------------------------------------------------->
 
         // drawing first dot connection points
         } else {
+            console.log("DRAW TOUCH DOTS FUNCTION - FIRST CONNECTED PART");
             chainDots[drawn] = this.add.graphics();
             // Set to the top-most depth
             chainDots[drawn].setDepth(20);
@@ -2268,7 +2302,77 @@ function onPointerMove(pointer) {
             chainDots[drawn].fillStyle(0x00FF00, 0.65);
             chainDots[drawn].fillCircle(centerX + radius, centerY, 20);
             chainDots[drawn].fillCircle(centerX - radius, centerY, 20);
+
+            console.log("...breaking here?");
+
+            let thickness = 10;
+            const arrowOffset = 0;
+            const arrowAngleExtents = 30;
+            const arrowHeadThickness = 26;
+            let arrowangle = Phaser.Math.RadToDeg(angle);
+
+            chainArrows[drawn] = this.add.graphics(0, 0, true);
+            // Set to the top-most depth
+            chainArrows[drawn].setDepth(20);
+            chainArrows[drawn].lineStyle(thickness, 0x00FF00, 1.0);
+            chainArrows[drawn].fillStyle(0x00FF00, 1.0);
+
+            // draw first side arc and arrow head
+            chainArrows[drawn].beginPath();
+            chainArrows[drawn].arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((0) - arrowAngleExtents),
+                Phaser.Math.DegToRad((0) + arrowAngleExtents),
+                false);
+            chainArrows[drawn].strokePath();
+
+            // draw opposite side arc and arrow head
+            chainArrows[drawn].beginPath();
+            chainArrows[drawn].arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((180) - arrowAngleExtents),
+                Phaser.Math.DegToRad((180) + arrowAngleExtents),
+                false);
+            chainArrows[drawn].strokePath();
+
+            let circumference = 2 * Math.PI * (arrowOffset + radius);
+            let fractionOfCircumference = (18 / circumference) * 360;
+
+            let arrowTop = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((0) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+            };
+            let arrowLeft = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+            };
+            let arrowRight = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+            };
+            chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+            console.log("FIRST ELSE arrow: ", arrowTop, arrowLeft, arrowRight);
+
+            let oppositeArrowTop = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+            };
+            let oppositeArrowLeft = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+            };
+            let oppositeArrowRight = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+            };
+            chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+            console.log("FIRST ELSE opposite arrow: ", oppositeArrowTop, oppositeArrowLeft, oppositeArrowRight);
+
         }
+
+
         drawn++;
     }
 // ---------------------------------------- DRAW CHAIN CONNECTION POINT ARROWS ---------------------------------------------------- //
@@ -2960,6 +3064,9 @@ function onPointerMove(pointer) {
         for (let l = 0; l < activedots; l++ ) {
             if (chainDots[l] != null) {
                 chainDots[l].destroy();
+            }
+            if (chainArrows[l] != null) {
+                chainArrows[l].destroy();
             }
         }
     }
