@@ -1984,7 +1984,7 @@ function showPossibleChainConnections() {
     // find all parts placed in the simulator circuit
 
     // now loop through the sprockets on this part - if different, then draw another dot
-    // let thisRadius = '';
+    let thisRadius = '';
     let sprocketBounds = [];
     let checkavailablelevels = [];
 
@@ -2008,23 +2008,35 @@ function showPossibleChainConnections() {
                     // console.log("junction loop, check available levels array: ", checkavailablelevels);
                 }
             }
+            if (checkavailablelevels.length > 0 ) {
+                // loop through the checkavailablelevels array which only stores unused sprockets on the junction
+                // then for each available sprocket on each part, draw the mobile touch dots for connecting chain
+                for (let n=0; n < checkavailablelevels.length; n++ ) {
+                    sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[n]);
+                    drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
+                }
+            }
         } else {
             // found a part that is not a junction
             // get available sprockets for this part that is not a junction (all others) by sending in level 0
             checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
-        }
-
-        // now we know what sprocket levels are available, so we can make sure at least one is available on each part
-        if (checkavailablelevels.length > 0 ) {
-            // loop through the checkavailablelevels array which only stores unused sprockets
-            // then for each available sprocket on each part, draw the mobile touch dots for connecting chain
-            for (let n=0; n < checkavailablelevels.length; n++ ) {
-                sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[n]);
+            if (checkavailablelevels.length > 0 ) {
+                sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[0]);
                 drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
             }
         }
-    }
-}
+
+        // now we know what sprocket levels are available, so we can make sure at least one is available on each part
+        // if (checkavailablelevels.length > 0 ) {
+        //     // loop through the checkavailablelevels array which only stores unused sprockets
+        //     // then for each available sprocket on each part, draw the mobile touch dots for connecting chain
+        //     for (let n=0; n < checkavailablelevels.length; n++ ) {
+        //         sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[n]);
+        //         drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
+        //     }
+        // }
+    } // end of each part on board loop
+} // end of show possible chain connections function
 
 // ---------------------------------------- ON POINTER MOVE ---------------------------------------------------- //
 function onPointerMove(pointer) {
@@ -2273,10 +2285,10 @@ function onPointerMove(pointer) {
 
         if (cw) {
             // console.log("centerx: ", centerX, " centerY: ", centerY, " ", angle, " ", Phaser.Math.DegToRad((-angle - 90) - arrowAngleExtents));
-            // var r1 = this.add.circle(centerX, centerY, 30, 0x6666ff);
-            // this.highlightGraphics.beginPath();
-            // this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle-180), Phaser.Math.DegToRad(-angle), false);
-            // this.highlightGraphics.strokePath();
+            var r1 = this.add.circle(centerX, centerY, 30, 0x6666ff);
+            this.highlightGraphics.beginPath();
+            this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle-180), Phaser.Math.DegToRad(-angle), false);
+            this.highlightGraphics.strokePath();
 
             // Now draw arrow
             this.highlightGraphics.beginPath();
@@ -2305,9 +2317,9 @@ function onPointerMove(pointer) {
             };
             this.highlightGraphics.fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
         } else {
-            // this.highlightGraphics.beginPath();
-            // this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle), Phaser.Math.DegToRad(-angle + 180), false);
-            // this.highlightGraphics.strokePath();
+            this.highlightGraphics.beginPath();
+            this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle), Phaser.Math.DegToRad(-angle + 180), false);
+            this.highlightGraphics.strokePath();
 
             // Now draw arrow
             this.highlightGraphics.beginPath();
