@@ -131,6 +131,7 @@ let mouseImageOffset = {x: 0, y: 0};
 const gridSpacing = 15;
 let drawn = 0;
 let partClickedForLevelSelect = {partIndex: -1, cw: false};
+let firstPartChainIsConnectedGoingCW = '';
 
 let partManager = null;
 let chainDots = [];
@@ -2023,6 +2024,7 @@ function showPossibleChainConnections() {
             checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
             if (checkavailablelevels.length > 0 ) {
                 sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[0]);
+                console.log("In SHOWPOSSIBLE function, sprocket bounds: ", sprocketBounds[i].cw);
                 drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
             }
         }
@@ -2147,10 +2149,11 @@ function onPointerMove(pointer) {
     // pass in part center x point, part center y point, part sprocket radius, angle to last part or 0, if it is midchain (meaning dots get turned for
     // the angle from last part to new part), islevel (?? being used ??), and isfirstconnection (only draw the one dot instead of two)
     function drawTouchDots(centerX, centerY, radius, angle, cw, ismidchain, islevel, isfirstconnection) {
-        console.log("in draw touch dots function...is mid chain is: ", ismidchain, " and cw is: ", cw, " first connection is: ", isfirstconnection);
-
+        console.log("DRAWTOUCHDOTS function, passed in cw is: ", cw);
+        console.log("DRAWTOUCHDOTS function, global first part chain connection is going cw: ", firstPartChainIsConnectedGoingCW);
+        // let isClockwise = null;
         if (ismidchain) {
-            console.log("DRAW TOUCH DOTS FUNCTION - MIDCHAIN");
+            // console.log("DRAW TOUCH DOTS FUNCTION - MIDCHAIN");
 
             angle = Phaser.Math.DegToRad(angle);
             // these points are the first new points to show where to attach the chain
@@ -2171,15 +2174,27 @@ function onPointerMove(pointer) {
             chainDots[drawn].setDepth(20);
 
             if (isfirstconnection) {
-                chainDots[drawn].fillStyle(0x00FF00, 0.65);
-                chainDots[drawn].fillCircle(myPointX, myPointY, 20);
+                // the part with the first connected chain will only show one remaining connection point
+                if (firstPartChainIsConnectedGoingCW && !cw) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 15);
+                } else if (!firstPartChainIsConnectedGoingCW && !cw) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myPointX, myPointY, 15);
+                } else if (firstPartChainIsConnectedGoingCW && cw) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myPointX, myPointY, 15);
+                } else if (!firstPartChainIsConnectedGoingCW && cw ) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 15);
+                }
             } else {
-                chainDots[drawn].fillStyle(0x00FF00, 0.65);
-                chainDots[drawn].fillCircle(myPointX, myPointY, 20);
-                chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 20);
+                chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                chainDots[drawn].fillCircle(myPointX, myPointY, 15);
+                chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 15);
             }
             // Kelly adding to try a touch arrow -------------------------------------------------------->
-            let thickness = 10;
+            let thickness = 6;
             const arrowOffset = 0;
             const arrowAngleExtents = 30;
             const arrowHeadThickness = 26;
@@ -2191,72 +2206,61 @@ function onPointerMove(pointer) {
             chainArrows[drawn].lineStyle(thickness, 0x00FF00, 1.0);
             chainArrows[drawn].fillStyle(0x00FF00, 1.0);
 
+            chainArrows[drawn].beginPath();
+            chainArrows[drawn].arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
+                Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
+                false);
+            chainArrows[drawn].strokePath();
+
+            // draw opposite side arc and arrow head
+            chainArrows[drawn].beginPath();
+            chainArrows[drawn].arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
+                Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
+                false);
+            chainArrows[drawn].strokePath();
+
             if (cw) {
-                console.log("DRAW ARCS and ARROW IF");
-
-                // draw first side arc and arrow head
-                chainArrows[drawn].beginPath();
-                chainArrows[drawn].arc(centerX,
-                    centerY,
-                    radius + arrowOffset,
-                    Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
-                    Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
-                    false);
-                chainArrows[drawn].strokePath();
-
-                // draw opposite side arc and arrow head
-                chainArrows[drawn].beginPath();
-                chainArrows[drawn].arc(centerX,
-                    centerY,
-                    radius + arrowOffset,
-                    Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
-                    Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
-                    false);
-                chainArrows[drawn].strokePath();
-                //     // We want a constant length of our arrow head: 18 px.
-                //     // Find circumference:
+                    // We want a constant length of our arrow head: 18 px.
+                    // Find circumference:
                 let circumference = 2 * Math.PI * (arrowOffset + radius);
                 let fractionOfCircumference = (18 / circumference) * 360;
+
                 let arrowTop = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
                 };
                 let arrowLeft = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
                 };
                 let arrowRight = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
                 };
                 chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
-                console.log("IF arrow: ", arrowTop, arrowLeft, arrowRight);
+
+                let oppositeArrowTop = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                };
+                let oppositeArrowLeft = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                };
+                let oppositeArrowRight = {
+                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                };
+                chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+
             } else {
-                // Now draw arrow
-                console.log("DRAW ARCS and ARROWS ELSE");
 
-                // draw first side arc and arrow head
-                chainArrows[drawn].beginPath();
-                chainArrows[drawn].arc(centerX,
-                    centerY,
-                    radius + arrowOffset,
-                    Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
-                    Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
-                    false);
-                chainArrows[drawn].strokePath();
-
-                // draw opposite side arc and arrow head
-                chainArrows[drawn].beginPath();
-                chainArrows[drawn].arc(centerX,
-                    centerY,
-                    radius + arrowOffset,
-                    Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
-                    Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
-                    false);
-                chainArrows[drawn].strokePath();
-
-                // We want a constant length of our arrow head: 18 px.
-                // Find circumference:
                 let circumference = 2 * Math.PI * (arrowOffset + radius);
                 let fractionOfCircumference = (18 / circumference) * 360;
 
@@ -2273,7 +2277,6 @@ function onPointerMove(pointer) {
                     y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
                 };
                 chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
-                console.log("ELSE arrow: ", arrowTop, arrowLeft, arrowRight);
 
                 let oppositeArrowTop = {
                     x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
@@ -2288,24 +2291,24 @@ function onPointerMove(pointer) {
                     y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
                 };
                 chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
-                console.log("ELSE opposite arrow: ", oppositeArrowTop, oppositeArrowLeft, oppositeArrowRight);
+
             }
             // Kelly end of touch arrows -------------------------------------------------------------------------------->
 
-        // drawing first dot connection points
+        // drawing first dot connection points on chain button clicked
         } else {
-            console.log("DRAW TOUCH DOTS FUNCTION - FIRST CONNECTED PART");
+
             chainDots[drawn] = this.add.graphics();
             // Set to the top-most depth
             chainDots[drawn].setDepth(20);
             // chainDots[thispart].lineStyle(thickness, 0x00FF00, 0.65);
-            chainDots[drawn].fillStyle(0x00FF00, 0.65);
-            chainDots[drawn].fillCircle(centerX + radius, centerY, 20);
-            chainDots[drawn].fillCircle(centerX - radius, centerY, 20);
+            chainDots[drawn].fillStyle(0x00FF00, 1.0);
+            chainDots[drawn].fillCircle(centerX + radius, centerY, 15);
+            chainDots[drawn].fillCircle(centerX - radius, centerY, 15);
 
-            console.log("...breaking here?");
+            // console.log("...breaking here?");
 
-            let thickness = 10;
+            let thickness = 6;
             const arrowOffset = 0;
             const arrowAngleExtents = 30;
             const arrowHeadThickness = 26;
@@ -2353,7 +2356,7 @@ function onPointerMove(pointer) {
                 y: centerY - Math.sin(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
             };
             chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
-            console.log("FIRST ELSE arrow: ", arrowTop, arrowLeft, arrowRight);
+            // console.log("FIRST ELSE arrow: ", arrowTop, arrowLeft, arrowRight);
 
             let oppositeArrowTop = {
                 x: centerX + Math.cos(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
@@ -2368,10 +2371,8 @@ function onPointerMove(pointer) {
                 y: centerY + Math.sin(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
             };
             chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
-            console.log("FIRST ELSE opposite arrow: ", oppositeArrowTop, oppositeArrowLeft, oppositeArrowRight);
-
+            // console.log("FIRST ELSE opposite arrow: ", oppositeArrowTop, oppositeArrowLeft, oppositeArrowRight);
         }
-
 
         drawn++;
     }
@@ -2566,9 +2567,9 @@ function onPointerMove(pointer) {
             // Draw a chain if the chain button is selected
             if (partManager.isInTheMiddleOfBuildingAChain()) {
                 console.log("--------*****MIDDLE OF CHAIN*****---------");
-
+                // console.log("MIDCHAIN - part clicked for level select cw (not being set here): ", partClickedForLevelSelect.cw);
                 var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
-                // console.log("IN DOWN, nearest sprocket: ", nearestSprocket);
+                // console.log("MIDCHAIN - IN DOWN, nearest sprocket: ", nearestSprocket);
                 if (nearestSprocket != null) {
                     // Draw a highlight circle where the sprocket is
                     var sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, nearestSprocket.level);
@@ -2606,6 +2607,9 @@ function onPointerMove(pointer) {
                     }
 
                     if (angleDiff >= 0 && angleDiff < 180) {
+                        console.log("MIDCHAIN - POINTER DOWN, in IF angle to add or close chain...");
+                        // Kelly added Oct 25
+                        partClickedForLevelSelect.cw = true;
                         // Clockwise
                         if (!(isFirstSprocket && firstSprocket.cw === false)) {
 
@@ -2630,6 +2634,9 @@ function onPointerMove(pointer) {
                             }
                         }
                     } else {
+                        console.log("MIDCHAIN - POINTER DOWN, in ELSE angle to add or close chain...");
+                        // Kelly added oct 25
+                        partClickedForLevelSelect.cw = false;
                         // Counterclockwise
                         if (!(isFirstSprocket && firstSprocket.cw === true)) {
                             if (!isFirstSprocket) {
@@ -2669,6 +2676,7 @@ function onPointerMove(pointer) {
                     let thisavailablelevels = [];
 
                     getLastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
+                    // console.log("MIDCHAIN - IN DOWN, get last sprocket bounds: ", getLastSprocketBounds);
 
                     if ( getLastSprocketBounds != null ) {
 
@@ -2676,7 +2684,7 @@ function onPointerMove(pointer) {
                             thisavailablelevels = [];   // empty array before finding the part's used sprockets
                             if ( dynamicPartsListForTouchDots[m].hasChainConnection !== 'na' ) {
                                 nextSprocketBounds[m] = partManager.getSprocketBounds(m, chosenLevel);
-
+                                console.log("part: ", dynamicPartsListForTouchDots[m].partType);
                                 if (dynamicPartsListForTouchDots[m].partType === 'junction') {
 
                                     // found a part that is a junction
@@ -2700,15 +2708,23 @@ function onPointerMove(pointer) {
 
                                 // Kelly - this seems to be working to find the chain point to draw a new angle between the next part
                                 if (getLastSprocketBounds.x > nextSprocketBounds[m].x) {
+                                    // console.log("partclickedforlevelselect.cw: ", partClickedForLevelSelect.cw);
+                                    // console.log("last sprocket bounds greater than next sprocket bounds");
                                     if (partClickedForLevelSelect.cw) {
+                                        // console.log("getting new angle, cw is true");
                                         getAngle = getAngle + 90;
                                     } else {
+                                        // console.log("getting new angle, cw is false");
                                         getAngle = getAngle - 90;
                                     }
                                 } else {
+                                    // console.log("partclickedforlevelselect.cw: ", partClickedForLevelSelect.cw);
+                                    // console.log("last sprocket bounds NOT greater than next sprocket bounds");
                                     if (partClickedForLevelSelect.cw) {
+                                        // console.log("getting new angle, cw is true");
                                         getAngle = 270 - getAngle;
                                     } else {
+                                        // console.log("getting new angle, cw is false");
                                         getAngle = 90 - getAngle;
                                     }
                                 }
@@ -2747,13 +2763,13 @@ function onPointerMove(pointer) {
 
                                 if (dynamicPartsListForTouchDots[m].hasChainConnection === 'first' && thisavailablelevels.length > 0) {
                                     if ( isMobile || isTouchMobile ) {
-                                        drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, true);
+                                        drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, partClickedForLevelSelect.cw, true, chosenLevel, true);
                                     }
                                     chosenlevelsprocketonnextpartisopen = false;
 
                                 } else if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0 && dynamicPartsListForTouchDots[m].hasChainConnection !== 'taken') {
                                     if ( isMobile || isTouchMobile ) {
-                                        drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, nextSprocketBounds[m].cw, true, chosenLevel, false);
+                                        drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
                                     }
                                     chosenlevelsprocketonnextpartisopen = false;
                                 } // end of if to draw touch dots
@@ -2765,6 +2781,7 @@ function onPointerMove(pointer) {
                 console.log("--------***FIRST CONNECTION***--------");
                 // console.log("on pointer down, adding chain to first or last level part");
                 var nearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+                // console.log("FIRST CONNECTION - IN DOWN, nearest sprocket: ", nearestSprocket);
                 chosenLevel = 0;
                 if (nearestSprocket != null) {
 
@@ -2793,9 +2810,12 @@ function onPointerMove(pointer) {
 
                             if (worldPointer.x < sprocketBounds.x) {
                                 partClickedForLevelSelect.cw = true;
+                                firstPartChainIsConnectedGoingCW = true;
                             } else {
                                 partClickedForLevelSelect.cw = false;
+                                firstPartChainIsConnectedGoingCW = false;
                             }
+                            // console.log("FIRST CONNECTION - IN DOWN, part clicked on cw: ", partClickedForLevelSelect.cw);
                             // Kelly added delete drawn dots for each part level
                             let numofdotpairs = chainDots.length;
                             clearChainDots(numofdotpairs);
@@ -2815,14 +2835,18 @@ function onPointerMove(pointer) {
                             clearChainDots(numofdotpairs);
 
                             var thisnearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+                            // console.log("ONLY LEVEL - IN DOWN, nearest sprocket: ", thisnearestSprocket);
 
                             var getonlysprocketbounds = partManager.getSprocketBounds(thisnearestSprocket.partIndex, chosenLevel);
 
                             if (worldPointer.x < getonlysprocketbounds.x) {
                                 partClickedForLevelSelect.cw = true;
+                                firstPartChainIsConnectedGoingCW = true;
                             } else {
                                 partClickedForLevelSelect.cw = false;
+                                firstPartChainIsConnectedGoingCW = false;
                             }
+                            console.log("IN ONLY LEVEL FOR CHAIN, part clicked for level select: ", partClickedForLevelSelect);
                             partClickedForLevelSelect.partIndex = thisnearestSprocket.partIndex;
 
                             partManager.startChain();
@@ -2938,7 +2962,7 @@ function onPointerMove(pointer) {
 
         drawn = 0;
         chosenLevel = level;
-        console.log("POPUP CHOSEN LEVEL: ", level);
+        console.log("POPUP CHOSEN LEVEL: ", level, " and partclickedforlevelselect from FIRST CHAIN POINTER DOWN is: ", partClickedForLevelSelect.cw);
 
         disablePointerOverEvent = false;
         popupLevelChooser = null;
