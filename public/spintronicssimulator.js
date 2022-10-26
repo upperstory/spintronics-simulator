@@ -2192,109 +2192,109 @@ function onPointerMove(pointer) {
                 chainDots[drawn].fillStyle(0x00FF00, 1.0);
                 chainDots[drawn].fillCircle(myPointX, myPointY, 15);
                 chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 15);
-            }
-            // Kelly adding to try a touch arrow -------------------------------------------------------->
-            let thickness = 6;
-            const arrowOffset = 0;
-            const arrowAngleExtents = 30;
-            const arrowHeadThickness = 26;
-            let arrowangle = Phaser.Math.RadToDeg(angle);
+                // }
+                // Kelly adding to try a touch arrow -------------------------------------------------------->
+                let thickness = 6;
+                const arrowOffset = 0;
+                const arrowAngleExtents = 30;
+                const arrowHeadThickness = 26;
+                let arrowangle = Phaser.Math.RadToDeg(angle);
 
-            chainArrows[drawn] = this.add.graphics(0, 0, true);
-            // Set to the top-most depth
-            chainArrows[drawn].setDepth(20);
-            chainArrows[drawn].lineStyle(thickness, 0x00FF00, 1.0);
-            chainArrows[drawn].fillStyle(0x00FF00, 1.0);
+                chainArrows[drawn] = this.add.graphics(0, 0, true);
+                // Set to the top-most depth
+                chainArrows[drawn].setDepth(20);
+                chainArrows[drawn].lineStyle(thickness, 0x00FF00, 1.0);
+                chainArrows[drawn].fillStyle(0x00FF00, 1.0);
 
-            chainArrows[drawn].beginPath();
-            chainArrows[drawn].arc(centerX,
-                centerY,
-                radius + arrowOffset,
-                Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
-                Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
-                false);
-            chainArrows[drawn].strokePath();
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
 
-            // draw opposite side arc and arrow head
-            chainArrows[drawn].beginPath();
-            chainArrows[drawn].arc(centerX,
-                centerY,
-                radius + arrowOffset,
-                Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
-                Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
-                false);
-            chainArrows[drawn].strokePath();
+                // draw opposite side arc and arrow head
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
 
-            if (cw) {
+                if (cw) {
                     // We want a constant length of our arrow head: 18 px.
                     // Find circumference:
-                let circumference = 2 * Math.PI * (arrowOffset + radius);
-                let fractionOfCircumference = (18 / circumference) * 360;
+                    let circumference = 2 * Math.PI * (arrowOffset + radius);
+                    let fractionOfCircumference = (18 / circumference) * 360;
 
-                let arrowTop = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-                };
-                let arrowLeft = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-                };
-                let arrowRight = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-                };
-                chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+                    let arrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let arrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let arrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
 
-                let oppositeArrowTop = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-                };
-                let oppositeArrowLeft = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-                };
-                let oppositeArrowRight = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-                };
-                chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+                    let oppositeArrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let oppositeArrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let oppositeArrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
 
-            } else {
+                } else {
 
-                let circumference = 2 * Math.PI * (arrowOffset + radius);
-                let fractionOfCircumference = (18 / circumference) * 360;
+                    let circumference = 2 * Math.PI * (arrowOffset + radius);
+                    let fractionOfCircumference = (18 / circumference) * 360;
 
-                let arrowTop = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-                };
-                let arrowLeft = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-                };
-                let arrowRight = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-                    y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-                };
-                chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+                    let arrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let arrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let arrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
 
-                let oppositeArrowTop = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-                };
-                let oppositeArrowLeft = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-                };
-                let oppositeArrowRight = {
-                    x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-                    y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-                };
-                chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+                    let oppositeArrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let oppositeArrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let oppositeArrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
 
+                }
+                // Kelly end of touch arrows -------------------------------------------------------------------------------->
             }
-            // Kelly end of touch arrows -------------------------------------------------------------------------------->
-
         // drawing first dot connection points on chain button clicked
         } else {
 
