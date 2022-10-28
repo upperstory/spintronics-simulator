@@ -2587,8 +2587,8 @@ function onPointerMove(pointer) {
                     }
 
                     if (angleDiff >= 0 && angleDiff < 180) {
-                        console.log("chosen level is: ", chosenLevel);
-                        console.log("sprockets with connections grid: ", sprocketsWithConnectionsGridArray);
+                        // console.log("chosen level is: ", chosenLevel);
+                        // console.log("sprockets with connections grid: ", sprocketsWithConnectionsGridArray);
                         // Kelly added Oct 25
                         partClickedForLevelSelect.cw = true;
                         // Clockwise
@@ -2617,8 +2617,8 @@ function onPointerMove(pointer) {
                     } else {
                         // console.log("MIDCHAIN - POINTER DOWN, in ELSE angle to add or close chain...");
                         // Kelly added oct 25
-                        console.log("chosen level is: ", chosenLevel);
-                        console.log("sprockets with connections grid: ", sprocketsWithConnectionsGridArray);
+                        // console.log("chosen level is: ", chosenLevel);
+                        // console.log("sprockets with connections grid: ", sprocketsWithConnectionsGridArray);
                         partClickedForLevelSelect.cw = false;
                         // Counterclockwise
                         if (!(isFirstSprocket && firstSprocket.cw === true)) {
@@ -2664,7 +2664,7 @@ function onPointerMove(pointer) {
                     if ( getLastSprocketBounds != null ) {
 
                         for (let m = 0; m < dynamicPartsListForTouchDots.length; m++) {
-                            console.log("MIDCHAIN - dynamic parts list: ", dynamicPartsListForTouchDots[m].partType, dynamicPartsListForTouchDots[m].hasChainConnection);
+                            // console.log("MIDCHAIN - dynamic parts list: ", dynamicPartsListForTouchDots[m].partType, dynamicPartsListForTouchDots[m].hasChainConnection);
                             thisavailablelevels = [];   // empty array before finding the part's used sprockets
                             if ( dynamicPartsListForTouchDots[m].hasChainConnection !== 'na' ) {
                                 nextSprocketBounds[m] = partManager.getSprocketBounds(m, chosenLevel);
@@ -2685,7 +2685,7 @@ function onPointerMove(pointer) {
                                     // get available sprockets for this part that is not a junction (all others) by sending in level 0
                                     thisavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(m, 0);
                                 }
-                                console.log("available levels on this part: ", thisavailablelevels);
+                                // console.log("available levels on this part: ", thisavailablelevels);
                                 let getDistance = Math.sqrt(Math.pow(getLastSprocketBounds.x - nextSprocketBounds[m].x, 2) + Math.pow(getLastSprocketBounds.y - nextSprocketBounds[m].y, 2));
                                 let getYdiff = getLastSprocketBounds.y - nextSprocketBounds[m].y;
                                 let getAngle = Phaser.Math.RadToDeg(Math.asin(getYdiff / getDistance));
@@ -2736,12 +2736,12 @@ function onPointerMove(pointer) {
                                 }
 
                                 for (let n = 0; n < thisavailablelevels.length; n++) {
-                                    console.log("Checking if the chosen level matches available level loop.", chosenLevel, thisavailablelevels[n]);
-                                    console.log("ORIGINAL - level is open?", chosenlevelsprocketonnextpartisopen);
+                                    // console.log("Checking if the chosen level matches available level loop.", chosenLevel, thisavailablelevels[n]);
+                                    // console.log("ORIGINAL - level is open?", chosenlevelsprocketonnextpartisopen);
                                     if (thisavailablelevels[n] === chosenLevel) {
                                         chosenlevelsprocketonnextpartisopen = true;
                                     }
-                                    console.log("AFTER CHECK - level is open?", chosenlevelsprocketonnextpartisopen);
+                                    // console.log("AFTER CHECK - level is open?", chosenlevelsprocketonnextpartisopen);
                                     // else {
                                     //     chosenlevelsprocketonnextpartisopen = false;
                                     // }
@@ -2755,7 +2755,6 @@ function onPointerMove(pointer) {
 
                                     } else if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0 && dynamicPartsListForTouchDots[m].hasChainConnection !== 'taken') {
                                         if (isMobile || isTouchMobile) {
-                                            console.log("IN DRAW ELSE IF!");
                                             drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
                                         }
                                         // chosenlevelsprocketonnextpartisopen = false;
@@ -2835,7 +2834,7 @@ function onPointerMove(pointer) {
                                 partClickedForLevelSelect.cw = false;
                                 firstPartChainIsConnectedGoingCW = false;
                             }
-                            console.log("IN ONLY LEVEL FOR CHAIN, part clicked for level select: ", partClickedForLevelSelect);
+                            // console.log("IN ONLY LEVEL FOR CHAIN, part clicked for level select: ", partClickedForLevelSelect);
                             partClickedForLevelSelect.partIndex = thisnearestSprocket.partIndex;
 
                             partManager.startChain();
@@ -2917,16 +2916,14 @@ function onPointerMove(pointer) {
                                     for ( let n = 0; n < thisavailablelevels.length; n++ ) {
 
                                         if (thisavailablelevels[n] === chosenLevel) {
-
                                             chosenlevelsprocketonnextpartisopen = true;
                                         }
-                                        // else {
-                                        //     chosenlevelsprocketonnextpartisopen = false;
                                         // }
-                                    }
-                                    if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0) {
-                                        if ( isMobile || isTouchMobile ) {
-                                            drawTouchDots.bind(self)(toNextSprocketBoundsOfPart[i].x, toNextSprocketBoundsOfPart[i].y, toNextSprocketBoundsOfPart[i].radius, thisnewangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
+                                        if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0) {
+                                            if (isMobile || isTouchMobile) {
+                                                drawTouchDots.bind(self)(toNextSprocketBoundsOfPart[i].x, toNextSprocketBoundsOfPart[i].y, toNextSprocketBoundsOfPart[i].radius, thisnewangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
+                                            }
+                                            // chosenlevelsprocketonnextpartisopen = false;
                                         }
                                         chosenlevelsprocketonnextpartisopen = false;
                                     }
@@ -2944,16 +2941,18 @@ function onPointerMove(pointer) {
 // Callback function for when the sprocket level is chosen from the popup menu list.
     function popupLevelSelected(level) {
         console.log("-------***POPUP***-------");
+
+        // Kelly added Oct 28
+        let numofdotpairs = chainDots.length;
+        clearChainDots(numofdotpairs);
+
         let sprocketBounds = [];
         let firstChainPointx = [];
         let firstChainPointy = [];
         let thisavailablelevels = [];
 
         drawn = 0;
-        console.log("popup before, chosen level is: ", chosenLevel);
         chosenLevel = level;
-        console.log("popup after, chosen level is: ", chosenLevel, level);
-        console.log("sprockets with connections grid: ", sprocketsWithConnectionsGridArray);
 
         disablePointerOverEvent = false;
         popupLevelChooser = null;
@@ -2963,7 +2962,6 @@ function onPointerMove(pointer) {
             partManager.startChain();
             partManager.addChainConnection(partClickedForLevelSelect.partIndex, level, partClickedForLevelSelect.cw);
 
-
             // Kelly testing finding used levels
             for (let m = 0; m < sprocketsWithConnectionsGridArray.length; m++ ) {
                 if ( sprocketsWithConnectionsGridArray[m].usedlevel === chosenLevel ) {
@@ -2971,14 +2969,13 @@ function onPointerMove(pointer) {
                 }
             }
 
-
             // // Kelly added loop to draw new touch dots after choosing level
             let lastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
             for (var i = 0; i < dynamicPartsListForTouchDots.length; i++) {
                 thisavailablelevels = [];
 
                 if ( dynamicPartsListForTouchDots[i].partType !== 'tile' && dynamicPartsListForTouchDots[i].partType !== 'tile-connector' ) {
-                    console.log("dynamic parts list: ", dynamicPartsListForTouchDots[i].hasChainConnection);
+                    // console.log("dynamic parts list: ", dynamicPartsListForTouchDots[i].hasChainConnection);
                     if (i !== partClickedForLevelSelect.partIndex) {
                         sprocketBounds[i] = partManager.getSprocketBounds(i, level);
 
@@ -3043,19 +3040,16 @@ function onPointerMove(pointer) {
                             }
                         }
                         for ( let n = 0; n < thisavailablelevels.length; n++ ) {
-
                             if (thisavailablelevels[n] === chosenLevel) {
-
                                 chosenlevelsprocketonnextpartisopen = true;
                             }
-                            // else {
-                            //     chosenlevelsprocketonnextpartisopen = false;
                             // }
-                        }
 
-                        if ( chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0 ) {
-                            if ( isMobile || isTouchMobile ) {
-                                drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, newangle, partClickedForLevelSelect.cw, true, level, false);
+                            if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0) {
+                                if (isMobile || isTouchMobile) {
+                                    drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, newangle, partClickedForLevelSelect.cw, true, level, false);
+                                }
+                                // chosenlevelsprocketonnextpartisopen = false;
                             }
                             chosenlevelsprocketonnextpartisopen = false;
                         }
