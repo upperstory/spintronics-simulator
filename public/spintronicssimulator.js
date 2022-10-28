@@ -2120,8 +2120,11 @@ function onPointerMove(pointer) {
         }
 
         // Redraw the chain we're currently building.
-        if (partManager.isInTheMiddleOfBuildingAChain() === true) {
-            partManager.redrawChainBeingBuilt(worldPointer);
+        // Kelly testing this for mobile chain drawing when touching random place
+        if ( !isMobile || !isTouchMobile ) {
+            if (partManager.isInTheMiddleOfBuildingAChain() === true) {
+                partManager.redrawChainBeingBuilt(worldPointer);
+            }
         }
     }
 }
@@ -2129,11 +2132,8 @@ function onPointerMove(pointer) {
     // pass in part center x point, part center y point, part sprocket radius, angle to last part or 0, if it is midchain (meaning dots get turned for
     // the angle from last part to new part), islevel (?? being used ??), and isfirstconnection (only draw the one dot instead of two)
     function drawTouchDots(centerX, centerY, radius, angle, cw, ismidchain, islevel, isfirstconnection) {
-        // console.log("DRAWTOUCHDOTS function, passed in cw is: ", cw);
-        // console.log("DRAWTOUCHDOTS function, global first part chain connection is going cw: ", firstPartChainIsConnectedGoingCW);
-        // let isClockwise = null;
+
         if (ismidchain) {
-            // console.log("DRAW TOUCH DOTS FUNCTION - MIDCHAIN");
 
             angle = Phaser.Math.DegToRad(angle);
             // these points are the first new points to show where to attach the chain
@@ -2764,7 +2764,9 @@ function onPointerMove(pointer) {
                             }  // end of check for tile and connector parts
                         } // end of loop to check each available part to draw touch dots
                     } // end of get last sprocket is not null
-                }  // end of if nearest sprocket is not null
+                }  else { // end of if nearest sprocket is not null
+                    console.log("nearest sprocket ELSE: ", nearestSprocket);
+                }
             } else {   // FIRST CHAIN CONNECTION
                 console.log("--------***FIRST CONNECTION***--------");
                 // console.log("on pointer down, adding chain to first or last level part");
@@ -2803,8 +2805,6 @@ function onPointerMove(pointer) {
                                 partClickedForLevelSelect.cw = false;
                                 firstPartChainIsConnectedGoingCW = false;
                             }
-                            // console.log("FIRST CONNECTION - IN DOWN, part clicked on cw: ", partClickedForLevelSelect.cw);
-                            // Kelly added delete drawn dots for each part level
 
                             // Kelly commented out Oct 27 - want to keep green arrows showing as level is picked from popup
                             // let numofdotpairs = chainDots.length;

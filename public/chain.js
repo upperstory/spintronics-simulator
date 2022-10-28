@@ -161,9 +161,9 @@ export class Chain
 
     onPointerDown(pointer, localx, localy, event)
     {
-
-        if (this.pointerDownCallback != null)
+        if (this.pointerDownCallback != null) {
             this.pointerDownCallback.bind(this.parentClass)(this, pointer);
+        }
         //event.stopPropagation();
     }
 
@@ -173,16 +173,18 @@ export class Chain
         //this.backImage.setTintFill(0xFF0000);
         //this.rTexture.snapshotPixel(pointer.x, pointer.y, this.onGotColor.bind(this));
 
-        if (this.pointerMoveCallback != null)
+        if (this.pointerMoveCallback != null) {
             this.pointerMoveCallback.bind(this.parentClass)(this, pointer);
+        }
         //event.stopPropagation();
     }
 
     onPointerOut(pointer, event)
     {
         //this.backImage.clearTint();
-        if (this.pointerOutCallback != null)
+        if (this.pointerOutCallback != null) {
             this.pointerOutCallback.bind(this.parentClass)(this, pointer);
+        }
         //event.stopPropagation();
     }
 
@@ -217,7 +219,7 @@ export class Chain
     //
     redrawChainGraphics (pointer = null)
     {
-        // console.log("in redraw chain graphics...");
+        // console.log("in CHAIN JS - redraw chain graphics...");
         // Erase the previous contents.
         this.chainGraphics.clearRect(0,0,this.backTexture.width, this.backTexture.height);//-this.mapWidth/2, -this.mapHeight/2, this.mapWidth, this.mapHeight);
         this.finalLineGraphics.clear();

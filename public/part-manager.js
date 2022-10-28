@@ -296,6 +296,7 @@ export class PartManager {
 
     startChain()
     {
+        console.log("----------***START CHAIN***----------");
         // console.log("in start chain of part manager...");
         this.chainBeingBuilt = new Chain(this.scene);
         this.chainBeingBuilt.setPointerDownCallback(this.onChainClicked, this);
@@ -352,23 +353,10 @@ export class PartManager {
 
     addChainConnection(partIndex, level, cw)
     {
-        // console.log("Adding chain to part with this index: ", partIndex);
-        this.chainBeingBuilt.addConnection(partIndex, this.parts[partIndex], level, cw);
-        // console.log("this chain being built, after add connection: ", this.chainBeingBuilt.connections);
-        // console.log("this chain being built, after add connection: ", this.chains.connections);
-        // let showTouchDotsOnTheseSprocketsOnly = [];
-        // showTouchDotsOnTheseSprocketsOnly[partIndex].usedlevel = level;
-        // console.log("for part with index: ", partIndex, " show on these sprockets: ", showTouchDotsOnTheseSprocketsOnly[partIndex].usedlevel);
 
-        // console.log("chain connection array in part manager: ", chainConnectionArray);
+        this.chainBeingBuilt.addConnection(partIndex, this.parts[partIndex], level, cw);
         this.chainBeingBuilt.redrawChainGraphics();
-        // Kelly added return
-        // console.log("now all parts minus those with connections: ", showTouchDotsOnThesePartsOnly);
-        // console.log("and all parts on board: ", this.parts);
-        // return showTouchDotsOnThesePartsOnly;
-        // let getAllPartsWithUsedSprocketLevels = this.chainBeingBuilt.connections;
-        // console.log("get all parts with used sprockets: ", getAllPartsWithUsedSprocketLevels);
-        // return getAllPartsWithUsedSprocketLevels;
+
     }
 
 
@@ -376,7 +364,7 @@ export class PartManager {
     getLengthOfChainBeingBuilt()
     {
         if (this.chainBeingBuilt != null) {
-            // console.log("In function getlengthofchainbeingbuilt: ", this.chainBeingBuilt.connections.length);
+
             return this.chainBeingBuilt.connections.length;
         }
         return 0;
@@ -624,6 +612,7 @@ export class PartManager {
     // Redraw all the chains
     redrawChains()
     {
+
         for (let i = 0; i < this.chains.length; i++)
         {
             this.chains[i].redrawChainGraphics();
@@ -633,11 +622,12 @@ export class PartManager {
         {
             chainLength += this.chains[i].chainLength;
         }
-        // console.log(chainLength);
+
     }
 
     redrawChainBeingBuilt(pointer)
     {
+
         if (this.chainBeingBuilt != null) {
             this.chainBeingBuilt.redrawChainGraphics(pointer);
         }
@@ -726,32 +716,18 @@ export class PartManager {
     // This function gives you the sprocket at the correct level if it exists. It also checks to make sure you're not clicking on the same sprocket you're currently on.
     getNextAllowedSprocketAtPoint (x, y)
     {
-        // console.log("dotpart: ", dotpart);
-        let nextSprocket = '';
 
-        // if ( findSprocketCenter ) {
-            nextSprocket = this.getSprocketAtPoint(x, y);
-            // console.log("if find sprocket center is true, next sprocket is: ", nextSprocket);
-        // } else {
-        //     nextSprocket = { partIndex: dotpartindex, level: 0 };
-            // console.log("if find sprocket center is false, next sprocket is: ", nextSprocket);
-        // }
+        let nextSprocket = '';
+        nextSprocket = this.getSprocketAtPoint(x, y);
 
         if (nextSprocket == null) {
             return null;
         }
 
-        // if ( !findSprocketCenter ) {
-            // console.log("in not find sprocket center");
             let currentChainLevel = this.chainBeingBuilt.connections[0].level;
-            // console.log("current chain level: ", currentChainLevel);
             let nextPart = this.parts[nextSprocket.partIndex];
-            // console.log("next part: ", nextPart);
             let lastChainPart = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
-            // console.log("next part: ", nextPart, " and last chain part: ", lastChainPart);
-            // Check to make sure it's not the same part that it's currently on.
             if (nextPart === lastChainPart) {
-                // console.log("next equals last!");
                 return null;
             }
 
@@ -759,9 +735,9 @@ export class PartManager {
             if (currentChainLevel !== nextSprocket.level) {
                 // Well this one's not at the correct level, but is there another sprocket with the same radius that is at the correct level?
                 if (nextPart.sprocketRadius[currentChainLevel] === nextPart.sprocketRadius[nextSprocket.level]) {
-                    // console.log("corrected current level to be same on next part");
+
                     nextSprocket.level = currentChainLevel;
-                    // console.log("after correcting the level: ", nextSprocket);
+
                 } else {
                     return null;
                 }
@@ -769,9 +745,9 @@ export class PartManager {
             }
 
             // Check to make sure there's not already a connection from another chain to this one.
-            // console.log("chains length: ", this.chains.length);
+
             for (let i = 0; i < this.chains.length; i++) {
-                // console.log("In check to see if chain already exists on sprocket");
+
                 let thisChain = this.chains[i];
                 for (let j = 0; j < thisChain.connections.length; j++) {
                     let thisConnection = thisChain.connections[j];
@@ -845,8 +821,9 @@ export class PartManager {
 
     getLastSprocketBoundsOfChainBeingBuilt()
     {
-        if (this.chainBeingBuilt == null)
+        if (this.chainBeingBuilt == null) {
             return null;
+        }
 
         const part = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
         // console.log("in part manager, part: ", part);
