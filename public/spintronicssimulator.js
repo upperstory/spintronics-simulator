@@ -2805,8 +2805,10 @@ function onPointerMove(pointer) {
                             }
                             // console.log("FIRST CONNECTION - IN DOWN, part clicked on cw: ", partClickedForLevelSelect.cw);
                             // Kelly added delete drawn dots for each part level
-                            let numofdotpairs = chainDots.length;
-                            clearChainDots(numofdotpairs);
+
+                            // Kelly commented out Oct 27 - want to keep green arrows showing as level is picked from popup
+                            // let numofdotpairs = chainDots.length;
+                            // clearChainDots(numofdotpairs);
 
                             // Show the popup menu and use callback function to get chosen level
                             popupLevelChooser = new PopupLevelChooser(controlscene, pointer.x, pointer.y, 50, 35, partManager.getGetNumberOfLevelsOnThisPart(nearestSprocket.partIndex), availableLevels, popupLevelSelected);
