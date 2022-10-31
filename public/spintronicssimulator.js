@@ -11,6 +11,12 @@ import GesturesPlugin from "./phaser3-rex-plugins/plugins/gestures-plugin.js";
 
 
 console.log("ON LOAD -- isMobile: ", isMobile, " isTouchMobile: ", isTouchMobile);
+console.log("ON LOAD -- userAgent: ", navigator.userAgent);
+// var w = window.innerWidth;
+// var h = window.innerHeight;
+// var x = document.getElementsByTagName("body");
+// x.innerHTML = "Browser width: " + w + ", height: " + h + ".";
+// console.log(x.innerHTML);
 
 let dpr = window.devicePixelRatio;
 let width = window.innerWidth * dpr;
@@ -1750,7 +1756,6 @@ function onSwitchToggled(name, newToggleState)
             // reset chain connection object
             sprocketsWithConnectionsGridArray = [];
 
-
             clearAllToggleButtons();
             self.chainbutton.setToggleState(true);
             mouseImage.setVisible(false);
@@ -1771,7 +1776,9 @@ function onSwitchToggled(name, newToggleState)
             self.junctionbutton.setToggleState(true);
             mouseImage.setTexture('junction');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1786,7 +1793,9 @@ function onSwitchToggled(name, newToggleState)
             self.motorbutton.setToggleState(true);
             mouseImage.setTexture('motor');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1801,7 +1810,9 @@ function onSwitchToggled(name, newToggleState)
             self.resistorbutton.setToggleState(true);
             mouseImage.setTexture('resistor');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1816,7 +1827,9 @@ function onSwitchToggled(name, newToggleState)
             self.capacitorbutton.setToggleState(true);
             mouseImage.setTexture('capacitor');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1831,7 +1844,9 @@ function onSwitchToggled(name, newToggleState)
             self.inductorbutton.setToggleState(true);
             mouseImage.setTexture('inductor');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1846,7 +1861,9 @@ function onSwitchToggled(name, newToggleState)
             self.phonographbutton.setToggleState(true);
             mouseImage.setTexture('phonograph');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1861,7 +1878,9 @@ function onSwitchToggled(name, newToggleState)
             self.diodebutton.setToggleState(true);
             mouseImage.setTexture('diode');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1876,7 +1895,9 @@ function onSwitchToggled(name, newToggleState)
             self.buttonbutton.setToggleState(true);
             mouseImage.setTexture('button');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1891,7 +1912,9 @@ function onSwitchToggled(name, newToggleState)
             self.transistorbutton.setToggleState(true);
             mouseImage.setTexture('transistor');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1906,7 +1929,9 @@ function onSwitchToggled(name, newToggleState)
             self.levelchangerbutton.setToggleState(true);
             mouseImage.setTexture('level-changer');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -1921,7 +1946,9 @@ function onSwitchToggled(name, newToggleState)
             self.tilebutton.setToggleState(true);
             mouseImage.setTexture('tile');
             mouseImageOffset = PartBase.getPartImageOffsets(name);
-            if (!isMobile || !isTouchMobile) {
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
                 mouseImage.setVisible(true);
             }
         }
@@ -2120,7 +2147,7 @@ function onPointerMove(pointer) {
         }
 
         // Redraw the chain we're currently building.
-        // Kelly testing this for mobile chain drawing when touching random place
+        // Kelly testing this for mobile chain drawing when touching random place Oct 28
         if ( !isMobile || !isTouchMobile ) {
             if (partManager.isInTheMiddleOfBuildingAChain() === true) {
                 partManager.redrawChainBeingBuilt(worldPointer);
