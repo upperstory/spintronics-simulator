@@ -2397,7 +2397,7 @@ function onPointerMove(pointer) {
 
         if (cw) {
             // console.log("centerx: ", centerX, " centerY: ", centerY, " ", angle, " ", Phaser.Math.DegToRad((-angle - 90) - arrowAngleExtents));
-            var r1 = this.add.circle(centerX, centerY, 30, 0x6666ff);
+            // var r1 = this.add.circle(centerX, centerY, 30, 0x6666ff);
             this.highlightGraphics.beginPath();
             this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle-180), Phaser.Math.DegToRad(-angle), false);
             this.highlightGraphics.strokePath();

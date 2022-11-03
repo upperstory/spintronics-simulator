@@ -326,14 +326,20 @@ export class PartManager {
     createChainJoints(chain)
     {
         // Add gear joints that connect the sprockets
+        // console.log("------------------------------");
+        // console.log("Chain: ", chain.connections);
         let lastConnection = chain.connections[0];
-        // console.log("in part manager create chain joints function, this is last connection: ", lastConnection);
-
+        // console.log("Last connection (chain[0]: ", lastConnection);
+        // console.log("chain connections length: ", chain.connections.length);
         for (let i = 1; i < chain.connections.length; i++)
         {
+            // console.log("index of chain connection: ", i);
             let thisConnection = chain.connections[i];
             let level = lastConnection.level;
-
+            // console.log("thisconnection (chain.connections[i]): ", thisConnection);
+            // console.log("level (lastconnection.level): ", level);
+            // console.log("thisconnection.part.sprphyrad[level]: ", thisConnection.part);
+            // console.log("lastconnection.part.sprphsrad[level]:", lastConnection.part);
             let gearRatio = -thisConnection.part.sprocketPhysicsRadius[level]/lastConnection.part.sprocketPhysicsRadius[level];
             if (lastConnection.cw !== thisConnection.cw) {
                 gearRatio = -gearRatio;
@@ -536,8 +542,13 @@ export class PartManager {
         for (let i = 0; i < connections.length; i++)
         {
             let thisConnection = connections[i];
-            newChain.addConnection(this.parts[thisConnection.partIndex], thisConnection.level, thisConnection.cw);
+            // console.log("In Part Manager, addchain function. thisconnection.level: ", thisConnection);
+            // Kelly testing adding part type to array object connection
+            newChain.addConnection(thisConnection.partIndex, this.parts[thisConnection.partIndex], thisConnection.level, thisConnection.cw);
+            // newChain.addConnection(this.parts[thisConnection.partIndex], thisConnection.level, thisConnection.cw);
+            // console.log("new chain: ", newChain);
         }
+
         newChain.isComplete = true;
         // Create the gear joints for the chain
         this.createChainJoints(newChain);
