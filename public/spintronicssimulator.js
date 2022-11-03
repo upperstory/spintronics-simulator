@@ -2080,8 +2080,9 @@ function onPointerMove(pointer) {
                     // Draw a highlight circle where the sprocket is
                     var sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, nearestSprocket.level);
 
-                    //Kelly added don't draw any arrows if on mobile or touchscreen (no hover)
-                    if (!isMobile || !isTouchMobile) {
+                    //Kelly added don't draw any highlight arrows if on mobile or touchscreen (no hover)
+                    if ( !(isMobile || isTouchMobile) ) {
+                    // if (!isMobile || !isTouchMobile) {
                         if (worldPointer.x < sprocketBounds.x) {
                             // console.log("in is not mobile or is not touch.");
                             drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, 90, true);
@@ -2133,14 +2134,17 @@ function onPointerMove(pointer) {
 
                 if (angleDiff >= 0 && angleDiff < 180) {
                     // The clockwise arrow
-
                     if (!(isFirstSprocket && firstSprocket.cw === false)) {
-                        drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, true);
+                        if ( !(isMobile || isTouchMobile) ) {
+                            drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, true);
+                        }
                     }
                 } else {
                     // The counterclockwise arrow
                     if (!(isFirstSprocket && firstSprocket.cw === true)) {
-                        drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, false);
+                        if ( !(isMobile || isTouchMobile) ) {
+                            drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, false);
+                        }
                     }
                 }
             }
@@ -2148,7 +2152,7 @@ function onPointerMove(pointer) {
 
         // Redraw the chain we're currently building.
         // Kelly testing this for mobile chain drawing when touching random place Oct 28
-        if ( !isMobile || !isTouchMobile ) {
+        if ( !(isMobile || isTouchMobile) ) {
             if (partManager.isInTheMiddleOfBuildingAChain() === true) {
                 partManager.redrawChainBeingBuilt(worldPointer);
             }
@@ -2519,6 +2523,14 @@ function onPointerMove(pointer) {
 // ---------------------------------------- ON POINTER DOWN ---------------------------------------------------- //
     function onPointerDown(pointer, currentlyOver) {
         let worldPointer = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+
+        // console.log("isMobile: ", isMobile);
+        // console.log("isTouchMobile: ", isTouchMobile);
+        // console.log("isMobile || isTouchMobile: ", isMobile || isTouchMobile);
+        // console.log("isMobile && isTouchMobile: ", isMobile && isTouchMobile);
+        // console.log("!isMobile || !isTouchMobile: ", !isMobile || !isTouchMobile);
+        // console.log("!isMobile && !isTouchMobile: ", !isMobile && !isTouchMobile);
+        // console.log("!(isMobile || isTouchMobile): ", !(isMobile || isTouchMobile));
 
         // Drop a part if we've got a part selected
         if (this.junctionbutton.getToggleState()) {
