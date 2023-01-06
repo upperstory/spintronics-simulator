@@ -2,7 +2,6 @@ import { ToggleButton } from './toggle-button.js';
 import { PartBase } from './parts/partbase.js';
 import { PartManager } from './part-manager.js';
 import { PopupLevelChooser } from './popup-level-chooser.js';
-import { PopupConfirmDeleteAll } from "./popup-confirm-delete-all.js";
 import { version } from "./constants.js";
 import { tileSpacing } from "./constants.js";
 import { isMobile } from "./constants.js";
@@ -27,7 +26,8 @@ let mapWidth = 4000;
 let mapHeight = 4000;
 let buttonWidth = 45;
 let buttonHeight = 45;
-
+// Kelly testing file upload click element
+let input;
 // let buttonWidth = 70;
 // let buttonHeight = 70;
 // let window_ratio = ( (window.innerHeight/12) * 2 );
@@ -1482,28 +1482,30 @@ function loadJSONCircuit(jsonCircuit)
 
 function onLoadClicked(name, newToggleState)
 {
-    var input = document.createElement('input');
+    // console.log("in onloadclicked function: ", name);
+    // var input = document.createElement('input');
+    // created global input variable to keep element on DOM to read onchange
+    input = document.createElement('input');
     input.type = 'file';
     input.accept = '.spin';
-
+    input.style.visibility = 'hidden';
+    input.click();
     input.onchange = e => {
-
+        console.log("in input.onchange");
         // getting a hold of the file reference
         var file = e.target.files[0];
-
+        console.log("file variable: ", file);
         // Read the file
         var reader = new FileReader();
         reader.addEventListener("loadend", function() {
 
             let result = JSON.parse(reader.result);
-
+            console.log("result variable: ", result);
             loadJSONCircuit(result);
         });
 
         reader.readAsText(file,'UTF-8');
     }
-
-    input.click();
 }
 
 function onPointerWheel(pointer, currentlyOver, deltaX, deltaY, deltaZ, event)
