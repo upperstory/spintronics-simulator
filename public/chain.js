@@ -3,7 +3,7 @@ import { PartBase } from './parts/partbase.js';
 const multiplier = 2.842;
 export class Chain
 {
-    connections = []; // In the format {part, level, cw/ccw}
+    connections = []; // In the format {partIndex, part, level, cw/ccw}
     joints = []; // The first connection doesn't have any joints, but every connection after that has a joint between it and the previous connection.
     chainGraphics = null;
     scene = null; // The scene to draw the chain onto.
@@ -161,9 +161,9 @@ export class Chain
 
     onPointerDown(pointer, localx, localy, event)
     {
-
-        if (this.pointerDownCallback != null)
+        if (this.pointerDownCallback != null) {
             this.pointerDownCallback.bind(this.parentClass)(this, pointer);
+        }
         //event.stopPropagation();
     }
 
@@ -173,28 +173,33 @@ export class Chain
         //this.backImage.setTintFill(0xFF0000);
         //this.rTexture.snapshotPixel(pointer.x, pointer.y, this.onGotColor.bind(this));
 
-        if (this.pointerMoveCallback != null)
+        if (this.pointerMoveCallback != null) {
             this.pointerMoveCallback.bind(this.parentClass)(this, pointer);
+        }
         //event.stopPropagation();
     }
 
     onPointerOut(pointer, event)
     {
         //this.backImage.clearTint();
-        if (this.pointerOutCallback != null)
+        if (this.pointerOutCallback != null) {
             this.pointerOutCallback.bind(this.parentClass)(this, pointer);
+        }
         //event.stopPropagation();
     }
 
-    addConnection (part, level, cw)
+    addConnection (indexofpart, part, level, cw)
     {
-        this.connections.push({part: part, level: level, cw: cw});
+        this.connections.push({pindex: indexofpart, part: part, level: level, cw: cw});
+        // console.log("In chain.js, addConnection function, this connections array: ", this.connections);
         this.backImage.setDepth((level + 1) * 2);
+        // return this.connections;
         // Check if the chain is a complete loop now. If so, set isComplete to true and redraw.
     }
 
     closeChain ()
     {
+        // console.log("In chain.js, closeChain function, this: ", this);
         this.isComplete = true;
         this.redrawChainGraphics(null);
     }
@@ -214,6 +219,7 @@ export class Chain
     //
     redrawChainGraphics (pointer = null)
     {
+        // console.log("in CHAIN JS - redraw chain graphics...");
         // Erase the previous contents.
         this.chainGraphics.clearRect(0,0,this.backTexture.width, this.backTexture.height);//-this.mapWidth/2, -this.mapHeight/2, this.mapWidth, this.mapHeight);
         this.finalLineGraphics.clear();
@@ -261,19 +267,19 @@ export class Chain
         this.backImage.setPosition((canvasMaxX+canvasMinX)/2, (canvasMaxY+canvasMinY)/2);
 
         // Step 4: Draw the chain on the canvas.
-        if (this.connections[0].level == 0) {
+        if (this.connections[0].level === 0) {
             this.chainGraphics.strokeStyle = this.LEVEL_ONE_COLOR;
             this.finalLineGraphics.lineStyle(10, this.LEVEL_ONE_COLOR_GO);
-        } else if (this.connections[0].level == 1) {
+        } else if (this.connections[0].level === 1) {
             this.chainGraphics.strokeStyle = this.LEVEL_TWO_COLOR;
             this.finalLineGraphics.lineStyle(10, this.LEVEL_TWO_COLOR_GO);
-        } else if (this.connections[0].level == 2) {
+        } else if (this.connections[0].level === 2) {
             this.chainGraphics.strokeStyle = this.LEVEL_THREE_COLOR;
             this.finalLineGraphics.lineStyle(10, this.LEVEL_THREE_COLOR_GO);
-        } else if (this.connections[0].level == 3) {
+        } else if (this.connections[0].level === 3) {
             this.chainGraphics.strokeStyle = this.LEVEL_FOUR_COLOR;
             this.finalLineGraphics.lineStyle(10, this.LEVEL_FOUR_COLOR_GO);
-        } else if (this.connections[0].level == 4) {
+        } else if (this.connections[0].level === 4) {
             this.chainGraphics.strokeStyle = this.LEVEL_FIVE_COLOR;
             this.finalLineGraphics.lineStyle(10, this.LEVEL_FIVE_COLOR_GO);
         }
@@ -356,7 +362,7 @@ export class Chain
                     thisTangentAngle = (Math.PI - alpha) + beta;
                 }
             }
-            else if (lastConnection.cw == false && thisConnection.cw == false)
+            else if (lastConnection.cw === false && thisConnection.cw === false)
             {
                 let alpha = Math.asin(-yDiff / distBetweenCenters);
                 let beta = Math.acos((lastSprocketRadius - thisSprocketRadius) / distBetweenCenters);
@@ -378,7 +384,7 @@ export class Chain
                     thisTangentAngle = Math.PI - (alpha + beta);
                 }
             }
-            else if (lastConnection.cw == true && thisConnection.cw == false)
+            else if (lastConnection.cw === true && thisConnection.cw === false)
             {
                 let alpha = Math.asin(-yDiff / distBetweenCenters);
                 let beta = Math.acos((lastSprocketRadius + thisSprocketRadius) / distBetweenCenters);
@@ -405,7 +411,7 @@ export class Chain
                     //console.log('thisTangentAngle: '+Phaser.Math.RadToDeg(thisTangentAngle));
                 }
             }
-            else if (lastConnection.cw == false && thisConnection.cw == true)
+            else if (lastConnection.cw === false && thisConnection.cw === true)
             {
                 let alpha = Math.asin(-yDiff / distBetweenCenters);
                 let beta = Math.acos((lastSprocketRadius + thisSprocketRadius) / distBetweenCenters);
@@ -456,7 +462,7 @@ export class Chain
             }
 
             // Save the very first angle so we can connect to it when we close up the loop at the end.
-            if (i == 1)
+            if (i === 1)
                 firstTangentAngle = lastTangentAngle;
 
             lastLastTangentAngle = thisTangentAngle;

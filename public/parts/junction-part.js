@@ -32,14 +32,14 @@ export class JunctionPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'junction';
-
+        this.hasChainConnection = 'open';
         // Create the images for this part
         this.partImage = scene.add.image(this.x, this.y,'junction-bottom');
         this.partImage.setScale(0.5);
         this.partImage.setDepth(2);
         //this.add(this.partImage);
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
         // Set the size of the container to the size of the biggest piece (this base sprocket)
         //this.setSize(this.partWidth, this.partHeight);
         //this.partCenterX = this.partWidth / 2;
@@ -251,13 +251,13 @@ export class JunctionPart extends PartBase
     {
         this.x = x;
         this.y = y;
-        if (this.partImage != undefined)
+        if (this.partImage !== undefined)
             this.partImage.setPosition(x, y);
-        if (this.middleSprocketImage != undefined)
+        if (this.middleSprocketImage !== undefined)
             this.middleSprocketImage.setPosition(x, y);
-        if (this.topSprocketImage != undefined)
+        if (this.topSprocketImage !== undefined)
             this.topSprocketImage.setPosition(x, y);
-        if (this.capImage != undefined)
+        if (this.capImage !== undefined)
             this.capImage.setPosition(x, y);
     }
 

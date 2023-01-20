@@ -1,5 +1,5 @@
 import { PartBase } from './partbase.js';
-import {worldScale} from '../constants.js';
+import { worldScale } from '../constants.js';
 import { ToggleButton } from '../toggle-button.js';
 
 const motorWheelRadius = 0.025771 / 2;
@@ -14,7 +14,7 @@ export class MotorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'motor';
-
+        this.hasChainConnection = 'open';
         this.isShorted = false;
         this.buttonWidth = 300;
         this.buttonHeight = 50;
@@ -327,25 +327,25 @@ export class MotorPart extends PartBase
     {
         this.x = x;
         this.y = y;
-        if (this.partImage != undefined)
+        if (this.partImage !== undefined)
             this.partImage.setPosition(x + this.partImageOffset.x, y + this.partImageOffset.y);
-        if (this.motorBaseUnderImage != undefined)
+        if (this.motorBaseUnderImage !== undefined)
             this.motorBaseUnderImage.setPosition(x + this.motorBaseUnderImageOffset.x, y + this.motorBaseUnderImageOffset.y);
-        if (this.motorBaseTileImage != undefined)
+        if (this.motorBaseTileImage !== undefined)
             this.motorBaseTileImage.setPosition(x + this.motorBaseTileImageOffset.x, y + this.motorBaseTileImageOffset.y);
-        if (this.motorPawlClosedImage != undefined)
+        if (this.motorPawlClosedImage !== undefined)
             this.motorPawlClosedImage.setPosition(x + this.motorPawlClosedImageOffset.x, y + this.motorPawlClosedImageOffset.y);
-        if (this.motorPawlOpenImage != undefined)
+        if (this.motorPawlOpenImage !== undefined)
             this.motorPawlOpenImage.setPosition(x + this.motorPawlOpenImageOffset.x, y + this.motorPawlOpenImageOffset.y);
-        if (this.motorScrewImage != undefined)
+        if (this.motorScrewImage !== undefined)
             this.motorScrewImage.setPosition(x + this.partImageOffset.x, y + this.partImageOffset.y);
-        if (this.motorDriveGearImage != undefined)
+        if (this.motorDriveGearImage !== undefined)
             this.motorDriveGearImage.setPosition(x + this.motorDriveGearImageOffset.x, y + this.motorDriveGearImageOffset.y);
-        if (this.motorIntermediateGearImage != undefined)
+        if (this.motorIntermediateGearImage !== undefined)
             this.motorIntermediateGearImage.setPosition(x + this.motorIntermediateGearImageOffset.x, y + this.motorIntermediateGearImageOffset.y);
-        if (this.motorSpannerImage != undefined)
+        if (this.motorSpannerImage !== undefined)
             this.motorSpannerImage.setPosition(x + this.motorSpannerImageOffset.x, y + this.motorSpannerImageOffset.y);
-        if (this.resetButton != undefined)
+        if (this.resetButton !== undefined)
             this.resetButton.setPosition(x, y + this.resetButtonYOffset);
     }
 
@@ -371,7 +371,8 @@ export class MotorPart extends PartBase
 
     onSwitchToggled (name, newToggleState) {
 
-        if (this.resetButton != undefined) {
+        if (this.resetButton !== undefined) {
+            console.log("in reset button in motor-parts js...");
             this.resetButton.setVisible(false);
             this.isShorted = false;
             this.motorPawlClosedImage.setVisible(false);

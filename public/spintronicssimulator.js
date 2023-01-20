@@ -2,17 +2,59 @@ import { ToggleButton } from './toggle-button.js';
 import { PartBase } from './parts/partbase.js';
 import { PartManager } from './part-manager.js';
 import { PopupLevelChooser } from './popup-level-chooser.js';
-import {tileSpacing} from './constants.js';
+import { version } from "./constants.js";
+import { tileSpacing } from "./constants.js";
+import { isMobile } from "./constants.js";
+import { isTouchMobile } from "./constants.js";
+import GesturesPlugin from "./phaser3-rex-plugins/plugins/gestures-plugin.js";
 
-let mapWidth = 10000;
-let mapHeight = 10000;
 
-let buttonWidth = 70;
-let buttonHeight = 70;
+console.log("ON LOAD -- isMobile: ", isMobile, " isTouchMobile: ", isTouchMobile);
+console.log("ON LOAD -- userAgent: ", navigator.userAgent);
+// var w = window.innerWidth;
+// var h = window.innerHeight;
+// var x = document.getElementsByTagName("body");
+// x.innerHTML = "Browser width: " + w + ", height: " + h + ".";
+// console.log(x.innerHTML);
 
-const dpr = window.devicePixelRatio;
-const width = window.innerWidth * dpr;
-const height = window.innerHeight * dpr;
+let dpr = window.devicePixelRatio;
+let width = window.innerWidth * dpr;
+let height = window.innerHeight * dpr;
+// console.log("ON LOAD -- innerWidth: ", innerWidth, ", innerHeight: ", innerHeight, ", dpr: ", dpr);
+
+let mapWidth = 4000;
+let mapHeight = 4000;
+let buttonWidth = 45;
+let buttonHeight = 45;
+// Kelly testing file upload click element
+let input;
+// let buttonWidth = 70;
+// let buttonHeight = 70;
+// let window_ratio = ( (window.innerHeight/12) * 2 );
+// console.log("window ratio: ", window_ratio);
+// let buttonHeight = ((window.innerHeight - window_ratio ) / 12);
+// let buttonWidth = ((window.innerHeight - window_ratio ) / 12);
+let buttonContainerHeight = (window.innerHeight-20) / 12;
+let buttonContainerWidth = (window.innerHeight-20) / 12;
+// console.log("ON LOAD -- button container height is: ", buttonContainerHeight);
+
+if ( window.innerHeight > 768 ) {
+    // mapWidth = 1500;
+    // mapHeight = 1500;
+    buttonWidth = buttonContainerHeight * .85;
+    buttonHeight = buttonContainerHeight * .85;
+    // console.log("ON LOAD - if inner height more than 800, button height: ", buttonHeight);
+} else if ( window.innerHeight > 600 && window.innerHeight <= 768 ) {
+    // buttonWidth = buttonContainerHeight * .8;
+    // buttonHeight = buttonContainerHeight * .8;
+    buttonWidth = 50;
+    buttonHeight = 50;
+    // console.log("ON LOAD - if inner height is between 600 and 800, button height: ", buttonHeight);
+} else if ( window.innerHeight <= 600 ) {
+    buttonWidth = 45;
+    buttonHeight = 45;
+    // console.log("ON LOAD - if inner height is less than 600, button height: ", buttonHeight);
+}
 
 let config = {
     type: Phaser.AUTO,
@@ -43,6 +85,15 @@ let config = {
         preload: preload,
         create: create,
         update: update
+    },
+    plugins: {
+        scene: [
+            {
+                plugin: GesturesPlugin,
+                key: 'rexGestures',
+                mapping: 'rexGestures'
+            }
+        ]
     }
 };
 
@@ -84,17 +135,27 @@ let self;
 let mouseImage;
 let mouseImageOffset = {x: 0, y: 0};
 const gridSpacing = 15;
-
+let drawn = 0;
 let partClickedForLevelSelect = {partIndex: -1, cw: false};
+let firstPartChainIsConnectedGoingCW = '';
 
 let partManager = null;
-
-let highlightGraphics = null;
+let chainDots = [];
+let chainArrows = [];
+let allPartsOnBoard = [];
+let chosenLevel = -1;
+let getLastSprocketBounds = '';
+let getThisSprocketBounds = '';
+let chosenlevelsprocketonnextpartisopen = false;
 
 // We have to have this variable because of an apparent bug in Phaser that sends POINTER_OVER events to the scene first when objects are in a container in the scene.
 let disablePointerOverEvent = false;
 let popupLevelChooser = null;
+// let popupConfirmDeleteAll = null;
 let controlscene = null;
+let dynamicPartsListForTouchDots = null;
+let addThisPartAndLeveltoConnectionsGrid = {};
+let sprocketsWithConnectionsGridArray = [];
 
 function preload ()
 {
@@ -127,17 +188,6 @@ function preload ()
         }
     });
     this.loadingText.setOrigin(0.5, 0.5);
-
-    /*this.percentText = this.make.text({
-        x: width / 2,
-        y: height / 2 + 30,
-        text: '0%',
-        style: {
-            font: '18px Roboto',
-            fill: '#3a3a3c'
-        }
-    });
-    this.percentText.setOrigin(0.5, 0.5);*/
 
     this.assetText = this.make.text({
         x: width / 2,
@@ -195,6 +245,7 @@ function preload ()
     this.load.image('chain-icon', 'Images/chain-icon.png');
     this.load.image('tile-icon', 'Images/tile-icon.png');
 
+    this.load.image('help-icon', 'Images/help-icon.png');
     this.load.image('interact-icon', 'Images/hand-icon.png');
     this.load.image('move-icon', 'Images/move-icon.png');
     this.load.image('delete-icon', 'Images/remove-icon.png');
@@ -276,6 +327,9 @@ function preload ()
     this.load.image('3', 'Images/3.png');
     this.load.image('4', 'Images/4.png');
     this.load.image('5', 'Images/5.png');
+
+    this.load.image('yes-btn', 'Images/yes-btn.png');
+    this.load.image('popup-question-btn', 'Images/popup-question-btn.png');
 }
 
 function preloaderResize (gameSize, baseSize, displaySize, resolution)
@@ -301,15 +355,17 @@ function preloaderResize (gameSize, baseSize, displaySize, resolution)
 
 function create ()
 {
+
     // Now check the url to see if there are parameters.
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
 
+    // console.log("CREATE FUNCTION -- buttonContainerHeight: ", buttonContainerHeight, " buttonHeight: ", buttonHeight);
     // Determine if this is a view-only editor.
     this.viewOnly = false;
     if (urlParams.has('viewOnly')) {
         const viewOnly = urlParams.get('viewOnly');
-        if (viewOnly == 'true')
+        if (viewOnly === 'true')
             this.viewOnly = true;
     }
 
@@ -328,6 +384,23 @@ function create ()
     this.dragZone = this.add.zone(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight);
     this.dragZone.setPosition(0,0);
     this.cameras.main.setBounds(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight, true);
+
+    // Kelly Test Pinch to Zoom for mobile //
+    if ( isMobile || isTouchMobile ) {
+        let currentZoom = self.cameras.main.zoom;
+        let newZoom = currentZoom / 2;
+
+        // Check to see if the image is too small to fill the screen.
+        let screenWidth = self.cameras.main.width;
+        let screenHeight = self.cameras.main.height;
+
+        if (mapWidth * newZoom < screenWidth || mapHeight * newZoom < screenHeight) {
+            newZoom = currentZoom;
+        }
+        self.cameras.main.setZoom(newZoom);
+    }
+    // End Kelly Test
+
     // First is the background grid
     drawBackgroundGrid.bind(this)();
 
@@ -337,6 +410,25 @@ function create ()
     mouseImage.setVisible(false);
     // Always on top
     mouseImage.setDepth(100);
+
+    // Create the debug text box. Used especially for debugging on mobile.
+    this.debugText = controlscene.add.text(10, 10, "Debug output", {
+        font: '20px Roboto',
+        fontSize: '50px',
+        color: "rgb(20,20,20)",
+        fontStyle: 'strong'
+    });
+    // Make visible or invisible to see debugging output.
+    this.debugText.setVisible(false);
+
+    this.titleText = controlscene.add.text(10, 10, "Spintronics Simulator v" + version, {
+        font: '16px Roboto',
+        fontSize: '50px',
+        color: "rgb(20,20,20)",
+        fontStyle: 'strong',
+        align: 'right'
+    });
+    this.titleText.setVisible(false);
 
     // Create the button textures
     let graphics = controlscene.add.graphics();
@@ -366,73 +458,88 @@ function create ()
     graphics.destroy();
 
     // Create the buttons
-    let buttonX = (buttonWidth /2) + 6;
-    let topMargin = 6;
-    this.chainbutton = new ToggleButton(controlscene, 'chain', buttonX, topMargin + 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'chain-icon', onSwitchToggled, 'button-disabled-background');
+
+    let buttonX = (buttonContainerWidth/2) + 6;
+    let buttonYoffset = (buttonContainerHeight/2) + 6;
+    // let topMargin = 6;
+    this.chainbutton = new ToggleButton(controlscene, 'chain', buttonX, buttonYoffset, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'chain-icon', onSwitchToggled, 'button-disabled-background');
     this.chainbutton.setButtonType('toggle');
     this.chainbutton.setTooltipString('Add chain loop', 'right');
-    this.junctionbutton = new ToggleButton(controlscene, 'junction', buttonX, topMargin + 35+75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'junction-icon', onSwitchToggled, 'button-disabled-background');
+    this.junctionbutton = new ToggleButton(controlscene, 'junction', buttonX, buttonYoffset+buttonContainerHeight, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'junction-icon', onSwitchToggled, 'button-disabled-background');
     this.junctionbutton.setButtonType('toggle');
     this.junctionbutton.setTooltipString('Junction', 'right');
-    this.motorbutton = new ToggleButton(controlscene, 'motor', buttonX, topMargin + 35+2*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'motor-icon', onSwitchToggled, 'button-disabled-background');
+    this.motorbutton = new ToggleButton(controlscene, 'motor', buttonX, buttonYoffset+buttonContainerHeight*2, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'motor-icon', onSwitchToggled, 'button-disabled-background');
     this.motorbutton.setButtonType('toggle');
     this.motorbutton.setTooltipString('Battery', 'right');
-    this.resistorbutton = new ToggleButton(controlscene, 'resistor', buttonX, topMargin + 35+3*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'resistor-icon', onSwitchToggled, 'button-disabled-background');
+    this.resistorbutton = new ToggleButton(controlscene, 'resistor', buttonX, buttonYoffset+buttonContainerHeight*3, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'resistor-icon', onSwitchToggled, 'button-disabled-background');
     this.resistorbutton.setButtonType('toggle');
     this.resistorbutton.setTooltipString('Resistor', 'right');
-    this.capacitorbutton = new ToggleButton(controlscene, 'capacitor', buttonX, topMargin + 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'capacitor-icon', onSwitchToggled, 'button-disabled-background');
+    this.capacitorbutton = new ToggleButton(controlscene, 'capacitor', buttonX, buttonYoffset+buttonContainerHeight*4, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'capacitor-icon', onSwitchToggled, 'button-disabled-background');
     this.capacitorbutton.setButtonType('toggle');
     this.capacitorbutton.setTooltipString('Capacitor', 'right');
-    this.inductorbutton = new ToggleButton(controlscene, 'inductor', buttonX, topMargin + 35+5*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'inductor-icon', onSwitchToggled, 'button-disabled-background');
+    this.inductorbutton = new ToggleButton(controlscene, 'inductor', buttonX, buttonYoffset+buttonContainerHeight*5, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'inductor-icon', onSwitchToggled, 'button-disabled-background');
     this.inductorbutton.setButtonType('toggle');
     this.inductorbutton.setTooltipString('Inductor', 'right');
-    this.phonographbutton = new ToggleButton(controlscene, 'phonograph', buttonX, topMargin + 35+6*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'phonograph-icon', onSwitchToggled, 'button-disabled-background');
+    this.phonographbutton = new ToggleButton(controlscene, 'phonograph', buttonX, buttonYoffset+buttonContainerHeight*6, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'phonograph-icon', onSwitchToggled, 'button-disabled-background');
     this.phonographbutton.setButtonType('toggle');
     this.phonographbutton.setTooltipString('Ammeter', 'right');
-    this.diodebutton = new ToggleButton(controlscene, 'diode', buttonX, topMargin + 35+7*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'diode-icon', onSwitchToggled, 'button-disabled-background');
+    this.diodebutton = new ToggleButton(controlscene, 'diode', buttonX, buttonYoffset+buttonContainerHeight*7, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'diode-icon', onSwitchToggled, 'button-disabled-background');
     this.diodebutton.setButtonType('toggle');
     this.diodebutton.setTooltipString('Diode', 'right');
-    this.buttonbutton = new ToggleButton(controlscene, 'button', buttonX, topMargin + 35+8*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'button-icon', onSwitchToggled, 'button-disabled-background');
+    this.buttonbutton = new ToggleButton(controlscene, 'button', buttonX, buttonYoffset+buttonContainerHeight*8, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'button-icon', onSwitchToggled, 'button-disabled-background');
     this.buttonbutton.setButtonType('toggle');
     this.buttonbutton.setTooltipString('Switch', 'right');
-    this.transistorbutton = new ToggleButton(controlscene, 'transistor', buttonX, topMargin + 35+9*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'transistor-icon', onSwitchToggled, 'button-disabled-background');
+    this.transistorbutton = new ToggleButton(controlscene, 'transistor', buttonX, buttonYoffset+buttonContainerHeight*9, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'transistor-icon', onSwitchToggled, 'button-disabled-background');
     this.transistorbutton.setButtonType('toggle');
     this.transistorbutton.setTooltipString('Transistor', 'right');
-    this.levelchangerbutton = new ToggleButton(controlscene, 'level-changer', buttonX, topMargin + 35+10*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'level-changer-icon', onSwitchToggled, 'button-disabled-background');
+    this.levelchangerbutton = new ToggleButton(controlscene, 'level-changer', buttonX, buttonYoffset+buttonContainerHeight*10, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'level-changer-icon', onSwitchToggled, 'button-disabled-background');
     this.levelchangerbutton.setButtonType('toggle');
     this.levelchangerbutton.setTooltipString('Level changer', 'right');
-    this.tilebutton = new ToggleButton(controlscene, 'tile', buttonX, topMargin + 35+11*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'tile-icon', onSwitchToggled, 'button-disabled-background');
+    this.tilebutton = new ToggleButton(controlscene, 'tile', buttonX, buttonYoffset+buttonContainerHeight*11, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'tile-icon', onSwitchToggled, 'button-disabled-background');
     this.tilebutton.setButtonType('toggle');
     this.tilebutton.setTooltipString('Tile', 'right');
 
-
     // Right side toolbar
     let spaceWidth = this.cameras.main.width;
-    let rightSideToolbarPositionX = spaceWidth - 10 - buttonWidth / 2;
+    let rightSideToolbarPositionX = spaceWidth - 13 - buttonWidth / 2;
+
+    this.helpbutton = new ToggleButton(controlscene, 'inform', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'help-icon', onHelpBtnClicked, 'button-disabled-background');
+    this.helpbutton.setTooltipString('Help', 'left');
+
     this.interactbutton = new ToggleButton(controlscene, 'interact', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'interact-icon', onSwitchToggled, 'button-disabled-background');
     this.interactbutton.setButtonType('toggle');
     this.interactbutton.setTooltipString('Interact', 'left');
+
     this.movebutton = new ToggleButton(controlscene, 'move', rightSideToolbarPositionX, 35+75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'move-icon', onSwitchToggled, 'button-disabled-background');
     this.movebutton.setButtonType('toggle');
     this.movebutton.setTooltipString('Reposition part', 'left');
+
     this.deletebutton = new ToggleButton(controlscene, 'delete', rightSideToolbarPositionX, 35+2*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'delete-icon', onSwitchToggled, 'button-disabled-background');
     this.deletebutton.setButtonType('toggle');
     this.deletebutton.setTooltipString('Remove part', 'left');
+
     this.editbutton = new ToggleButton(controlscene, 'edit', rightSideToolbarPositionX, 35+3*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'edit-icon', onSwitchToggled, 'button-disabled-background');
     this.editbutton.setButtonType('toggle');
     this.editbutton.setTooltipString('Change part properties', 'left');
+
     this.removeallbutton = new ToggleButton(controlscene, 'remove-all', rightSideToolbarPositionX, 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'remove-all-icon', onRemoveAllClicked, 'button-disabled-background');
     this.removeallbutton.setTooltipString('Remove all', 'left');
+
     this.zoominbutton = new ToggleButton(controlscene, 'zoom-in', rightSideToolbarPositionX, 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-in-icon', onZoomInClicked, 'button-disabled-background');
     this.zoominbutton.setTooltipString('Zoom in', 'left');
+
     this.zoomoutbutton = new ToggleButton(controlscene, 'zoom-out', rightSideToolbarPositionX, 35+5*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-out-icon', onZoomOutClicked, 'button-disabled-background');
     this.zoomoutbutton.setTooltipString('Zoom out', 'left');
+
     this.linkbutton = new ToggleButton(controlscene, 'link', rightSideToolbarPositionX, 35+6*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'link-icon', onGenerateLinkClicked, 'button-disabled-background');
     this.linkbutton.setTooltipString('Copy circuit to clipboard', 'left');
+
     this.savebutton = new ToggleButton(controlscene, 'save', rightSideToolbarPositionX, 35+7*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'save-icon', onSaveClicked, 'button-disabled-background');
     this.savebutton.setTooltipString('Save circuit', 'left');
+
     this.loadbutton = new ToggleButton(controlscene, 'load', rightSideToolbarPositionX, 35+8*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'load-icon', onLoadClicked, 'button-disabled-background');
     this.loadbutton.setTooltipString('Load circuit', 'left');
+
     this.fullscreenbutton = new ToggleButton(controlscene, 'full-editor', rightSideToolbarPositionX, 35+9*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'full-screen-icon', onFullEditorClicked, 'button-disabled-background');
     this.fullscreenbutton.setTooltipString('Open in full simulator', 'left');
 
@@ -451,6 +558,7 @@ function create ()
         this.levelchangerbutton.setVisible(false);
         this.tilebutton.setVisible(false);
 
+        this.helpbutton.setVisible(false);
         this.interactbutton.setVisible(false);
         this.movebutton.setVisible(false);
         this.deletebutton.setVisible(false);
@@ -472,6 +580,7 @@ function create ()
 
     this.input.on('pointermove', (pointer) => onPointerMove.bind(this)(pointer));
     this.input.on('pointerdown', (pointer, currentlyOver) => onPointerDown.bind(this)(pointer, currentlyOver));
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => onMouseWheel.bind(this)(pointer, gameObjects, deltaX, deltaY, deltaZ));
 
     this.dragZone.setInteractive({
        draggable: true
@@ -485,7 +594,124 @@ function create ()
     this.input.keyboard.on('keydown-ESC', (event) => escapeKeyDown.bind(this)(event))
 
     this.useZoomExtents = false;
+    // console.log("In CREATE function, on resize pass in resize: ", resize);
     this.scale.on('resize', resize, this);
+
+    // Kelly Test Pinch on Touch Screen //
+    this.dragScale = this.rexGestures.add.pinch();
+    let lastPinchCenterPoint = {x: 0, y: 0};
+
+    this.dragScale
+        .on('drag1', function (pinch) {
+            //if (this.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+                // Get the starting point for the drag.
+                let camera = this.cameras.main;
+                let startingDragCenter = camera.midPoint;
+                let desiredCenterPosition = {x: 0, y: 0};
+                desiredCenterPosition.x = startingDragCenter.x - (pinch.drag1Vector.x / this.cameras.main.zoom);
+                desiredCenterPosition.y = startingDragCenter.y - (pinch.drag1Vector.y / this.cameras.main.zoom);
+
+                camera.centerOn(desiredCenterPosition.x, desiredCenterPosition.y);
+
+                // Stop resizing window to the zoom extents.
+                this.useZoomExtents = false;
+                //DEBUG:
+                /*this.debugText.setText("Camera scroll x: " + camera.scrollX.toString() +
+                    "\nCamera scroll y: " + camera.scrollY.toString());
+                */
+            //}
+
+
+            // console.log("in dragscale on drag1.");
+            // var drag1Vector = dragScale.drag1Vector;
+            // camera.scrollX -= drag1Vector.x / camera.zoom;
+            // camera.scrollY -= drag1Vector.y / camera.zoom;
+         }, this)
+        .on('pinchstart', function(pinch) {
+            lastPinchCenterPoint = {
+                x: (pinch.pointers[0].x + pinch.pointers[1].x) / 2,
+                y: (pinch.pointers[0].y + pinch.pointers[1].y) / 2
+            };
+        }, this)
+        .on('pinchend', function(pinch) {
+
+        }, this)
+        .on('pinch', function (pinch) {
+            // console.log("In dragscale on pinch. Current parts: ", current_parts.parts);
+            let camera = this.cameras.main;
+
+            let zoomFactor = pinch.scaleFactor;
+            // Find the center between the two pinch points - this is the point we want to zoom in and out of.
+            // In screen units, not world units.
+            let pinchCenterPoint = {
+                x: (pinch.pointers[0].x + pinch.pointers[1].x) / 2,
+                y: (pinch.pointers[0].y + pinch.pointers[1].y) / 2
+            };
+            let pinchCenterWorldPoint = camera.getWorldPoint(pinchCenterPoint.x, pinchCenterPoint.y);
+
+            //this.backgroundGrid.fillStyle(0xFF0000, 0.35);
+            //this.backgroundGrid.fillEllipse(pinchCenterWorldPoint.x, pinchCenterWorldPoint.y, 2, 2);
+
+            let worldCenterPoint = camera.midPoint;
+
+            //this.backgroundGrid.fillStyle(0x00FF00, 0.35);
+            //this.backgroundGrid.fillEllipse(worldCenterPoint.x, worldCenterPoint.y, 2, 2);
+
+            let distanceFromCenter = {
+                x: pinchCenterWorldPoint.x - worldCenterPoint.x,
+                y: pinchCenterWorldPoint.y - worldCenterPoint.y
+            };
+
+            let newDistanceFromCenter = {
+                x: distanceFromCenter.x * zoomFactor,
+                y: distanceFromCenter.y * zoomFactor
+            };
+
+            let currentZoom = camera.zoom;
+            let newZoom = camera.zoom * zoomFactor;
+
+            // Check to see if the image is too small to fill the screen.
+            let screenWidth = camera.width;
+            let screenHeight = camera.height;
+
+            if (mapWidth * newZoom < screenWidth || mapHeight * newZoom < screenHeight) {
+                newZoom = currentZoom;
+            }
+
+            // Limit zooming in too far
+            if (newZoom > 10)
+                newZoom = 10;
+
+            camera.setZoom(newZoom);
+            camera.centerOn(worldCenterPoint.x + (newDistanceFromCenter.x - distanceFromCenter.x) + (lastPinchCenterPoint.x - pinchCenterPoint.x), worldCenterPoint.y + (newDistanceFromCenter.y - distanceFromCenter.y) + (lastPinchCenterPoint.y - pinchCenterPoint.y));
+
+            lastPinchCenterPoint.x = pinchCenterPoint.x;
+            lastPinchCenterPoint.y = pinchCenterPoint.y;
+
+            //DEBUG:
+            /*this.debugText.setText("dragScale: " + dragScale.scaleFactor.toString() +
+                "\nCamera zoom: " + camera.zoom.toString() +
+                "\nWorld center point x: " + worldCenterPoint.x.toString() +
+                "\nWorld center point y: " + worldCenterPoint.y.toString() +
+                "\nWorld pinch point x: " + pinchCenterWorldPoint.x.toString() +
+                "\nWorld pinch point y: " + pinchCenterWorldPoint.y.toString() +
+                "\nPinch point x: " + pinchCenterPoint.x.toString() +
+                "\nPinch point y: " + pinchCenterPoint.y.toString() +
+                "\nShift x: " + (newDistanceFromCenter.x - distanceFromCenter.x).toString() +
+                "\nShift y: " + (newDistanceFromCenter.y - distanceFromCenter.y).toString() +
+                "\nCamera center x: " + camera.centerX.toString() +
+                "\nCamera center y: " + camera.centerY.toString() +
+                "\nCamera scroll x: " + camera.scrollX.toString() +
+                "\nCamera scroll y: " + camera.scrollY.toString());
+            */
+
+            // Stop resizing window to the zoom extents.
+            self.useZoomExtents = false;
+        }, this)
+
+
+
+
     //let worldCenter = this.cameras.main.getWorldPoint(this.cameras.main.centerX, this.cameras.main.centerY);
     //let topleft = this.cameras.main.getWorldPoint(0,0);
     //let bottomright = this.cameras.main.getWorldPoint(this.cameras.main.width,this.cameras.main.height);
@@ -510,6 +736,7 @@ function create ()
     // 16 = Part content above level 5 sprockets
 
     partManager = new PartManager(this, gridSpacing, mapWidth, mapHeight, this.world);
+    // console.log("on load partManager.parts: ", partManager.parts);
 
     // Set the Interact button to ON so you can mess with the parts.
     onSwitchToggled('interact', true);
@@ -519,7 +746,6 @@ function create ()
         this.linkID = urlParams.get('linkID');
         loadCircuitFromDatabase(this.linkID);
     }
-
 }
 
 function onFullEditorClicked (name, newToggleState)
@@ -529,6 +755,8 @@ function onFullEditorClicked (name, newToggleState)
 
     if (self.linkID != null && self.linkID > 0)
         window.open("https://simulator.spintronics.com?linkID=" + self.linkID, '_blank');
+    else
+        window.open("https://simulator.spintronics.com", '_blank');
 }
 
 function fallbackCopyTextToClipboard(text) {
@@ -587,38 +815,47 @@ function update ()
 */
 }
 
-var mapDragging = true;
-var startingDragCenter = {x: 0, y: 0};
-var startingPointer = {x: 0, y: 0};
+//var startingDragCenter = {x: 0, y: 0};
+//var startingPointer = {x: 0, y: 0};
+
+// Used to detect when dragging the entire workspace
 function onDragStart(pointer, dragX, dragY)
 {
-    if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+    // The rexGestures pinch gesture doesn't take into account objects
+    // above it that take priority for dragging. This enables pinch
+    // and drag when a regular drag is started.
+    self.dragScale.setEnable(true);
+    // console.log("In onDragStart function, passed in pointer: ", pointer);
+    /*if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+        // Get the starting point for the drag.
         startingDragCenter = self.cameras.main.getWorldPoint(self.cameras.main.centerX, self.cameras.main.centerY);
         startingPointer.x = pointer.x;
         startingPointer.y = pointer.y;
-        mapDragging = true;
 
         // Stop resizing window to the zoom extents.
         self.useZoomExtents = false;
-    }
+    }*/
+
 }
 
 function onDrag(pointer, dragX, dragY)
 {
-    if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
+    // console.log("In onDrag function, passed in pointer: ", pointer);
+    /*if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         let desiredCenterPosition = {x: 0, y: 0};
         desiredCenterPosition.x = startingDragCenter.x - (pointer.x - startingPointer.x) / self.cameras.main.zoom;
         desiredCenterPosition.y = startingDragCenter.y - (pointer.y - startingPointer.y) / self.cameras.main.zoom;
         self.cameras.main.centerOn(desiredCenterPosition.x, desiredCenterPosition.y);
-    }
+    }*/
 }
 
 function onDragEnd(pointer, dragX, dragY)
 {
-    if (self.interactbutton.getToggleState() || partManager.toolMode == 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
-        mapDragging = false;
+    // console.log("In onDragEnd function, passed in pointer: ", pointer);
+    if (self.interactbutton.getToggleState() || partManager.toolMode === 'move' || self.chainbutton.getToggleState() || self.deletebutton.getToggleState() || self.editbutton.getToggleState()) {
         self.input.setDefaultCursor('default');
     }
+    self.dragScale.setEnable(false);
 }
 
 async function loadCircuitFromDatabase (linkID)
@@ -631,16 +868,16 @@ async function loadCircuitFromDatabase (linkID)
             break;
     }
 
-    if (code != null && code != '') {
+    if (code != null && code !== '') {
         let result = await fetchCircuit(code, linkID);
-        if (result == "Circuit is loading.") {
+        if (result === "Circuit is loading.") {
             for (let tries = 1; tries <= 3; tries++) {
                 result = await getCircuit(code, linkID);
-                if (result['status'] == 'success')
+                if (result['status'] === 'success')
                     break;
             }
 
-            if (result['status'] == 'success')
+            if (result['status'] === 'success')
             {
                 // We've got our circuit, now load it.
                 //console.log(JSON.parse(result['circuitJSON']));
@@ -736,7 +973,7 @@ async function onGenerateLinkClicked (name, newToggleState)
     // First, make a JSON of it.
     let jsonData = createCircuitJSON();
 
-    if (partManager.parts.length == 0)
+    if (partManager.parts.length === 0)
     {
         // There are no parts in this circuit!
         let graybackground = controlscene.add.dom().createElement('div', 'background-color: rgba(0, 0, 0, 0.2); position: absolute; left: ' + controlscene.cameras.main.width / 2 + 'px; top: ' + controlscene.cameras.main.height / 2 + 'px; width: ' + controlscene.cameras.main.width + 'px; height: ' + controlscene.cameras.main.height + 'px', '');
@@ -755,7 +992,7 @@ async function onGenerateLinkClicked (name, newToggleState)
 
         element.addListener('click');
         element.on('click', (event) => {
-            if (event.target.name == 'doneButton') {
+            if (event.target.name === 'doneButton') {
                 element.destroy();
                 graybackground.destroy();
             }
@@ -791,18 +1028,18 @@ async function onGenerateLinkClicked (name, newToggleState)
                 break;
         }
 
-        if (code != null && code != '') {
+        if (code != null && code !== '') {
             let result = await submitCircuit(code, jsonData);
             console.log(result);
-            if (result == "Circuit accepted.") {
+            if (result === "Circuit accepted.") {
 
                 for (let tries = 1; tries < 5; tries++) {
                     result = await getLink(code);
-                    if (result['status'] == 'success')
+                    if (result['status'] === 'success')
                         break;
                 }
 
-                if (result['status'] == 'success') {
+                if (result['status'] === 'success') {
                     // We got our link.
                     // Show text box with button to copy to clipboard. Text shows value of: "https://simulator.spintronics.comlinkID=" + result['link'];
                     let linkText = "https://simulator.spintronics.com?linkID=" + result['link'];
@@ -830,11 +1067,11 @@ async function onGenerateLinkClicked (name, newToggleState)
                     //let doneButton = document.getElementsByName('doneButton');
                     element.addListener('click');
                     element.on('click', (event) => {
-                        if (event.target.name == 'doneButton') {
+                        if (event.target.name === 'doneButton') {
                             element.destroy();
                             graybackground.destroy();
                         }
-                        if (event.target.name == 'copyButton') {
+                        if (event.target.name === 'copyButton') {
                             copyTextToClipboard(linkInput.value);
                         }
                         event.stopPropagation();
@@ -876,7 +1113,7 @@ async function onGenerateLinkClicked (name, newToggleState)
 
                 element.addListener('click');
                 element.on('click', (event) => {
-                    if (event.target.name == 'doneButton') {
+                    if (event.target.name === 'doneButton') {
                         element.destroy();
                         graybackground.destroy();
                     }
@@ -1245,28 +1482,30 @@ function loadJSONCircuit(jsonCircuit)
 
 function onLoadClicked(name, newToggleState)
 {
-    var input = document.createElement('input');
+    // console.log("in onloadclicked function: ", name);
+    // var input = document.createElement('input');
+    // created global input variable to keep element on DOM to read onchange
+    input = document.createElement('input');
     input.type = 'file';
     input.accept = '.spin';
-
+    input.style.visibility = 'hidden';
+    input.click();
     input.onchange = e => {
-
+        console.log("in input.onchange");
         // getting a hold of the file reference
         var file = e.target.files[0];
-
+        console.log("file variable: ", file);
         // Read the file
         var reader = new FileReader();
         reader.addEventListener("loadend", function() {
 
             let result = JSON.parse(reader.result);
-
+            console.log("result variable: ", result);
             loadJSONCircuit(result);
         });
 
         reader.readAsText(file,'UTF-8');
     }
-
-    input.click();
 }
 
 function onPointerWheel(pointer, currentlyOver, deltaX, deltaY, deltaZ, event)
@@ -1329,33 +1568,58 @@ function zoomOut()
     self.cameras.main.centerOn(newCenterX, newCenterY);*/
 }
 
-function onRemoveAllClicked(name, newToggleState)
-{
-    // Remove all the chains.
-    partManager.deleteAllChains();
+// Kelly added button and function for an info/instructions screen overlay
+function onHelpBtnClicked(name, newToggleState) {
 
-    // Remove all the parts.
-    partManager.deleteAllParts();
+    window.open("https://www.upperstory.com/spintronics/simulator", '_blank');
+    /*let graybackground = controlscene.add.dom().createElement('div', 'background-color: rgba(0, 0, 0, 0.2); position: absolute; left: ' + controlscene.cameras.main.width / 2 + 'px; top: ' + controlscene.cameras.main.height / 2 + 'px; width: ' + controlscene.cameras.main.width + 'px; height: ' + controlscene.cameras.main.height + 'px', '');
+    let form = `
+            <div style="font-family: 'Roboto', Arial, sans-serif; font-size: 14px; position: absolute; transform: translate(-50%, -50%); box-sizing: border-box; background-color: rgba(255, 255, 255, 1); border-color: black; border-width: 1px; border-style: solid; border-radius: 10px; width: 80vw; padding: 20px; margin: 20px;" >
+                <h3 style="margin: 0 auto 10px auto; font-family: 'Roboto', Arial, sans-serif;">Simulator Info and Tips</h3>
+                <div style="width: 100%; text-align: left;">
+                    <p> Instructions on how to play will go in this box. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam nibh magna, faucibus non velit ac, varius gravida felis. Maecenas neque metus, condimentum at mi in, vehicula interdum nulla. Duis pellentesque at tortor lobortis mattis. Aliquam sollicitudin lorem quis turpis ultricies, id placerat ex faucibus. Maecenas porta arcu nisl, et sollicitudin quam auctor id. Cras eget vestibulum eros. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>
+                    <p>Duis vitae nisl posuere, egestas sapien ac, pulvinar sapien. Integer ullamcorper accumsan dui, nec malesuada nulla molestie sit amet. Suspendisse sed urna non sem lacinia lobortis vel eu odio. Integer maximus consequat leo et scelerisque. Morbi vel est et mi gravida sodales. Pellentesque feugiat libero id dui luctus, et rutrum elit porta. </p>
+                    <p>Nulla ante dolor, pretium id ultricies non, efficitur venenatis tortor. Nam mattis sed quam non ultricies. Sed fringilla elit faucibus, fermentum nisi vitae, porttitor sapien. Fusce aliquam maximus felis in vulputate. Fusce molestie elementum purus eu lobortis. Phasellus elementum ultricies enim at volutpat. Vivamus imperdiet quam neque, at efficitur odio imperdiet id.</p>
+                </div>
+            
+                <div style="width: 100%; text-align: center;">
+                    <div id="okcloseinfo" style="box-sizing: border-box; display: inline-block; font-family: 'Roboto', Arial, sans-serif; font-size: 16px; border: 1px solid darkgray; border-radius: 5px; cursor: pointer; padding: 5px 10px;">Ok</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    let element = controlscene.add.dom().createFromHTML(form);
+    element.setPosition(controlscene.cameras.main.width / 2, controlscene.cameras.main.height / 2);
+    element.addListener('click');
+    element.on('click', (event) => {
+        if (event.target.id === 'okcloseinfo') {
+            element.destroy();
+            graybackground.destroy();
+        }
+        event.stopPropagation();
+    });
+
+    // Stop anything underneath the background from getting clicks.
+    graybackground.addListener('click');
+    graybackground.on('click', (event) => {
+        element.destroy();
+        graybackground.destroy();
+        event.stopPropagation();
+    });
+    graybackground.setInteractive();
+    graybackground.on('pointerdown', (pointer, localx, localy, event) => {
+        event.stopPropagation();
+    });
+    graybackground.on('pointerup', (pointer, localx, localy, event) => {
+        event.stopPropagation();
+    });
+    graybackground.on('pointerover', (pointer, localx, localy, event) => {
+        event.stopPropagation();
+    });*/
 }
 
-function onZoomInClicked(name, newToggleState)
-{
-    zoomIn();
-    // Stop resizing to the zoom extents.
-    self.useZoomExtents = false;
-}
-
-function onZoomOutClicked(name, newToggleState)
-{
-    zoomOut();
-    // Stop resizing to the zoom extents.
-    self.useZoomExtents = false;
-}
-
-
-var objects = {};
-function onSwitchToggled (name, newToggleState)
-{
+function onRemoveAllClicked(name, newToggleState) {
+    // toggle off other tools that may be on
     self.chainbutton.setToggleState(false);
     self.junctionbutton.setToggleState(false);
     self.motorbutton.setToggleState(false);
@@ -1372,161 +1636,468 @@ function onSwitchToggled (name, newToggleState)
     self.movebutton.setToggleState(false);
     self.deletebutton.setToggleState(false);
     self.editbutton.setToggleState(false);
+
+    //    Kelly new popup with HTML overlay to confirm remove all
+    let graybackground = controlscene.add.dom().createElement('div', 'background-color: rgba(0, 0, 0, 0.2); position: absolute; left: ' + controlscene.cameras.main.width / 2 + 'px; top: ' + controlscene.cameras.main.height / 2 + 'px; width: ' + controlscene.cameras.main.width + 'px; height: ' + controlscene.cameras.main.height + 'px', '');
+
+    let form = `
+            <div style="font-family: 'Roboto', Arial, sans-serif; font-size: 16px; position: absolute; transform: translate(-50%, -50%); box-sizing: border-box; background-color: rgba(255, 255, 255, 1); border-color: black; border-width: 1px; border-style: solid; border-radius: 10px; width: 300px; padding-top: 10px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px;" >
+            <p style="margin-top: 0; margin-bottom: 10px; font-family: 'Roboto', Arial, sans-serif;">Are you sure you want to remove all parts?</p>
+            <div style="width: 100%; text-align: right;">
+                <div id="exitRemoveAll" style="box-sizing: border-box; display: inline-block; font-family: 'Roboto', Arial, sans-serif; font-size: 16px; margin-right: 20px; border: 1px solid darkgray; border-radius: 5px; cursor: pointer; padding: 5px 10px;">Cancel</div>
+                <div id="yesRemoveAll" style="box-sizing: border-box; display: inline-block; font-family: 'Roboto', Arial, sans-serif; font-size: 16px; border: 1px solid darkgray; border-radius: 5px; cursor: pointer; padding: 5px 10px;">Yes</div>
+            </div>
+       </div>
+       `;
+
+    let element = controlscene.add.dom().createFromHTML(form);
+    element.setPosition(controlscene.cameras.main.width / 2, controlscene.cameras.main.height / 2);
+    element.addListener('click');
+    element.on('click', (event) => {
+        if (event.target.id === 'exitRemoveAll') {
+            element.destroy();
+            graybackground.destroy();
+        }
+        if (event.target.id === 'yesRemoveAll') {
+            element.destroy();
+            graybackground.destroy();
+            // Remove all the chains.
+            partManager.deleteAllChains();
+            // Remove all the parts and tiles.
+            partManager.deleteAllParts();
+            // clearHighlight.bind(self)();
+            clearChainDots(chainDots.length);
+        }
+        event.stopPropagation();
+    });
+
+    // Stop anything underneath the background from getting clicks.
+    graybackground.addListener('click');
+    graybackground.on('click', (event) => {
+        element.destroy();
+        graybackground.destroy();
+    });
+    graybackground.setInteractive();
+    graybackground.on('pointerdown', (pointer, localx, localy, event) => {
+        event.stopPropagation();
+    });
+    graybackground.on('pointerup', (pointer, localx, localy, event) => {
+        event.stopPropagation();
+    });
+    graybackground.on('pointerover', (pointer, localx, localy, event) => {
+        event.stopPropagation();
+    });
+}
+
+function onZoomInClicked(name, newToggleState)
+{
+    zoomIn();
+    // Stop resizing to the zoom extents.
+    self.useZoomExtents = false;
+}
+
+function onZoomOutClicked(name, newToggleState)
+{
+    zoomOut();
+    // Stop resizing to the zoom extents.
+    self.useZoomExtents = false;
+}
+
+function setToInteractMode() {
+    clearAllToggleButtons();
+    mouseImage.setVisible(false);
+    self.interactbutton.setToggleState(true);
+    partManager.setToolMode.bind(partManager)('interact');
+}
+
+function clearAllToggleButtons() {
+    self.chainbutton.setToggleState(false);
+    self.junctionbutton.setToggleState(false);
+    self.motorbutton.setToggleState(false);
+    self.resistorbutton.setToggleState(false);
+    self.capacitorbutton.setToggleState(false);
+    self.inductorbutton.setToggleState(false);
+    self.phonographbutton.setToggleState(false);
+    self.diodebutton.setToggleState(false);
+    self.buttonbutton.setToggleState(false);
+    self.transistorbutton.setToggleState(false);
+    self.levelchangerbutton.setToggleState(false);
+    self.tilebutton.setToggleState(false);
+    self.interactbutton.setToggleState(false);
+    self.movebutton.setToggleState(false);
+    self.deletebutton.setToggleState(false);
+    self.editbutton.setToggleState(false);
+}
+
+// Intended behavior: The interact button is the default button. It is selected when nothing else is.
+// After dropping a part, always switch back to interact button.
+// Start with the interact button toggled.
+function onSwitchToggled(name, newToggleState)
+{
+    clearChainDots(chainDots.length);
+
+    // console.log("in on switch toggled function: ", name);
+    // console.log("IN ON TOGGLE, is mobile?", isMobile, " or is touch device? ", isTouchMobile);
+
     partManager.setToolMode('default');
     partManager.cancelChain();
 
-    if (name == 'chain')
+    // console.log("In onSwitchToggled function, passed in name: ", name);
+    if (name === 'chain')
     {
-        self.chainbutton.setToggleState(true);
-        mouseImage.setVisible(false);
+        if (!self.chainbutton.getToggleState()) {
+            dynamicPartsListForTouchDots = [...partManager.parts];
+            // reset parts list
+            for ( let k = 0; k < dynamicPartsListForTouchDots.length; k++ ) {
+                if ( dynamicPartsListForTouchDots[k].hasChainConnection === 'first' || dynamicPartsListForTouchDots[k].hasChainConnection === 'taken' )
+                {
+                    dynamicPartsListForTouchDots[k].hasChainConnection = 'open';
+                }
+                // console.log("CHAIN TOGGLE BUTTON - part has connection: ", dynamicPartsListForTouchDots[k].partType, " ", dynamicPartsListForTouchDots[k].hasChainConnection);
+            }
+            // reset chain connection object
+            sprocketsWithConnectionsGridArray = [];
+
+            clearAllToggleButtons();
+            self.chainbutton.setToggleState(true);
+            mouseImage.setVisible(false);
+
+            // if mobile device or touch screen then call function to draw chain connection areas
+            if ( isMobile || isTouchMobile ) {
+                showPossibleChainConnections();   // call function to draw touch dots on chain button clicked
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'junction')
+    else if (name === 'junction')
     {
-        self.junctionbutton.setToggleState(true);
-        mouseImage.setTexture('junction');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.junctionbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.junctionbutton.setToggleState(true);
+            mouseImage.setTexture('junction');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'motor')
+    else if (name === 'motor')
     {
-        self.motorbutton.setToggleState(true);
-        mouseImage.setTexture('motor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.motorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.motorbutton.setToggleState(true);
+            mouseImage.setTexture('motor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'resistor')
+    else if (name === 'resistor')
     {
-        self.resistorbutton.setToggleState(true);
-        mouseImage.setTexture('resistor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.resistorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.resistorbutton.setToggleState(true);
+            mouseImage.setTexture('resistor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'capacitor')
+    else if (name === 'capacitor')
     {
-        self.capacitorbutton.setToggleState(true);
-        mouseImage.setTexture('capacitor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.capacitorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.capacitorbutton.setToggleState(true);
+            mouseImage.setTexture('capacitor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'inductor')
+    else if (name === 'inductor')
     {
-        self.inductorbutton.setToggleState(true);
-        mouseImage.setTexture('inductor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.inductorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.inductorbutton.setToggleState(true);
+            mouseImage.setTexture('inductor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'phonograph')
+    else if (name === 'phonograph')
     {
-        self.phonographbutton.setToggleState(true);
-        mouseImage.setTexture('phonograph');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.phonographbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.phonographbutton.setToggleState(true);
+            mouseImage.setTexture('phonograph');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'diode')
+    else if (name === 'diode')
     {
-        self.diodebutton.setToggleState(true);
-        mouseImage.setTexture('diode');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.diodebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.diodebutton.setToggleState(true);
+            mouseImage.setTexture('diode');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'button')
+    else if (name === 'button')
     {
-        self.buttonbutton.setToggleState(true);
-        mouseImage.setTexture('button');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.buttonbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.buttonbutton.setToggleState(true);
+            mouseImage.setTexture('button');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'transistor')
+    else if (name === 'transistor')
     {
-        self.transistorbutton.setToggleState(true);
-        mouseImage.setTexture('transistor');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.transistorbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.transistorbutton.setToggleState(true);
+            mouseImage.setTexture('transistor');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'level-changer')
+    else if (name === 'level-changer')
     {
-        self.levelchangerbutton.setToggleState(true);
-        mouseImage.setTexture('level-changer');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.levelchangerbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.levelchangerbutton.setToggleState(true);
+            mouseImage.setTexture('level-changer');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'tile')
+    else if (name === 'tile')
     {
-        self.tilebutton.setToggleState(true);
-        mouseImage.setTexture('tile');
-        mouseImageOffset = PartBase.getPartImageOffsets(name);
-        mouseImage.setVisible(true);
+        if (!self.tilebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.tilebutton.setToggleState(true);
+            mouseImage.setTexture('tile');
+            mouseImageOffset = PartBase.getPartImageOffsets(name);
+            if (isMobile || isTouchMobile) {
+                mouseImage.setVisible(false);
+            } else {
+                mouseImage.setVisible(true);
+            }
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'interact') {
-        self.interactbutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('interact');
+    else if (name === 'interact') {
+        // Can't deselect this one by clicking on it twice.
+        setToInteractMode();
     }
-    else if (name == 'move')
+    else if (name === 'move')
     {
-        self.movebutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('move');
+        if (!self.movebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.movebutton.setToggleState(true);
+            mouseImage.setVisible(false);
+            partManager.setToolMode.bind(partManager)('move');
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'delete')
+    else if (name === 'delete')
     {
-        self.deletebutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('delete');
+        if (!self.deletebutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.deletebutton.setToggleState(true);
+            mouseImage.setVisible(false);
+            partManager.setToolMode.bind(partManager)('delete');
+        }
+        else {
+            setToInteractMode();
+        }
     }
-    else if (name == 'edit')
+    else if (name === 'edit')
     {
-        self.editbutton.setToggleState(true);
-        mouseImage.setVisible(false);
-        partManager.setToolMode.bind(partManager)('edit');
+        if (!self.editbutton.getToggleState()) {
+            clearAllToggleButtons();
+            self.editbutton.setToggleState(true);
+            mouseImage.setVisible(false);
+            partManager.setToolMode.bind(partManager)('edit');
+        }
+        else {
+            setToInteractMode();
+        }
     }
 }
 
-function onPointerMove(pointer)
-{
+//Kelly added this function - called when clicking on chain tool button (mobile or touch screen only)
+function showPossibleChainConnections() {
+    // find all parts placed in the simulator circuit
+
+    // now loop through the sprockets on this part - if different, then draw another dot
+    let thisRadius = '';
+    let sprocketBounds = [];
+    let checkavailablelevels = [];
+
+    // allPartsOnBoard = partManager.parts;
+
+    for (let i = 0; i < dynamicPartsListForTouchDots.length; i++) {
+        checkavailablelevels = [];   // empty array before finding the part's used sprockets
+        let thispartname = dynamicPartsListForTouchDots[i].partType;  // need to find any junctions, which are checked differently
+        // checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+        if (thispartname === 'junction') {
+            // found a part that is a junction
+            for (let j=0; j < 3; j++ ) {  // loop through the 3 levels of sprockets
+                // for each junction sprocket level, find out if it is available
+                let junctionavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, j);
+                // console.log("junction level index: ", j, " junction available levels: ", junctionavailablelevels[0]);
+                // now if the sprocket level is used, check for type of undefined. If not undefined...
+                if ( typeof junctionavailablelevels[0] !== 'undefined' ) {
+                    // console.log("type of is NOT undefined match.");
+                    // we know there is only one array element per junction sprocket - if it has a value, push to checkavailable levels array
+                    checkavailablelevels.push(junctionavailablelevels[0]);
+                    // console.log("junction loop, check available levels array: ", checkavailablelevels);
+                }
+            }
+            if (checkavailablelevels.length > 0 ) {
+                // loop through the checkavailablelevels array which only stores unused sprockets on the junction
+                // then for each available sprocket on each part, draw the mobile touch dots for connecting chain
+                for (let n=0; n < checkavailablelevels.length; n++ ) {
+                    sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[n]);
+                    drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
+                }
+            }
+        } else {
+            // found a part that is not a junction
+            // get available sprockets for this part that is not a junction (all others) by sending in level 0
+            checkavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+            if (checkavailablelevels.length > 0 ) {
+                sprocketBounds[i] = partManager.getSprocketBounds(i, checkavailablelevels[0]);
+                // console.log("In SHOWPOSSIBLE function, sprocket bounds: ", sprocketBounds[i].cw);
+                drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, 0, sprocketBounds[i].cw, false, null, false);
+            }
+        }
+    } // end of each part on board loop
+} // end of show possible chain connections function
+
+// ---------------------------------------- ON POINTER MOVE ---------------------------------------------------- //
+function onPointerMove(pointer) {
+
     if (disablePointerOverEvent)
         return;
 
     let worldPointer = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
 
     var snapPosition;
-    if (this.motorbutton.getToggleState() || this.tilebutton.getToggleState())
-    {
+    if (this.motorbutton.getToggleState() || this.tilebutton.getToggleState()) {
         snapPosition = PartBase.getSnapPosition(worldPointer, tileSpacing/* * this.cameras.main.zoom*/);
     } else {
         snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing/* * this.cameras.main.zoom*/);
     }
     mouseImage.setPosition(snapPosition.snapPoint.x - mouseImageOffset.x, snapPosition.snapPoint.y - mouseImageOffset.y);
+
     clearHighlight.bind(this)();
 
     // Chain mode
-    if (this.chainbutton.getToggleState())
-    {
-        if (partManager.isInTheMiddleOfBuildingAChain() == false)
-        {
-            // We haven't drawn any of the chain, yet. So when the mouse is over a part, draw arrows to choose which way the chain should go.
+    if (this.chainbutton.getToggleState()) {            // on POINTER MOVE
+        if (partManager.isInTheMiddleOfBuildingAChain() === false) {
+            // We haven't drawn any of the chain, yet. So when the mouse is over a part, draw highlighted arrows to choose which way the chain should go.
             // Search for a part that has a sprocket circle on which the cursor is over.
-
             var nearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
-            if (nearestSprocket != null) {
+            if (nearestSprocket != null) {    // only null if cursor not over a sprocket edge
                 // Check to see if there are any levels without a chain on the sprocket.
-                let availableLevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nearestSprocket.partIndex, nearestSprocket.level)
-
-                if (availableLevels.length > 0) {//partManager.isSprocketAvailable(nearestSprocket.partIndex, nearestSprocket.level)) {
+                let availableLevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nearestSprocket.partIndex, nearestSprocket.level);
+                // console.log("available levels: ", availableLevels);
+                if (availableLevels.length > 0) { //partManager.isSprocketAvailable(nearestSprocket.partIndex, nearestSprocket.level)) {
                     // Draw a highlight circle where the sprocket is
                     var sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, nearestSprocket.level);
-                    if (worldPointer.x < sprocketBounds.x) {
-                        drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, 90, true);
-                    } else {
-                        drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, 90, false);
+
+                    //Kelly added don't draw any highlight arrows if on mobile or touchscreen (no hover)
+                    if ( !(isMobile || isTouchMobile) ) {
+                    // if (!isMobile || !isTouchMobile) {
+                        if (worldPointer.x < sprocketBounds.x) {
+                            // console.log("in is not mobile or is not touch.");
+                            drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, 90, true);
+                        } else {
+                            drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, 90, false);
+                        }
                     }
                 }
             }
-        }
-        else
-        {
+        } else {    // ON MOVE - MIDCHAIN
             // We have a chain started. Now we need to draw the next part highlighted.
-            var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+            var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y, true, null);
+
             if (nearestSprocket != null) {
                 // Draw a highlight circle where the sprocket is
                 var sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, nearestSprocket.level);
@@ -1535,7 +2106,7 @@ function onPointerMove(pointer)
                 let isFirstSprocket = false;
                 let firstSprocket = partManager.getInfoAboutFirstSprocketInChainBeingBuilt();
 
-                if (firstSprocket.partIndex == nearestSprocket.partIndex) {
+                if (firstSprocket.partIndex === nearestSprocket.partIndex) {
                     // It IS the sprocket we began this chain on. We're going to end this chain now.
                     isFirstSprocket = true;
                 }
@@ -1543,642 +2114,1379 @@ function onPointerMove(pointer)
                 // Figure out which side of the line this part is on.
                 // Determine angle between the current part and the next one
                 var lastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
-                let distance = Math.sqrt(Math.pow(lastSprocketBounds.x - sprocketBounds.x,2) + Math.pow(lastSprocketBounds.y - sprocketBounds.y,2));
+
+                let distance = Math.sqrt(Math.pow(lastSprocketBounds.x - sprocketBounds.x, 2) + Math.pow(lastSprocketBounds.y - sprocketBounds.y, 2));
                 let ydiff = lastSprocketBounds.y - sprocketBounds.y;
-                let angle = Phaser.Math.RadToDeg(Math.asin(ydiff/distance));
-                if (lastSprocketBounds.x > sprocketBounds.x)
+                let angle = Phaser.Math.RadToDeg(Math.asin(ydiff / distance));
+                if (lastSprocketBounds.x > sprocketBounds.x) {
                     angle = 180 - angle;
+                }
 
                 // Determine the angle to the pointer
-                let distanceToPointer = Math.sqrt(Math.pow(sprocketBounds.x - worldPointer.x,2) + Math.pow(sprocketBounds.y - worldPointer.y,2));
+                let distanceToPointer = Math.sqrt(Math.pow(sprocketBounds.x - worldPointer.x, 2) + Math.pow(sprocketBounds.y - worldPointer.y, 2));
                 let ydiffToPointer = sprocketBounds.y - worldPointer.y;
-                let angleToPointer = Phaser.Math.RadToDeg(Math.asin(ydiffToPointer/distanceToPointer));
-                if (worldPointer.x < sprocketBounds.x)
+                let angleToPointer = Phaser.Math.RadToDeg(Math.asin(ydiffToPointer / distanceToPointer));
+                if (worldPointer.x < sprocketBounds.x) {
                     angleToPointer = 180 - angleToPointer;
-
+                }
                 let angleDiff = angleToPointer - angle;
-                if (angleDiff < 0)
+                if (angleDiff < 0) {
                     angleDiff += 360;
+                }
 
                 if (angleDiff >= 0 && angleDiff < 180) {
                     // The clockwise arrow
-                    if (!(isFirstSprocket && firstSprocket.cw == false))
-                        drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, true);
+                    if (!(isFirstSprocket && firstSprocket.cw === false)) {
+                        if ( !(isMobile || isTouchMobile) ) {
+                            drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, true);
+                        }
+                    }
                 } else {
                     // The counterclockwise arrow
-                    if (!(isFirstSprocket && firstSprocket.cw == true))
-                        drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, false);
+                    if (!(isFirstSprocket && firstSprocket.cw === true)) {
+                        if ( !(isMobile || isTouchMobile) ) {
+                            drawHighlight.bind(this)(sprocketBounds.x, sprocketBounds.y, sprocketBounds.radius, sprocketBounds.thickness, angle, false);
+                        }
+                    }
                 }
             }
         }
 
         // Redraw the chain we're currently building.
-        if (partManager.isInTheMiddleOfBuildingAChain() == true)
-        {
-            partManager.redrawChainBeingBuilt(worldPointer);
-        }
-    }
-}
-
-function drawHighlight(centerX, centerY, radius, thickness, angle, cw)
-{
-    const arrowOffset = 20;
-    const arrowAngleExtents = 30;
-    const arrowHeadThickness = 26;
-
-    this.highlightGraphics = this.add.graphics(0, 0, true);
-    // Set to the top-most depth
-    this.highlightGraphics.setDepth(20);
-    this.highlightGraphics.lineStyle(thickness, 0x00FF00, 0.65);
-    this.highlightGraphics.fillStyle(0x00FF00, 0.65);
-
-    if (cw)
-    {
-        this.highlightGraphics.beginPath();
-        this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle-180), Phaser.Math.DegToRad(-angle), false);
-        this.highlightGraphics.strokePath();
-
-        // Now draw arrow
-        this.highlightGraphics.beginPath();
-        this.highlightGraphics.arc(centerX,
-            centerY,
-            radius + arrowOffset,
-            Phaser.Math.DegToRad((-angle - 90) - arrowAngleExtents),
-            Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents),
-            false);
-        this.highlightGraphics.strokePath();
-        // We want a constant length of our arrow head: 18 px.
-        // Find circumference:
-        let circumference = 2 * Math.PI * (arrowOffset + radius);
-        let fractionOfCircumference = (18 / circumference) * 360;
-        let arrowTop = {
-            x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-            y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-        };
-        let arrowLeft = {
-            x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-            y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-        };
-        let arrowRight = {
-            x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-            y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-        };
-        this.highlightGraphics.fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
-    }
-    else
-    {
-        this.highlightGraphics.beginPath();
-        this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle), Phaser.Math.DegToRad(-angle + 180), false);
-        this.highlightGraphics.strokePath();
-
-        // Now draw arrow
-        this.highlightGraphics.beginPath();
-        this.highlightGraphics.arc(centerX,
-            centerY,
-            radius + arrowOffset,
-            Phaser.Math.DegToRad((-angle + 90) - arrowAngleExtents),
-            Phaser.Math.DegToRad((-angle + 90) + arrowAngleExtents),
-            false);
-        this.highlightGraphics.strokePath();
-        // We want a constant length of our arrow head: 18 px.
-        // Find circumference:
-        let circumference = 2 * Math.PI * (arrowOffset + radius);
-        let fractionOfCircumference = (18 / circumference) * 360;
-        let arrowTop = {
-            x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
-            y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
-        };
-        let arrowLeft = {
-            x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
-            y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
-        };
-        let arrowRight = {
-            x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
-            y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
-        };
-        this.highlightGraphics.fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
-    }
-}
-
-function onPointerDown(pointer, currentlyOver)
-{
-    let worldPointer = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-    // Drop a part if we've got a part selected
-    if (this.junctionbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('junction', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.buttonbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('button', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.resistorbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('resistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.capacitorbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('capacitor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.diodebutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('diode', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.transistorbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('transistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.levelchangerbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('level-changer', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.phonographbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('phonograph', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.motorbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, tileSpacing);
-        partManager.addPart('motor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-        // Update all the tile connectors
-        partManager.updateTileConnectors();
-    }
-    else if (this.inductorbutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
-        partManager.addPart('inductor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-    }
-    else if (this.tilebutton.getToggleState())
-    {
-        var snapPosition = PartBase.getSnapPosition(worldPointer, tileSpacing);
-        partManager.addPart('tile', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
-        // Update all the tile connectors
-        partManager.updateTileConnectors();
-
-    }
-    else if (this.chainbutton.getToggleState())
-    {
-        // Draw a chain if the chain button is selected
-        if (partManager.isInTheMiddleOfBuildingAChain())
-        {
-            var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
-            if (nearestSprocket != null) {
-                // Draw a highlight circle where the sprocket is
-                var sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, nearestSprocket.level);
-
-                // Is this the very first sprocket in this chain?
-                let isFirstSprocket = false;
-                let firstSprocket = partManager.getInfoAboutFirstSprocketInChainBeingBuilt();
-
-                if (firstSprocket.partIndex == nearestSprocket.partIndex) {
-                    // It IS the sprocket we began this chain on. We're going to end this chain now.
-                    isFirstSprocket = true;
-                }
-
-                // Determine angle between the current part and the next one
-                var lastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
-                let distance = Math.sqrt(Math.pow(lastSprocketBounds.x - sprocketBounds.x,2) + Math.pow(lastSprocketBounds.y - sprocketBounds.y,2));
-                let ydiff = lastSprocketBounds.y - sprocketBounds.y;
-                let angle = Phaser.Math.RadToDeg(Math.asin(ydiff/distance));
-                if (lastSprocketBounds.x > sprocketBounds.x)
-                    angle = 180 - angle;
-
-                // Determine the angle to the pointer
-                let distanceToPointer = Math.sqrt(Math.pow(sprocketBounds.x - worldPointer.x,2) + Math.pow(sprocketBounds.y - worldPointer.y,2));
-                let ydiffToPointer = sprocketBounds.y - worldPointer.y;
-                let angleToPointer = Phaser.Math.RadToDeg(Math.asin(ydiffToPointer/distanceToPointer));
-                if (worldPointer.x < sprocketBounds.x)
-                    angleToPointer = 180 - angleToPointer;
-
-                let angleDiff = angleToPointer - angle;
-                if (angleDiff < 0)
-                    angleDiff += 360;
-
-                if (angleDiff >= 0 && angleDiff < 180) {
-                    // Clockwise
-                    if (!(isFirstSprocket && firstSprocket.cw == false)) {
-                        if (!isFirstSprocket)
-                            partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
-                        else
-                            partManager.closeChain();
-                    }
-                } else {
-                    // Counterclockwise
-                    if (!(isFirstSprocket && firstSprocket.cw == true)) {
-                        if (!isFirstSprocket)
-                            partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, false);
-                        else
-                            partManager.closeChain();
-                    }
-                }
-
-                clearHighlight.bind(this)();
+        // Kelly testing this for mobile chain drawing when touching random place Oct 28
+        if ( !(isMobile || isTouchMobile) ) {
+            if (partManager.isInTheMiddleOfBuildingAChain() === true) {
+                partManager.redrawChainBeingBuilt(worldPointer);
             }
         }
-        else
-        {
-            var nearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
-            if (nearestSprocket != null)
-            {
-                let availableLevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nearestSprocket.partIndex, nearestSprocket.level);
-                if (availableLevels.length > 0) {
-                    let chosenLevel = 0;
-                    if (availableLevels.length == 1)
-                    {
-                        chosenLevel = availableLevels[0];
+    }
+}
+    // Kelly added function to show touch dots where to connect chain (on mobile)
+    // pass in part center x point, part center y point, part sprocket radius, angle to last part or 0, if it is midchain (meaning dots get turned for
+    // the angle from last part to new part), islevel (?? being used ??), and isfirstconnection (only draw the one dot instead of two)
+    function drawTouchDots(centerX, centerY, radius, angle, cw, ismidchain, islevel, isfirstconnection) {
+
+        if (ismidchain) {
+
+            angle = Phaser.Math.DegToRad(angle);
+            // these points are the first new points to show where to attach the chain
+            let myPointX = centerX + radius * Math.cos(angle);
+            let myPointY = centerY + radius * Math.sin(angle);
+
+            // these points are the opposite side points to show where to attach the chain
+            let myOppositePointX;
+            let myOppositePointY;
+
+            let myXDistanceToCenter = myPointX - centerX;
+            let myYDistanceToCenter = myPointY - centerY;
+            myOppositePointX = centerX - myXDistanceToCenter;
+            myOppositePointY = centerY - myYDistanceToCenter;
+
+            chainDots[drawn] = this.add.graphics();
+            // Set to the top-most depth
+            chainDots[drawn].setDepth(20);
+
+            if (isfirstconnection) {
+                // the part with the first connected chain will only show one remaining connection point
+                if (firstPartChainIsConnectedGoingCW && !cw) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 15);
+                } else if (!firstPartChainIsConnectedGoingCW && !cw) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myPointX, myPointY, 15);
+                } else if (firstPartChainIsConnectedGoingCW && cw) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myPointX, myPointY, 15);
+                } else if (!firstPartChainIsConnectedGoingCW && cw ) {
+                    chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                    chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 15);
+                }
+            } else {
+                chainDots[drawn].fillStyle(0x00FF00, 1.0);
+                chainDots[drawn].fillCircle(myPointX, myPointY, 15);
+                chainDots[drawn].fillCircle(myOppositePointX, myOppositePointY, 15);
+                // }
+                // Kelly adding to try a touch arrow -------------------------------------------------------->
+                let thickness = 6;
+                const arrowOffset = 0;
+                const arrowAngleExtents = 30;
+                const arrowHeadThickness = 26;
+                let arrowangle = Phaser.Math.RadToDeg(angle);
+
+                chainArrows[drawn] = this.add.graphics(0, 0, true);
+                // Set to the top-most depth
+                chainArrows[drawn].setDepth(20);
+                chainArrows[drawn].lineStyle(thickness, 0x00FF00, 1.0);
+                chainArrows[drawn].fillStyle(0x00FF00, 1.0);
+
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
+
+                // draw opposite side arc and arrow head
+                chainArrows[drawn].beginPath();
+                chainArrows[drawn].arc(centerX,
+                    centerY,
+                    radius + arrowOffset,
+                    Phaser.Math.DegToRad((arrowangle + 180) - arrowAngleExtents),
+                    Phaser.Math.DegToRad((arrowangle + 180) + arrowAngleExtents),
+                    false);
+                chainArrows[drawn].strokePath();
+
+                if (cw) {
+                    // We want a constant length of our arrow head: 18 px.
+                    // Find circumference:
+                    let circumference = 2 * Math.PI * (arrowOffset + radius);
+                    let fractionOfCircumference = (18 / circumference) * 360;
+
+                    let arrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let arrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let arrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+
+                    let oppositeArrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let oppositeArrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let oppositeArrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+
+                } else {
+
+                    let circumference = 2 * Math.PI * (arrowOffset + radius);
+                    let fractionOfCircumference = (18 / circumference) * 360;
+
+                    let arrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let arrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let arrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY - Math.sin(Phaser.Math.DegToRad((-arrowangle) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+
+                    let oppositeArrowTop = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+                    };
+                    let oppositeArrowLeft = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+                    };
+                    let oppositeArrowRight = {
+                        x: centerX + Math.cos(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                        y: centerY + Math.sin(Phaser.Math.DegToRad((arrowangle - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+                    };
+                    chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+
+                }
+                // Kelly end of touch arrows -------------------------------------------------------------------------------->
+            }
+        // drawing first dot connection points on chain button clicked
+        } else {
+
+            chainDots[drawn] = this.add.graphics();
+            // Set to the top-most depth
+            chainDots[drawn].setDepth(20);
+            // chainDots[thispart].lineStyle(thickness, 0x00FF00, 0.65);
+            chainDots[drawn].fillStyle(0x00FF00, 1.0);
+            chainDots[drawn].fillCircle(centerX + radius, centerY, 15);
+            chainDots[drawn].fillCircle(centerX - radius, centerY, 15);
+
+            // console.log("...breaking here?");
+
+            let thickness = 6;
+            const arrowOffset = 0;
+            const arrowAngleExtents = 30;
+            const arrowHeadThickness = 26;
+            let arrowangle = Phaser.Math.RadToDeg(angle);
+
+            chainArrows[drawn] = this.add.graphics(0, 0, true);
+            // Set to the top-most depth
+            chainArrows[drawn].setDepth(20);
+            chainArrows[drawn].lineStyle(thickness, 0x00FF00, 1.0);
+            chainArrows[drawn].fillStyle(0x00FF00, 1.0);
+
+            // draw first side arc and arrow head
+            chainArrows[drawn].beginPath();
+            chainArrows[drawn].arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((0) - arrowAngleExtents),
+                Phaser.Math.DegToRad((0) + arrowAngleExtents),
+                false);
+            chainArrows[drawn].strokePath();
+
+            // draw opposite side arc and arrow head
+            chainArrows[drawn].beginPath();
+            chainArrows[drawn].arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((180) - arrowAngleExtents),
+                Phaser.Math.DegToRad((180) + arrowAngleExtents),
+                false);
+            chainArrows[drawn].strokePath();
+
+            let circumference = 2 * Math.PI * (arrowOffset + radius);
+            let fractionOfCircumference = (18 / circumference) * 360;
+
+            let arrowTop = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((0) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+            };
+            let arrowLeft = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+            };
+            let arrowRight = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((0) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+            };
+            chainArrows[drawn].fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+            // console.log("FIRST ELSE arrow: ", arrowTop, arrowLeft, arrowRight);
+
+            let oppositeArrowTop = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+            };
+            let oppositeArrowLeft = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+            };
+            let oppositeArrowRight = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((0 - 180) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+            };
+            chainArrows[drawn].fillTriangle(oppositeArrowTop.x, oppositeArrowTop.y, oppositeArrowLeft.x, oppositeArrowLeft.y, oppositeArrowRight.x, oppositeArrowRight.y);
+            // console.log("FIRST ELSE opposite arrow: ", oppositeArrowTop, oppositeArrowLeft, oppositeArrowRight);
+        }
+
+        drawn++;
+    }
+// ---------------------------------------- DRAW CHAIN CONNECTION POINT ARROWS ---------------------------------------------------- //
+    function drawHighlight(centerX, centerY, radius, thickness, angle, cw) {
+        thickness = 10;
+        const arrowOffset = 20;
+        const arrowAngleExtents = 30;
+        const arrowHeadThickness = 26;
+        this.highlightGraphics = this.add.graphics(0, 0, true);
+        // Set to the top-most depth
+        this.highlightGraphics.setDepth(20);
+        this.highlightGraphics.lineStyle(thickness, 0x00FF00, 0.65);
+        this.highlightGraphics.fillStyle(0x00FF00, 0.65);
+
+        if (cw) {
+            // console.log("centerx: ", centerX, " centerY: ", centerY, " ", angle, " ", Phaser.Math.DegToRad((-angle - 90) - arrowAngleExtents));
+            // var r1 = this.add.circle(centerX, centerY, 30, 0x6666ff);
+            this.highlightGraphics.beginPath();
+            this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle-180), Phaser.Math.DegToRad(-angle), false);
+            this.highlightGraphics.strokePath();
+
+            // Now draw arrow
+            this.highlightGraphics.beginPath();
+            this.highlightGraphics.arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((-angle - 90) - arrowAngleExtents),
+                Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents),
+                false);
+            this.highlightGraphics.strokePath();
+            // We want a constant length of our arrow head: 18 px.
+            // Find circumference:
+            let circumference = 2 * Math.PI * (arrowOffset + radius);
+            let fractionOfCircumference = (18 / circumference) * 360;
+            let arrowTop = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+            };
+            let arrowLeft = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+            };
+            let arrowRight = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                y: centerY + Math.sin(Phaser.Math.DegToRad((-angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+            };
+            this.highlightGraphics.fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+        } else {
+            this.highlightGraphics.beginPath();
+            this.highlightGraphics.arc(centerX, centerY, radius, Phaser.Math.DegToRad(-angle), Phaser.Math.DegToRad(-angle + 180), false);
+            this.highlightGraphics.strokePath();
+
+            // Now draw arrow
+            this.highlightGraphics.beginPath();
+            this.highlightGraphics.arc(centerX,
+                centerY,
+                radius + arrowOffset,
+                Phaser.Math.DegToRad((-angle + 90) - arrowAngleExtents),
+                Phaser.Math.DegToRad((-angle + 90) + arrowAngleExtents),
+                false);
+            this.highlightGraphics.strokePath();
+            //     // We want a constant length of our arrow head: 18 px.
+            //     // Find circumference:
+            let circumference = 2 * Math.PI * (arrowOffset + radius);
+            let fractionOfCircumference = (18 / circumference) * 360;
+            let arrowTop = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents + fractionOfCircumference)) * (arrowOffset + radius)
+            };
+            let arrowLeft = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius + arrowHeadThickness / 2)
+            };
+            let arrowRight = {
+                x: centerX + Math.cos(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2),
+                y: centerY - Math.sin(Phaser.Math.DegToRad((angle - 90) + arrowAngleExtents)) * (arrowOffset + radius - arrowHeadThickness / 2)
+            };
+            this.highlightGraphics.fillTriangle(arrowTop.x, arrowTop.y, arrowLeft.x, arrowLeft.y, arrowRight.x, arrowRight.y);
+        }
+    }
+
+// ---------------------------------------- ON MOUSE WHEEL ---------------------------------------------------- //
+    function onMouseWheel(pointer, gameObjects, deltaX, deltaY, deltaZ)
+    {
+        let camera = this.cameras.main;
+
+        let zoomFactor = Math.pow(10, -deltaY/2000);
+        // Find the center between the two pinch points - this is the point we want to zoom in and out of.
+        // In screen units, not world units.
+        let pinchCenterPoint = {
+            x: pointer.x,
+            y: pointer.y
+        };
+        let pinchCenterWorldPoint = camera.getWorldPoint(pinchCenterPoint.x, pinchCenterPoint.y);
+
+        //this.backgroundGrid.fillStyle(0xFF0000, 0.35);
+        //this.backgroundGrid.fillEllipse(pinchCenterWorldPoint.x, pinchCenterWorldPoint.y, 2, 2);
+
+        let worldCenterPoint = camera.midPoint;
+
+        //this.backgroundGrid.fillStyle(0x00FF00, 0.35);
+        //this.backgroundGrid.fillEllipse(worldCenterPoint.x, worldCenterPoint.y, 2, 2);
+
+        let distanceFromCenter = {
+            x: pinchCenterWorldPoint.x - worldCenterPoint.x,
+            y: pinchCenterWorldPoint.y - worldCenterPoint.y
+        };
+
+        let newDistanceFromCenter = {
+            x: distanceFromCenter.x * zoomFactor,
+            y: distanceFromCenter.y * zoomFactor
+        };
+
+        let currentZoom = camera.zoom;
+        let newZoom = camera.zoom * zoomFactor;
+
+        // Check to see if the image is too small to fill the screen.
+        let screenWidth = self.cameras.main.width;
+        let screenHeight = self.cameras.main.height;
+
+        if (mapWidth * newZoom < screenWidth || mapHeight * newZoom < screenHeight) {
+            newZoom = currentZoom;
+        }
+
+        // Limit zooming in too far
+        if (newZoom > 10)
+            newZoom = 10;
+
+        camera.setZoom(newZoom);
+        camera.centerOn(worldCenterPoint.x + (newDistanceFromCenter.x - distanceFromCenter.x), worldCenterPoint.y + (newDistanceFromCenter.y - distanceFromCenter.y));
+
+        // Stop resizing window to the zoom extents.
+        self.useZoomExtents = false;
+    }
+
+// ---------------------------------------- ON POINTER DOWN ---------------------------------------------------- //
+    function onPointerDown(pointer, currentlyOver) {
+        let worldPointer = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+
+        // console.log("isMobile: ", isMobile);
+        // console.log("isTouchMobile: ", isTouchMobile);
+        // console.log("isMobile || isTouchMobile: ", isMobile || isTouchMobile);
+        // console.log("isMobile && isTouchMobile: ", isMobile && isTouchMobile);
+        // console.log("!isMobile || !isTouchMobile: ", !isMobile || !isTouchMobile);
+        // console.log("!isMobile && !isTouchMobile: ", !isMobile && !isTouchMobile);
+        // console.log("!(isMobile || isTouchMobile): ", !(isMobile || isTouchMobile));
+
+        // Drop a part if we've got a part selected
+        if (this.junctionbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('junction', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            // Turn the button off after placing a part
+            setToInteractMode();
+        } else if (this.buttonbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('button', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.resistorbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('resistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.capacitorbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('capacitor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.diodebutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('diode', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.transistorbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('transistor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.levelchangerbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('level-changer', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.phonographbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('phonograph', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.motorbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, tileSpacing);
+            partManager.addPart('motor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            // Update all the tile connectors
+            partManager.updateTileConnectors();
+            setToInteractMode();
+        } else if (this.inductorbutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, gridSpacing);
+            partManager.addPart('inductor', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            setToInteractMode();
+        } else if (this.tilebutton.getToggleState()) {
+            var snapPosition = PartBase.getSnapPosition(worldPointer, tileSpacing);
+            partManager.addPart('tile', snapPosition.snapPoint.x, snapPosition.snapPoint.y);
+            // Update all the tile connectors
+            partManager.updateTileConnectors();
+            setToInteractMode();
+        } else if (this.chainbutton.getToggleState()) {         // on POINTER DOWN - BUILDING CHAIN
+            // Draw a chain if the chain button is selected
+            if (partManager.isInTheMiddleOfBuildingAChain()) {
+                console.log("--------*****MIDDLE OF CHAIN*****---------");
+                // console.log("MIDCHAIN - part clicked for level select cw (not being set here): ", partClickedForLevelSelect.cw);
+                var nearestSprocket = partManager.getNextAllowedSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+                // console.log("MIDCHAIN - IN DOWN, nearest sprocket: ", nearestSprocket);
+                if (nearestSprocket != null) {
+                    // Draw a highlight circle where the sprocket is
+                    var sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, nearestSprocket.level);
+
+                    // Is this the very first sprocket in this chain?
+                    let isFirstSprocket = false;
+                    let firstSprocket = partManager.getInfoAboutFirstSprocketInChainBeingBuilt();
+                    // console.log("first sprocket: ", firstSprocket);
+                    dynamicPartsListForTouchDots[firstSprocket.partIndex].hasChainConnection = 'first';
+
+                    if (firstSprocket.partIndex === nearestSprocket.partIndex) {
+                        // It IS the sprocket we began this chain on. We're going to end this chain now.
+                        isFirstSprocket = true;
                     }
-                    else
-                    {
-                        // Now, which level do we want to attach to? There are multiple possibilities.
-                        // Bring up a menu so the user can choose
-                        // Step 1: Create the items in the menu
-                        let menuItems = [];
-                        for (let i = 0; i < availableLevels.length; i++)
-                        {
-                            menuItems.push({name: 'Level ' + (availableLevels[i]+1)});
+
+                    // Determine angle between the current part and the next one
+                    var lastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
+                    let distance = Math.sqrt(Math.pow(lastSprocketBounds.x - sprocketBounds.x, 2) + Math.pow(lastSprocketBounds.y - sprocketBounds.y, 2));
+                    let ydiff = lastSprocketBounds.y - sprocketBounds.y;
+                    let angle = Phaser.Math.RadToDeg(Math.asin(ydiff / distance));
+                    if (lastSprocketBounds.x > sprocketBounds.x) {
+                        angle = 180 - angle;
+                    }
+                    // Determine the angle to the pointer
+                    let distanceToPointer = Math.sqrt(Math.pow(sprocketBounds.x - worldPointer.x, 2) + Math.pow(sprocketBounds.y - worldPointer.y, 2));
+                    let ydiffToPointer = sprocketBounds.y - worldPointer.y;
+                    let angleToPointer = Phaser.Math.RadToDeg(Math.asin(ydiffToPointer / distanceToPointer));
+                    if (worldPointer.x < sprocketBounds.x) {
+                        angleToPointer = 180 - angleToPointer;
+                    }
+
+                    let angleDiff = angleToPointer - angle;
+                    if (angleDiff < 0) {
+                        angleDiff += 360;
+                    }
+
+                    if (angleDiff >= 0 && angleDiff < 180) {
+                        // console.log("chosen level is: ", chosenLevel);
+                        // console.log("sprockets with connections grid: ", sprocketsWithConnectionsGridArray);
+                        // Kelly added Oct 25
+                        partClickedForLevelSelect.cw = true;
+                        // Clockwise
+                        if (!(isFirstSprocket && firstSprocket.cw === false)) {
+
+                            if (!isFirstSprocket) {
+                                partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, true);
+                                //    Kelly added here to test finding connections
+                                addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
+                                sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
+
+                                for (let m = 0; m < sprocketsWithConnectionsGridArray.length; m++ ) {
+                                    if ( sprocketsWithConnectionsGridArray[m].usedlevel === chosenLevel ) {
+                                        dynamicPartsListForTouchDots[sprocketsWithConnectionsGridArray[m].pindex].hasChainConnection = 'taken';
+                                    }
+                                }
+                                dynamicPartsListForTouchDots[nearestSprocket.partIndex].hasChainConnection = 'taken';
+                            } else {
+                                partManager.closeChain();
+                                // Kelly added for array grid
+                                addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
+                                sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
+                                setToInteractMode();
+                            }
                         }
+                    } else {
+                        // console.log("MIDCHAIN - POINTER DOWN, in ELSE angle to add or close chain...");
+                        // Kelly added oct 25
+                        // console.log("chosen level is: ", chosenLevel);
+                        // console.log("sprockets with connections grid: ", sprocketsWithConnectionsGridArray);
+                        partClickedForLevelSelect.cw = false;
+                        // Counterclockwise
+                        if (!(isFirstSprocket && firstSprocket.cw === true)) {
+                            if (!isFirstSprocket) {
+                                partManager.addChainConnection(nearestSprocket.partIndex, nearestSprocket.level, false);
 
-                        //Now create the popup menu.
-                        // We'll need to store nearestSprocket.partIndex and cw somewhere so that we can start a chain with the chosen level once it's been picked.
-                        // Once an item has been selected on the popup menu, we'll need to destroy the popup menu and the modalBackground, too.
-                        partClickedForLevelSelect.partIndex = nearestSprocket.partIndex;
-                        let sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, availableLevels[0]);
-                        if (worldPointer.x < sprocketBounds.x)
-                            partClickedForLevelSelect.cw = true;
-                        else
-                            partClickedForLevelSelect.cw = false;
+                                addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
+                                sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
 
-                        popupLevelChooser = new PopupLevelChooser(controlscene, pointer.x, pointer.y, 50, 35, partManager.getGetNumberOfLevelsOnThisPart(nearestSprocket.partIndex), availableLevels, popupLevelSelected);
-                        disablePointerOverEvent = true;
-                        // We haven't yet chosen a level, so -1
-                        chosenLevel = -1;
-                    }
+                                for (let m = 0; m < sprocketsWithConnectionsGridArray.length; m++ ) {
+                                        if ( sprocketsWithConnectionsGridArray[m].usedlevel === chosenLevel ) {
+                                            dynamicPartsListForTouchDots[sprocketsWithConnectionsGridArray[m].pindex].hasChainConnection = 'taken';
+                                        }
+                                }
 
-                    if (chosenLevel >= 0) {
-                        let sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, chosenLevel);
+                                dynamicPartsListForTouchDots[nearestSprocket.partIndex].hasChainConnection = 'taken';
 
-                        partManager.startChain();
-                        if (worldPointer.x < sprocketBounds.x) {
-                            partManager.addChainConnection(nearestSprocket.partIndex, chosenLevel, true);
-                        } else {
-                            partManager.addChainConnection(nearestSprocket.partIndex, chosenLevel, false);
+                            } else {
+                                partManager.closeChain();
+
+                                // Kelly added for array grid
+                                addThisPartAndLeveltoConnectionsGrid = { 'pindex': nearestSprocket.partIndex, 'usedlevel': nearestSprocket.level };
+                                sprocketsWithConnectionsGridArray.push(addThisPartAndLeveltoConnectionsGrid);
+                                setToInteractMode();
+                            }
                         }
                     }
 
                     clearHighlight.bind(this)();
+                    // Kelly added delete drawn dots for each part level
+                    let numofdotpairs = chainDots.length;
+                    clearChainDots(numofdotpairs);
+                    // Kelly testing the next drawing of touch dots when building the chain
+
+                    let nextSprocketBounds = [];
+                    let getFirstChainPointx = [];
+                    let getFirstChainPointy = [];
+                    let thisavailablelevels = [];
+
+                    getLastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
+                    // console.log("MIDCHAIN - IN DOWN, get last sprocket bounds: ", getLastSprocketBounds);
+
+                    if ( getLastSprocketBounds != null ) {
+
+                        for (let m = 0; m < dynamicPartsListForTouchDots.length; m++) {
+                            // console.log("MIDCHAIN - dynamic parts list: ", dynamicPartsListForTouchDots[m].partType, dynamicPartsListForTouchDots[m].hasChainConnection);
+                            thisavailablelevels = [];   // empty array before finding the part's used sprockets
+                            if ( dynamicPartsListForTouchDots[m].hasChainConnection !== 'na' ) {
+                                nextSprocketBounds[m] = partManager.getSprocketBounds(m, chosenLevel);
+                                // console.log("part: ", dynamicPartsListForTouchDots[m].partType);
+                                if (dynamicPartsListForTouchDots[m].partType === 'junction') {
+
+                                    // found a part that is a junction
+                                    for (let j = 0; j < 3; j++) {  // loop through the 3 levels of sprockets
+                                        // for each junction sprocket level, find out if it is available
+                                        let junctionavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(m, j);
+                                        // now if the sprocket level is used, check for type of undefined. If not undefined...
+                                        if (typeof junctionavailablelevels[0] !== 'undefined') {
+                                            // we know there is only one array element per junction sprocket - if it has a value, push to checkavailable levels array
+                                            thisavailablelevels.push(junctionavailablelevels[0]);
+                                        }
+                                    }
+                                } else {
+                                    // get available sprockets for this part that is not a junction (all others) by sending in level 0
+                                    thisavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(m, 0);
+                                }
+                                // console.log("available levels on this part: ", thisavailablelevels);
+                                let getDistance = Math.sqrt(Math.pow(getLastSprocketBounds.x - nextSprocketBounds[m].x, 2) + Math.pow(getLastSprocketBounds.y - nextSprocketBounds[m].y, 2));
+                                let getYdiff = getLastSprocketBounds.y - nextSprocketBounds[m].y;
+                                let getAngle = Phaser.Math.RadToDeg(Math.asin(getYdiff / getDistance));
+
+                                // Kelly - this seems to be working to find the chain point to draw a new angle between the next part
+                                if (getLastSprocketBounds.x > nextSprocketBounds[m].x) {
+                                    // console.log("partclickedforlevelselect.cw: ", partClickedForLevelSelect.cw);
+                                    // console.log("last sprocket bounds greater than next sprocket bounds");
+                                    if (partClickedForLevelSelect.cw) {
+                                        // console.log("getting new angle, cw is true");
+                                        getAngle = getAngle + 90;
+                                    } else {
+                                        // console.log("getting new angle, cw is false");
+                                        getAngle = getAngle - 90;
+                                    }
+                                } else {
+                                    // console.log("partclickedforlevelselect.cw: ", partClickedForLevelSelect.cw);
+                                    // console.log("last sprocket bounds NOT greater than next sprocket bounds");
+                                    if (partClickedForLevelSelect.cw) {
+                                        // console.log("getting new angle, cw is true");
+                                        getAngle = 270 - getAngle;
+                                    } else {
+                                        // console.log("getting new angle, cw is false");
+                                        getAngle = 90 - getAngle;
+                                    }
+                                }
+
+                                getAngle = Phaser.Math.DegToRad(getAngle);
+                                getFirstChainPointx[m] = getLastSprocketBounds.x + getLastSprocketBounds.radius * Math.cos(getAngle);
+                                getFirstChainPointy[m] = getLastSprocketBounds.y + getLastSprocketBounds.radius * Math.sin(getAngle);
+
+                                let newdistance = Math.sqrt(Math.pow(getFirstChainPointx[m] - nextSprocketBounds[m].x, 2) + Math.pow(getFirstChainPointy[m] - nextSprocketBounds[m].y, 2));
+                                let newydiff = getFirstChainPointy[m] - nextSprocketBounds[m].y;
+                                let newangle = Phaser.Math.RadToDeg(Math.asin(newydiff / newdistance));
+
+                                if (getFirstChainPointx[m] > nextSprocketBounds[m].x) {
+                                    if (partClickedForLevelSelect.cw) {
+                                        newangle = newangle + 90;
+                                    } else {
+                                        newangle = newangle - 90;
+                                    }
+                                } else {
+                                    if (partClickedForLevelSelect.cw) {
+                                        newangle = 270 - newangle;
+                                    } else {
+                                        newangle = 90 - newangle;
+                                    }
+                                }
+
+                                for (let n = 0; n < thisavailablelevels.length; n++) {
+                                    // console.log("Checking if the chosen level matches available level loop.", chosenLevel, thisavailablelevels[n]);
+                                    // console.log("ORIGINAL - level is open?", chosenlevelsprocketonnextpartisopen);
+                                    if (thisavailablelevels[n] === chosenLevel) {
+                                        chosenlevelsprocketonnextpartisopen = true;
+                                    }
+                                    // console.log("AFTER CHECK - level is open?", chosenlevelsprocketonnextpartisopen);
+                                    // else {
+                                    //     chosenlevelsprocketonnextpartisopen = false;
+                                    // }
+                                // }
+
+                                    if (dynamicPartsListForTouchDots[m].hasChainConnection === 'first' && thisavailablelevels.length > 0) {
+                                        if (isMobile || isTouchMobile) {
+                                            drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, partClickedForLevelSelect.cw, true, chosenLevel, true);
+                                        }
+                                        // chosenlevelsprocketonnextpartisopen = false;
+
+                                    } else if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0 && dynamicPartsListForTouchDots[m].hasChainConnection !== 'taken') {
+                                        if (isMobile || isTouchMobile) {
+                                            drawTouchDots.bind(self)(nextSprocketBounds[m].x, nextSprocketBounds[m].y, nextSprocketBounds[m].radius, newangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
+                                        }
+                                        // chosenlevelsprocketonnextpartisopen = false;
+                                    } // end of if to draw touch dots
+                                    chosenlevelsprocketonnextpartisopen = false;
+                                } // end of check for open sprocket on each level of each part
+                            }  // end of check for tile and connector parts
+                        } // end of loop to check each available part to draw touch dots
+                    } // end of get last sprocket is not null
+                }  else { // end of if nearest sprocket is not null
+                    console.log("nearest sprocket ELSE: ", nearestSprocket);
+                }
+            } else {   // FIRST CHAIN CONNECTION
+                console.log("--------***FIRST CONNECTION***--------");
+                // console.log("on pointer down, adding chain to first or last level part");
+                var nearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+                // console.log("FIRST CONNECTION - IN DOWN, nearest sprocket: ", nearestSprocket);
+                chosenLevel = 0;
+                if (nearestSprocket != null) {
+
+                    let availableLevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(nearestSprocket.partIndex, nearestSprocket.level);
+
+                    if (availableLevels.length > 0) {
+
+                        // this is for the last sprocket available or a junction level
+                        if (availableLevels.length === 1) {
+                            chosenLevel = availableLevels[0];
+                        } else {
+                            // Now, which level do we want to attach to? There are multiple possibilities.
+                            // Bring up a menu so the user can choose
+                            // Step 1: Create the items in the menu
+                            let menuItems = [];
+                            for (let i = 0; i < availableLevels.length; i++) {
+                                menuItems.push({name: 'Level ' + (availableLevels[i] + 1)});
+                            }
+
+                            //Now create the popup menu.
+                            // We'll need to store nearestSprocket.partIndex and cw somewhere so that we can start a chain with the chosen level once it's been picked.
+                            // Once an item has been selected on the popup menu, we'll need to destroy the popup menu and the modalBackground, too.
+                            partClickedForLevelSelect.partIndex = nearestSprocket.partIndex;
+
+                            let sprocketBounds = partManager.getSprocketBounds(nearestSprocket.partIndex, availableLevels[0]);
+
+                            if (worldPointer.x < sprocketBounds.x) {
+                                partClickedForLevelSelect.cw = true;
+                                firstPartChainIsConnectedGoingCW = true;
+                            } else {
+                                partClickedForLevelSelect.cw = false;
+                                firstPartChainIsConnectedGoingCW = false;
+                            }
+
+                            // Kelly commented out Oct 27 - want to keep green arrows showing as level is picked from popup
+                            // let numofdotpairs = chainDots.length;
+                            // clearChainDots(numofdotpairs);
+
+                            // Show the popup menu and use callback function to get chosen level
+                            popupLevelChooser = new PopupLevelChooser(controlscene, pointer.x, pointer.y, 50, 35, partManager.getGetNumberOfLevelsOnThisPart(nearestSprocket.partIndex), availableLevels, popupLevelSelected);
+                            disablePointerOverEvent = true;
+                            // We haven't yet chosen a level, so -1
+                            chosenLevel = -1;
+                        }
+
+                        // this is for the junction and only level of a part where you don't need the popup level selector menu
+                        if (chosenLevel >= 0) {
+                            console.log("--------***ONLY LEVEL FOR CHAIN***--------");
+                            // Kelly added delete drawn dots for each part level
+                            let numofdotpairs = chainDots.length;
+                            clearChainDots(numofdotpairs);
+
+                            var thisnearestSprocket = partManager.getSprocketAtPoint.bind(partManager)(worldPointer.x, worldPointer.y);
+                            // console.log("ONLY LEVEL - IN DOWN, nearest sprocket: ", thisnearestSprocket);
+
+                            var getonlysprocketbounds = partManager.getSprocketBounds(thisnearestSprocket.partIndex, chosenLevel);
+
+                            if (worldPointer.x < getonlysprocketbounds.x) {
+                                partClickedForLevelSelect.cw = true;
+                                firstPartChainIsConnectedGoingCW = true;
+                            } else {
+                                partClickedForLevelSelect.cw = false;
+                                firstPartChainIsConnectedGoingCW = false;
+                            }
+                            // console.log("IN ONLY LEVEL FOR CHAIN, part clicked for level select: ", partClickedForLevelSelect);
+                            partClickedForLevelSelect.partIndex = thisnearestSprocket.partIndex;
+
+                            partManager.startChain();
+                            partManager.addChainConnection(partClickedForLevelSelect.partIndex, chosenLevel, partClickedForLevelSelect.cw);
+
+                            let toNextSprocketBoundsOfPart = [];
+                            let thisavailablelevels = [];
+                            let junctionChainPointx = '';
+                            let junctionChainPointy = '';
+
+                            drawn = 0;
+
+                            getThisSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
+
+                            for (var i = 0; i < dynamicPartsListForTouchDots.length; i++) {
+                                thisavailablelevels = [];
+                                if (dynamicPartsListForTouchDots[i].hasChainConnection !== 'na') {
+
+                                    toNextSprocketBoundsOfPart[i] = partManager.getSprocketBounds(i, chosenLevel);
+
+                                    if (dynamicPartsListForTouchDots[i].partType === 'junction') {
+
+                                        // found a part that is a junction
+                                        for (let j=0; j < 3; j++ ) {  // loop through the 3 levels of sprockets
+                                            // for each junction sprocket level, find out if it is available
+                                            let junctionavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, j);
+                                            // now if the sprocket level is used, check for type of undefined. If not undefined...
+                                            if ( typeof junctionavailablelevels[0] !== 'undefined' ) {
+                                                // we know there is only one array element per junction sprocket - if it has a value, push to checkavailable levels array
+                                                thisavailablelevels.push(junctionavailablelevels[0]);
+                                                }
+                                        }
+                                    } else {
+                                        thisavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+                                    }
+                                    // Determine angle between the current part and the next one
+
+                                    let thisdistance = Math.sqrt(Math.pow(getThisSprocketBounds.x - toNextSprocketBoundsOfPart[i].x, 2) + Math.pow(getThisSprocketBounds.y - toNextSprocketBoundsOfPart[i].y, 2));
+                                    let thisydiff = getThisSprocketBounds.y - toNextSprocketBoundsOfPart[i].y;
+                                    let thisangle = Phaser.Math.RadToDeg(Math.asin(thisydiff / thisdistance));
+
+                                    // Kelly - this seems to be working to find the chain point to draw a new angle between the next part
+                                    if (getThisSprocketBounds.x > toNextSprocketBoundsOfPart[i].x) {
+                                        if (partClickedForLevelSelect.cw) {
+                                            thisangle = thisangle + 90;
+                                        } else {
+                                            thisangle = thisangle - 90;
+                                        }
+                                    } else {
+                                        if (partClickedForLevelSelect.cw) {
+                                            thisangle = 270 - thisangle;
+                                        } else {
+                                            thisangle = 90 - thisangle;
+                                        }
+                                    }
+
+                                    thisangle = Phaser.Math.DegToRad(thisangle);
+                                    junctionChainPointx = getThisSprocketBounds.x + getThisSprocketBounds.radius * Math.cos(thisangle);
+                                    junctionChainPointy = getThisSprocketBounds.y + getThisSprocketBounds.radius * Math.sin(thisangle);
+
+                                    let thisnewdistance = Math.sqrt(Math.pow(junctionChainPointx - toNextSprocketBoundsOfPart[i].x, 2) + Math.pow(junctionChainPointy - toNextSprocketBoundsOfPart[i].y, 2));
+                                    let thisnewydiff = junctionChainPointy - toNextSprocketBoundsOfPart[i].y;
+                                    let thisnewangle = Phaser.Math.RadToDeg(Math.asin(thisnewydiff / thisnewdistance));
+
+                                    if (junctionChainPointx > toNextSprocketBoundsOfPart[i].x) {
+                                        if (partClickedForLevelSelect.cw) {
+                                            thisnewangle = thisnewangle + 90;
+                                        } else {
+                                            thisnewangle = thisnewangle - 90;
+                                        }
+                                    } else {
+                                        if (partClickedForLevelSelect.cw) {
+                                            thisnewangle = 270 - thisnewangle;
+                                        } else {
+                                            thisnewangle = 90 - thisnewangle;
+                                        }
+                                    }
+
+                                    for ( let n = 0; n < thisavailablelevels.length; n++ ) {
+
+                                        if (thisavailablelevels[n] === chosenLevel) {
+                                            chosenlevelsprocketonnextpartisopen = true;
+                                        }
+                                        // }
+                                        if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0) {
+                                            if (isMobile || isTouchMobile) {
+                                                drawTouchDots.bind(self)(toNextSprocketBoundsOfPart[i].x, toNextSprocketBoundsOfPart[i].y, toNextSprocketBoundsOfPart[i].radius, thisnewangle, partClickedForLevelSelect.cw, true, chosenLevel, false);
+                                            }
+                                            // chosenlevelsprocketonnextpartisopen = false;
+                                        }
+                                        chosenlevelsprocketonnextpartisopen = false;
+                                    }
+                                }
+                            }
+                        }
+                        clearHighlight.bind(this)();
+                    }   // end of if available levels greater than 0
+                }   // end of if nearest sprocket not null
+            }   // end of else, first chain connection
+        }  // end of is chain
+    }  // end of onPointerDown function
+
+// ------------------------------- FUNCTION FOR POPUP SPROCKET LEVEL CHOOSER (callback) --------------------------------------------- //
+// Callback function for when the sprocket level is chosen from the popup menu list.
+    function popupLevelSelected(level) {
+        console.log("-------***POPUP***-------");
+
+        // Kelly added Oct 28
+        let numofdotpairs = chainDots.length;
+        clearChainDots(numofdotpairs);
+
+        let sprocketBounds = [];
+        let firstChainPointx = [];
+        let firstChainPointy = [];
+        let thisavailablelevels = [];
+
+        drawn = 0;
+        chosenLevel = level;
+
+        disablePointerOverEvent = false;
+        popupLevelChooser = null;
+
+        if (level >= 0) {
+
+            partManager.startChain();
+            partManager.addChainConnection(partClickedForLevelSelect.partIndex, level, partClickedForLevelSelect.cw);
+
+            // Kelly testing finding used levels
+            for (let m = 0; m < sprocketsWithConnectionsGridArray.length; m++ ) {
+                if ( sprocketsWithConnectionsGridArray[m].usedlevel === chosenLevel ) {
+                    dynamicPartsListForTouchDots[sprocketsWithConnectionsGridArray[m].pindex].hasChainConnection = 'taken';
+                }
+            }
+
+            // // Kelly added loop to draw new touch dots after choosing level
+            let lastSprocketBounds = partManager.getLastSprocketBoundsOfChainBeingBuilt();
+            for (var i = 0; i < dynamicPartsListForTouchDots.length; i++) {
+                thisavailablelevels = [];
+
+                if ( dynamicPartsListForTouchDots[i].partType !== 'tile' && dynamicPartsListForTouchDots[i].partType !== 'tile-connector' ) {
+                    // console.log("dynamic parts list: ", dynamicPartsListForTouchDots[i].hasChainConnection);
+                    if (i !== partClickedForLevelSelect.partIndex) {
+                        sprocketBounds[i] = partManager.getSprocketBounds(i, level);
+
+                        if (dynamicPartsListForTouchDots[i].partType === 'junction') {
+
+                            // found a part that is a junction
+                            for (let j=0; j < 3; j++ ) {  // loop through the 3 levels of sprockets
+                                // for each junction sprocket level, find out if it is available
+                                let junctionavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, j);
+                                // now if the sprocket level is used, check for type of undefined. If not undefined...
+                                if ( typeof junctionavailablelevels[0] !== 'undefined' ) {
+                                    // we know there is only one array element per junction sprocket - if it has a value, push to checkavailable levels array
+                                    thisavailablelevels.push(junctionavailablelevels[0]);
+                                }
+                            }
+                        } else {
+                            // get available sprockets for this part that is not a junction (all others) by sending in level 0
+                            thisavailablelevels = partManager.getAllLevelsWithSameRadiusThatAreAvailableOnThisPart(i, 0);
+                        }
+
+                        // Determine angle between the current part and the next one
+                        let distance = Math.sqrt(Math.pow(lastSprocketBounds.x - sprocketBounds[i].x, 2) + Math.pow(lastSprocketBounds.y - sprocketBounds[i].y, 2));
+                        let ydiff = lastSprocketBounds.y - sprocketBounds[i].y;
+                        let angle = Phaser.Math.RadToDeg(Math.asin(ydiff / distance));
+
+                        // Kelly - this seems to be working to find the chain point to draw a new angle between the next part
+                        if (lastSprocketBounds.x > sprocketBounds[i].x) {
+                            if (partClickedForLevelSelect.cw) {
+                                angle = angle + 90;
+                            } else {
+                                angle = angle - 90;
+                            }
+                        } else {
+                            if (partClickedForLevelSelect.cw) {
+                                angle = 270 - angle;
+                            } else {
+                                angle = 90 - angle;
+                            }
+                        }
+
+                        angle = Phaser.Math.DegToRad(angle);
+                        firstChainPointx[i] = lastSprocketBounds.x + lastSprocketBounds.radius * Math.cos(angle);
+                        firstChainPointy[i] = lastSprocketBounds.y + lastSprocketBounds.radius * Math.sin(angle);
+
+                        let newdistance = Math.sqrt(Math.pow(firstChainPointx[i] - sprocketBounds[i].x, 2) + Math.pow(firstChainPointy[i] - sprocketBounds[i].y, 2));
+                        let newydiff = firstChainPointy[i] - sprocketBounds[i].y;
+                        let newangle = Phaser.Math.RadToDeg(Math.asin(newydiff / newdistance));
+
+                        if (firstChainPointx[i] > sprocketBounds[i].x) {
+                            if (partClickedForLevelSelect.cw) {
+
+                                newangle = newangle + 90;
+                            } else {
+
+                                newangle = newangle - 90;
+                            }
+                        } else {
+                            if (partClickedForLevelSelect.cw) {
+                                newangle = 270 - newangle;
+                            } else {
+                                newangle = 90 - newangle;
+                            }
+                        }
+                        for ( let n = 0; n < thisavailablelevels.length; n++ ) {
+                            if (thisavailablelevels[n] === chosenLevel) {
+                                chosenlevelsprocketonnextpartisopen = true;
+                            }
+                            // }
+
+                            if (chosenlevelsprocketonnextpartisopen && thisavailablelevels.length > 0) {
+                                if (isMobile || isTouchMobile) {
+                                    drawTouchDots.bind(self)(sprocketBounds[i].x, sprocketBounds[i].y, sprocketBounds[i].radius, newangle, partClickedForLevelSelect.cw, true, level, false);
+                                }
+                                // chosenlevelsprocketonnextpartisopen = false;
+                            }
+                            chosenlevelsprocketonnextpartisopen = false;
+                        }
+                    }
                 }
             }
         }
     }
-}
 
-// Callback function for when the sprocket level is chosen from the popup menu list.
-function popupLevelSelected(level)
-{
-    disablePointerOverEvent = false;
-    popupLevelChooser = null;
-    if (level >= 0) {
-        let sprocketBounds = partManager.getSprocketBounds(partClickedForLevelSelect.partIndex, level);
-        partManager.startChain();
-        partManager.addChainConnection(partClickedForLevelSelect.partIndex, level, partClickedForLevelSelect.cw);
-    }
-}
+// ---------------------------------------- DELETE THE ARROW HIGHLIGHTS ---------------------------------------------------- //
+    function clearHighlight() {
 
-function clearHighlight()
-{
-    if (this.highlightGraphics != null)
-    {
-        this.highlightGraphics.destroy();
-        this.highlightGraphics = null;
-    }
-}
+        if (this.highlightGraphics != null ) {
 
-function drawBackgroundGrid ()
-{
-    //var height = mapHeight;//this.cameras.main.height;
-    //var width = mapWidth;//this.cameras.main.width;
-    let mapLeft = -mapWidth/2;
-    let mapRight = mapWidth/2;
-    let mapTop = -mapHeight/2;
-    let mapBottom = mapHeight/2;
-
-    this.backgroundGrid = this.add.graphics();
-    this.backgroundGrid.lineStyle(1, 0x000000, 0.05);
-    this.backgroundGrid.beginPath();
-    this.backgroundGrid.arc(100, 100, 50, 45*(2*Math.PI/360), 90*(2*Math.PI/360), false);
-    this.backgroundGrid.stroke();
-    // First draw vertical lines
-    // Middle to right
-    for (var x = 0; x <= mapWidth; x += gridSpacing) {
-        this.backgroundGrid.lineBetween(x, mapBottom, x, mapTop);
-    }
-    // Middle to left
-    for (var x = 0 - gridSpacing; x >= -mapWidth; x -= gridSpacing) {
-        this.backgroundGrid.lineBetween(x, mapBottom, x, mapTop);
-    }
-
-    // Where would we start on the left side of the map?
-    // Up is negative, down is positive
-    // m = 1/SQRT(3)
-    // y = 1/SQRT(3) * x + intercept
-    // intercept = 0
-    // We're interested in where it crosses at x = mapLeft;
-    // yAtMapLeft = 1/SQRT(3) * mapLeft + 0
-    var yAtMapLeft = (1/Math.sqrt(3)) * mapLeft;//((-Math.sqrt(2)* mapLeft) / (2 * gridSpacing)) - Math.floor((-Math.sqrt(2)* mapLeft) / (2 * gridSpacing));
-    // Going down
-    for (var y = yAtMapLeft; y < mapBottom; y += gridSpacing * (2/Math.sqrt(3))) {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + (1/Math.sqrt(3)) * mapWidth);
-    }
-    // Going up
-    for (var y = yAtMapLeft - (gridSpacing * (2/Math.sqrt(3))); y > mapTop - mapWidth / Math.sqrt(3); y -= gridSpacing * (2/Math.sqrt(3))) {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + (1/Math.sqrt(3)) * mapWidth);
-    }
-
-    // m = -1/SQRT(3)
-    // yAtMapLeft = -1/SQRT(3) * mapLeft + 0
-    yAtMapLeft = (-1/Math.sqrt(3)) * mapLeft;
-    // Going down
-    for (var y = yAtMapLeft; y < mapBottom + mapWidth / 2; y += gridSpacing * (2/Math.sqrt(3)))
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y - (1/Math.sqrt(3)) * mapWidth);
-    }
-    // Going up
-    for (var y = yAtMapLeft - (gridSpacing * (2/Math.sqrt(3))); y > mapTop; y -= gridSpacing * (2/Math.sqrt(3)))
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + (-1/Math.sqrt(3)) * mapWidth);
-    }
-
-    this.backgroundGrid.lineStyle(1, 0xFF0000, 0.35);
-    this.backgroundGrid.lineBetween(-gridSpacing, 0, gridSpacing, 0);
-    this.backgroundGrid.lineBetween(-gridSpacing*(1/2), -gridSpacing*(Math.sqrt(3)/2), gridSpacing*(1/2), gridSpacing*(Math.sqrt(3)/2));
-    this.backgroundGrid.lineBetween(-gridSpacing*(1/2), gridSpacing*(Math.sqrt(3)/2), gridSpacing*(1/2), -gridSpacing*(Math.sqrt(3)/2));
-    // Now draw lines at 120 deg
-    /*var y = mapTop, x = mapLeft;
-    while (y < (Math.sqrt(2) * mapWidth) + mapBottom)
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y - Math.sqrt(2) * mapWidth);
-        y += 2 * gridSpacing;
-    }
-    y = mapTop;
-    while (y < mapBottom)
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + Math.sqrt(2) * mapWidth);
-        y += 2 * gridSpacing;
-    }
-    y = mapTop + (-2 * gridSpacing);
-    while (y > -(Math.sqrt(2) * mapWidth))
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + Math.sqrt(2) * mapWidth);
-        y -= 2 * gridSpacing;
-    }*/
-}
-
-function drawBackgroundGridOld ()
-{
-    //var height = mapHeight;//this.cameras.main.height;
-    //var width = mapWidth;//this.cameras.main.width;
-    let mapLeft = -mapWidth/2;
-    let mapRight = mapWidth/2;
-    let mapTop = -mapHeight/2;
-    let mapBottom = mapHeight/2;
-
-    this.backgroundGrid = this.add.graphics();
-    this.backgroundGrid.lineStyle(1, 0x000000, 0.15);
-
-    // First draw horizontal lines
-    for (var y = 0; y <= mapHeight; y += gridSpacing) {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapWidth, y);
-    }
-    for (var y = 0 - gridSpacing; y >= -mapHeight; y -= gridSpacing) {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapWidth, y);
-    }
-
-    // Where would we start on the left side of the map?
-    // m = -SQRT(2)
-    //y = -SQRT(2)* mapLeft
-    var intercept = ((-Math.sqrt(2)* mapLeft) / (2 * gridSpacing)) - Math.floor((-Math.sqrt(2)* mapLeft) / (2 * gridSpacing));
-    for (var y = intercept*(2 * gridSpacing); y < (Math.sqrt(2) * mapWidth) + mapBottom; y += 2 * gridSpacing) {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y - Math.sqrt(2) * mapWidth);
-    }
-    for (var y = intercept*(2 * gridSpacing) - 2 * gridSpacing; y > mapTop; y -= 2 * gridSpacing) {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y - Math.sqrt(2) * mapWidth);
-    }
-
-    intercept = ((Math.sqrt(2)* mapLeft) / (2 * gridSpacing)) - Math.floor((Math.sqrt(2)* mapLeft) / (2 * gridSpacing));
-    for (var y = intercept*(2 * gridSpacing); y < mapBottom; y += 2 * gridSpacing)
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + Math.sqrt(2) * mapWidth);
-    }
-    for (var y = intercept*(2 * gridSpacing) - 2 * gridSpacing; y > -(Math.sqrt(2) * mapWidth) - (mapHeight/2); y -= 2 * gridSpacing)
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + Math.sqrt(2) * mapWidth);
-    }
-
-    this.backgroundGrid.lineStyle(1, 0xFF0000, 0.35);
-    this.backgroundGrid.lineBetween(-gridSpacing, 0, gridSpacing, 0);
-    this.backgroundGrid.lineBetween(-gridSpacing*(1/2), -gridSpacing*(Math.sqrt(2)/2), gridSpacing*(1/2), gridSpacing*(Math.sqrt(2)/2));
-    this.backgroundGrid.lineBetween(-gridSpacing*(1/2), gridSpacing*(Math.sqrt(2)/2), gridSpacing*(1/2), -gridSpacing*(Math.sqrt(2)/2));
-    // Now draw lines at 120 deg
-    /*var y = mapTop, x = mapLeft;
-    while (y < (Math.sqrt(2) * mapWidth) + mapBottom)
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y - Math.sqrt(2) * mapWidth);
-        y += 2 * gridSpacing;
-    }
-    y = mapTop;
-    while (y < mapBottom)
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + Math.sqrt(2) * mapWidth);
-        y += 2 * gridSpacing;
-    }
-    y = mapTop + (-2 * gridSpacing);
-    while (y > -(Math.sqrt(2) * mapWidth))
-    {
-        this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + Math.sqrt(2) * mapWidth);
-        y -= 2 * gridSpacing;
-    }*/
-}
-
-function escapeKeyDown(event)
-{
-    if (partManager.isInTheMiddleOfBuildingAChain())
-    {
-        partManager.cancelChain();
-    }
-    if (popupLevelChooser != null)
-    {
-        popupLevelChooser.cancelPopup();
-        popupLevelChooser = null;
-        disablePointerOverEvent = false;
-    }
-}
-
-function getZoomExtents ()
-{
-    let zoomExtents = {left: 0, right: 0, top: 0, bottom: 0};
-    if (partManager != null) {
-        for (let i = 0; i < partManager.parts.length; i++) {
-            let partExtents = partManager.parts[i].getPartExtents();
-            if (partExtents.left < zoomExtents.left)
-                zoomExtents.left = partExtents.left;
-            if (partExtents.right > zoomExtents.right)
-                zoomExtents.right = partExtents.right;
-            if (partExtents.top < zoomExtents.top)
-                zoomExtents.top = partExtents.top;
-            if (partExtents.bottom > zoomExtents.bottom)
-                zoomExtents.bottom = partExtents.bottom;
+            this.highlightGraphics.destroy();
+            this.highlightGraphics = null;
         }
     }
-    return zoomExtents;
-}
 
-//function resize (gameSize, baseSize, displaySize, resolution)
-function resize (gameSize, baseSize, displaySize, previousWidth, previousHeight)
-{
-    positionLeftSideButtons.bind(this)();
-    positionRightSideButtons.bind(this)();
+// ---------------------------------------- DELETE THE MOBILE CHAIN TOUCH DOTS ---------------------------------------------------- //
+    function clearChainDots(activedots) {
 
-    // this.sceneDimensions has the last dimensions of the view before the resize.
-
-    //let worldCenter = this.cameras.main.getWorldPoint(this.cameras.main.centerX, this.cameras.main.centerY);
-    //let topleft = this.cameras.main.getWorldPoint(0,0);
-    //let bottomright = this.cameras.main.getWorldPoint(this.cameras.main.width,this.cameras.main.height);
-
-    if (this.useZoomExtents)
-    {
-        // Now set the view area (using zoom extents)
-        let zoomExtents = getZoomExtents();
-        // Find the center of the extents;
-        let extentsCenter = {x: (zoomExtents.right + zoomExtents.left) / 2, y: (zoomExtents.top + zoomExtents.bottom) / 2};
-        let extentsDimensions = {width: zoomExtents.right - zoomExtents.left, height: zoomExtents.bottom - zoomExtents.top};
-        this.cameras.main.centerOn(extentsCenter.x, extentsCenter.y);
-
-        // Get the current view dimensions
-        let topleft = self.cameras.main.getWorldPoint(0,0);
-        let bottomright = self.cameras.main.getWorldPoint(self.cameras.main.width,self.cameras.main.height);
-        let currentViewDimensions = {width: bottomright.x - topleft.x, height: bottomright.y - topleft.y};
-
-        // Get aspect ratio of each:
-        let currentAspectRatio = currentViewDimensions.width / currentViewDimensions.height;
-        let extentsAspectRatio = extentsDimensions.width / extentsDimensions.height;
-
-        let neededZoom = 1;
-        if (currentAspectRatio >= extentsAspectRatio)
-        {
-            // Our current width is greater than in the json. We're going to have to match height to get it to fit correctly.
-            neededZoom = (currentViewDimensions.height / extentsDimensions.height);
+        for (let l = 0; l < activedots; l++ ) {
+            if (chainDots[l] != null) {
+                chainDots[l].destroy();
+            }
+            if (chainArrows[l] != null) {
+                chainArrows[l].destroy();
+            }
         }
-        else
-        {
-            // Our current height is greater than in the json. We're going to have to match width to get it to fit correctly.
-            neededZoom = (currentViewDimensions.width / extentsDimensions.width);
-        }
-
-        this.cameras.main.setZoom(neededZoom * this.cameras.main.zoom * 0.9);
-    }
-    else {
-        // Determine the old center
-        let oldCenterX = this.cameras.main.centerX - ((gameSize.width - previousWidth) / 2);
-        let oldCenterY = this.cameras.main.centerY - ((gameSize.height - previousHeight) / 2);
-        let newPoint = this.cameras.main.getWorldPoint(oldCenterX, oldCenterY);
-
-        this.cameras.main.centerOn(newPoint.x, newPoint.y);
-
-        let neededZoom = (gameSize.width / previousWidth);
-
-
-        this.cameras.main.setZoom(neededZoom * this.cameras.main.zoom);
     }
 
-}
+// ---------------------------------------- DRAW THE BACKGROUND GRID ---------------------------------------------------- //
+    function drawBackgroundGrid() {
+        //var height = mapHeight;//this.cameras.main.height;
+        //var width = mapWidth;//this.cameras.main.width;
+        let mapLeft = -mapWidth / 2;
+        let mapRight = mapWidth / 2;
+        let mapTop = -mapHeight / 2;
+        let mapBottom = mapHeight / 2;
 
-function positionLeftSideButtons()
-{
-    let leftMargin = 6;
-    let topMargin = 6;
-    let spaceHeight = this.cameras.main.height;
+        this.backgroundGrid = this.add.graphics();
 
-    let buttons = [this.chainbutton,
-        this.motorbutton,
-        this.tilebutton,
-        this.junctionbutton,
-        this.resistorbutton,
-        this.capacitorbutton,
-        this.inductorbutton,
-        this.phonographbutton,
-        this.diodebutton,
-        this.buttonbutton,
-        this.transistorbutton,
-        this.levelchangerbutton
+        this.backgroundGrid.lineStyle(1, 0x000000, 0.05);
+
+        // First draw vertical lines
+        // Middle to right
+        for (var x = 0; x <= mapWidth; x += gridSpacing) {
+            this.backgroundGrid.lineBetween(x, mapBottom, x, mapTop);
+        }
+        // Middle to left
+        for (var x = 0 - gridSpacing; x >= -mapWidth; x -= gridSpacing) {
+            this.backgroundGrid.lineBetween(x, mapBottom, x, mapTop);
+        }
+
+        // Where would we start on the left side of the map?
+        // Up is negative, down is positive
+        // m = 1/SQRT(3)
+        // y = 1/SQRT(3) * x + intercept
+        // intercept = 0
+        // We're interested in where it crosses at x = mapLeft;
+        // yAtMapLeft = 1/SQRT(3) * mapLeft + 0
+        var yAtMapLeft = (1 / Math.sqrt(3)) * mapLeft;//((-Math.sqrt(2)* mapLeft) / (2 * gridSpacing)) - Math.floor((-Math.sqrt(2)* mapLeft) / (2 * gridSpacing));
+        // Going down
+        for (var y = yAtMapLeft; y < mapBottom; y += gridSpacing * (2 / Math.sqrt(3))) {
+            this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + (1 / Math.sqrt(3)) * mapWidth);
+        }
+        // Going up
+        for (var y = yAtMapLeft - (gridSpacing * (2 / Math.sqrt(3))); y > mapTop - mapWidth / Math.sqrt(3); y -= gridSpacing * (2 / Math.sqrt(3))) {
+            this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + (1 / Math.sqrt(3)) * mapWidth);
+        }
+
+        // m = -1/SQRT(3)
+        // yAtMapLeft = -1/SQRT(3) * mapLeft + 0
+        yAtMapLeft = (-1 / Math.sqrt(3)) * mapLeft;
+        // Going down
+        for (var y = yAtMapLeft; y < mapBottom + mapWidth / 2; y += gridSpacing * (2 / Math.sqrt(3))) {
+            this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y - (1 / Math.sqrt(3)) * mapWidth);
+        }
+        // Going up
+        for (var y = yAtMapLeft - (gridSpacing * (2 / Math.sqrt(3))); y > mapTop; y -= gridSpacing * (2 / Math.sqrt(3))) {
+            this.backgroundGrid.lineBetween(mapLeft, y, mapRight, y + (-1 / Math.sqrt(3)) * mapWidth);
+        }
+
+        // red asterik star in middle of background
+        this.backgroundGrid.lineStyle(1, 0xFF0000, 0.35);
+        this.backgroundGrid.lineBetween(-gridSpacing, 0, gridSpacing, 0);
+        this.backgroundGrid.lineBetween(-gridSpacing * (1 / 2), -gridSpacing * (Math.sqrt(3) / 2), gridSpacing * (1 / 2), gridSpacing * (Math.sqrt(3) / 2));
+        this.backgroundGrid.lineBetween(-gridSpacing * (1 / 2), gridSpacing * (Math.sqrt(3) / 2), gridSpacing * (1 / 2), -gridSpacing * (Math.sqrt(3) / 2));
+        // Now draw lines at 120 deg
+
+    }
+
+
+    function escapeKeyDown(event) {
+        if (partManager.isInTheMiddleOfBuildingAChain()) {
+            partManager.cancelChain();
+        }
+        if (popupLevelChooser != null) {
+            popupLevelChooser.cancelPopup();
+            popupLevelChooser = null;
+            disablePointerOverEvent = false;
+        }
+        setToInteractMode();
+    }
+
+    function getZoomExtents() {
+        let zoomExtents = {left: 0, right: 0, top: 0, bottom: 0};
+        if (partManager != null) {
+            for (let i = 0; i < partManager.parts.length; i++) {
+                let partExtents = partManager.parts[i].getPartExtents();
+                if (partExtents.left < zoomExtents.left)
+                    zoomExtents.left = partExtents.left;
+                if (partExtents.right > zoomExtents.right)
+                    zoomExtents.right = partExtents.right;
+                if (partExtents.top < zoomExtents.top)
+                    zoomExtents.top = partExtents.top;
+                if (partExtents.bottom > zoomExtents.bottom)
+                    zoomExtents.bottom = partExtents.bottom;
+            }
+        }
+        return zoomExtents;
+    }
+
+// ---------------------------------------- WINDOW RESIZE ---------------------------------------------------- //
+// Kelly Test to add responsive button sizes
+    function resize(gameSize, baseSize, displaySize, previousWidth, previousHeight) {
+        // console.log("isMobile: ", isMobile, " isTouchMobile: ", isTouchMobile);
+        dpr = window.devicePixelRatio;
+        width = window.innerWidth * dpr;
+        height = window.innerHeight * dpr;
+
+        this.titleText.setX(this.cameras.main.width - (this.titleText.width + 20));
+        this.titleText.setY(this.cameras.main.height - (this.titleText.height + 20));
+        // console.log("RESIZED -- width: ", window.innerWidth, ", height: ", window.innerHeight, ", dpr: ", dpr);
+
+        buttonContainerHeight = (window.innerHeight - 20) / 12;
+        buttonContainerWidth = (window.innerHeight - 20) / 12;
+        // console.log("RESIZED - now button container height is: ", buttonContainerHeight);
+
+        if (window.innerHeight > 768) {
+            buttonWidth = buttonContainerHeight * .85;
+            buttonHeight = buttonContainerHeight * .85;
+            // console.log("RESIZED - if inner height more than 800, button height: ", buttonHeight);
+        } else if (window.innerHeight > 600 && window.innerHeight <= 768) {
+            buttonWidth = 50;
+            buttonHeight = 50;
+            // console.log("RESIZED - if inner height is between 600 and 800, button height: ", buttonHeight);
+        } else if (window.innerHeight <= 600) {
+            buttonWidth = 45;
+            buttonHeight = 45;
+            // console.log("RESIZED - if inner height is less than 600, button height: ", buttonHeight);
+        }
+
+        // Kelly Test recreate part buttons with new size
+        let buttonX = (buttonContainerWidth / 2) + 6;
+        let buttonYoffset = (buttonContainerHeight / 2) + 6;
+
+        this.chainbutton.destroy();
+        this.junctionbutton.destroy();
+        this.motorbutton.destroy();
+        this.resistorbutton.destroy();
+        this.capacitorbutton.destroy();
+        this.inductorbutton.destroy();
+        this.phonographbutton.destroy();
+        this.diodebutton.destroy();
+        this.buttonbutton.destroy();
+        this.transistorbutton.destroy();
+        this.levelchangerbutton.destroy();
+        this.tilebutton.destroy();
+        this.helpbutton.destroy();
+        this.interactbutton.destroy();
+        this.tilebutton.destroy();
+        this.movebutton.destroy();
+        this.deletebutton.destroy();
+        this.editbutton.destroy();
+        this.removeallbutton.destroy();
+        this.zoominbutton.destroy();
+        this.zoomoutbutton.destroy();
+        this.linkbutton.destroy();
+        this.savebutton.destroy();
+        this.loadbutton.destroy();
+        // this.fullscreenbutton.destroy();
+
+        // left side part buttons
+        this.chainbutton = new ToggleButton(controlscene, 'chain', buttonX, buttonYoffset, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'chain-icon', onSwitchToggled, 'button-disabled-background');
+        this.chainbutton.setButtonType('toggle');
+        this.chainbutton.setTooltipString('Add chain loop', 'right');
+        this.junctionbutton = new ToggleButton(controlscene, 'junction', buttonX, buttonYoffset + buttonContainerHeight, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'junction-icon', onSwitchToggled, 'button-disabled-background');
+        this.junctionbutton.setButtonType('toggle');
+        this.junctionbutton.setTooltipString('Junction', 'right');
+        this.motorbutton = new ToggleButton(controlscene, 'motor', buttonX, buttonYoffset + buttonContainerHeight * 2, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'motor-icon', onSwitchToggled, 'button-disabled-background');
+        this.motorbutton.setButtonType('toggle');
+        this.motorbutton.setTooltipString('Battery', 'right');
+        this.resistorbutton = new ToggleButton(controlscene, 'resistor', buttonX, buttonYoffset + buttonContainerHeight * 3, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'resistor-icon', onSwitchToggled, 'button-disabled-background');
+        this.resistorbutton.setButtonType('toggle');
+        this.resistorbutton.setTooltipString('Resistor', 'right');
+        this.capacitorbutton = new ToggleButton(controlscene, 'capacitor', buttonX, buttonYoffset + buttonContainerHeight * 4, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'capacitor-icon', onSwitchToggled, 'button-disabled-background');
+        this.capacitorbutton.setButtonType('toggle');
+        this.capacitorbutton.setTooltipString('Capacitor', 'right');
+        this.inductorbutton = new ToggleButton(controlscene, 'inductor', buttonX, buttonYoffset + buttonContainerHeight * 5, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'inductor-icon', onSwitchToggled, 'button-disabled-background');
+        this.inductorbutton.setButtonType('toggle');
+        this.inductorbutton.setTooltipString('Inductor', 'right');
+        this.phonographbutton = new ToggleButton(controlscene, 'phonograph', buttonX, buttonYoffset + buttonContainerHeight * 6, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'phonograph-icon', onSwitchToggled, 'button-disabled-background');
+        this.phonographbutton.setButtonType('toggle');
+        this.phonographbutton.setTooltipString('Ammeter', 'right');
+        this.diodebutton = new ToggleButton(controlscene, 'diode', buttonX, buttonYoffset + buttonContainerHeight * 7, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'diode-icon', onSwitchToggled, 'button-disabled-background');
+        this.diodebutton.setButtonType('toggle');
+        this.diodebutton.setTooltipString('Diode', 'right');
+        this.buttonbutton = new ToggleButton(controlscene, 'button', buttonX, buttonYoffset + buttonContainerHeight * 8, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'button-icon', onSwitchToggled, 'button-disabled-background');
+        this.buttonbutton.setButtonType('toggle');
+        this.buttonbutton.setTooltipString('Switch', 'right');
+        this.transistorbutton = new ToggleButton(controlscene, 'transistor', buttonX, buttonYoffset + buttonContainerHeight * 9, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'transistor-icon', onSwitchToggled, 'button-disabled-background');
+        this.transistorbutton.setButtonType('toggle');
+        this.transistorbutton.setTooltipString('Transistor', 'right');
+        this.levelchangerbutton = new ToggleButton(controlscene, 'level-changer', buttonX, buttonYoffset + buttonContainerHeight * 10, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'level-changer-icon', onSwitchToggled, 'button-disabled-background');
+        this.levelchangerbutton.setButtonType('toggle');
+        this.levelchangerbutton.setTooltipString('Level changer', 'right');
+        this.tilebutton = new ToggleButton(controlscene, 'tile', buttonX, buttonYoffset + buttonContainerHeight * 11, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'tile-icon', onSwitchToggled, 'button-disabled-background');
+        this.tilebutton.setButtonType('toggle');
+        this.tilebutton.setTooltipString('Tile', 'right');
+
+        // Right side toolbar
+        let spaceWidth = this.cameras.main.width;
+        let rightSideToolbarPositionX = spaceWidth - 10 - buttonWidth / 2;
+
+        this.helpbutton = new ToggleButton(controlscene, 'inform', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'help-icon', onHelpBtnClicked, 'button-disabled-background');
+        this.helpbutton.setTooltipString('Instructions', 'left');
+        this.interactbutton = new ToggleButton(controlscene, 'interact', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'interact-icon', onSwitchToggled, 'button-disabled-background');
+        this.interactbutton.setButtonType('toggle');
+        this.interactbutton.setTooltipString('Interact', 'left');
+        this.movebutton = new ToggleButton(controlscene, 'move', rightSideToolbarPositionX, 35 + 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'move-icon', onSwitchToggled, 'button-disabled-background');
+        this.movebutton.setButtonType('toggle');
+        this.movebutton.setTooltipString('Reposition part', 'left');
+        this.deletebutton = new ToggleButton(controlscene, 'delete', rightSideToolbarPositionX, 35 + 2 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'delete-icon', onSwitchToggled, 'button-disabled-background');
+        this.deletebutton.setButtonType('toggle');
+        this.deletebutton.setTooltipString('Remove part', 'left');
+        this.editbutton = new ToggleButton(controlscene, 'edit', rightSideToolbarPositionX, 35 + 3 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'edit-icon', onSwitchToggled, 'button-disabled-background');
+        this.editbutton.setButtonType('toggle');
+        this.editbutton.setTooltipString('Change part properties', 'left');
+        this.removeallbutton = new ToggleButton(controlscene, 'remove-all', rightSideToolbarPositionX, 35 + 4 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'remove-all-icon', onRemoveAllClicked, 'button-disabled-background');
+        this.removeallbutton.setTooltipString('Remove all', 'left');
+        this.zoominbutton = new ToggleButton(controlscene, 'zoom-in', rightSideToolbarPositionX, 35 + 4 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-in-icon', onZoomInClicked, 'button-disabled-background');
+        this.zoominbutton.setTooltipString('Zoom in', 'left');
+        this.zoomoutbutton = new ToggleButton(controlscene, 'zoom-out', rightSideToolbarPositionX, 35 + 5 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-out-icon', onZoomOutClicked, 'button-disabled-background');
+        this.zoomoutbutton.setTooltipString('Zoom out', 'left');
+        this.linkbutton = new ToggleButton(controlscene, 'link', rightSideToolbarPositionX, 35 + 6 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'link-icon', onGenerateLinkClicked, 'button-disabled-background');
+        this.linkbutton.setTooltipString('Copy circuit to clipboard', 'left');
+        this.savebutton = new ToggleButton(controlscene, 'save', rightSideToolbarPositionX, 35 + 7 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'save-icon', onSaveClicked, 'button-disabled-background');
+        this.savebutton.setTooltipString('Save circuit', 'left');
+        this.loadbutton = new ToggleButton(controlscene, 'load', rightSideToolbarPositionX, 35 + 8 * 75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'load-icon', onLoadClicked, 'button-disabled-background');
+        this.loadbutton.setTooltipString('Load circuit', 'left');
+        // this.fullscreenbutton = new ToggleButton(controlscene, 'full-editor', rightSideToolbarPositionX, 35+9*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'full-screen-icon', onFullEditorClicked, 'button-disabled-background');
+        // this.fullscreenbutton.setTooltipString('Open in full simulator', 'left');
+
+        positionLeftSideButtons.bind(this)();
+        positionRightSideButtons.bind(this)();
+
+        // this.sceneDimensions has the last dimensions of the view before the resize.
+
+        //let worldCenter = this.cameras.main.getWorldPoint(this.cameras.main.centerX, this.cameras.main.centerY);
+        //let topleft = this.cameras.main.getWorldPoint(0,0);
+        //let bottomright = this.cameras.main.getWorldPoint(this.cameras.main.width,this.cameras.main.height);
+
+        if (this.useZoomExtents) {
+            // Now set the view area (using zoom extents)
+            let zoomExtents = getZoomExtents();
+            // Find the center of the extents;
+            let extentsCenter = {
+                x: (zoomExtents.right + zoomExtents.left) / 2,
+                y: (zoomExtents.top + zoomExtents.bottom) / 2
+            };
+            let extentsDimensions = {
+                width: zoomExtents.right - zoomExtents.left,
+                height: zoomExtents.bottom - zoomExtents.top
+            };
+            this.cameras.main.centerOn(extentsCenter.x, extentsCenter.y);
+
+            // Get the current view dimensions
+            let topleft = self.cameras.main.getWorldPoint(0, 0);
+            let bottomright = self.cameras.main.getWorldPoint(self.cameras.main.width, self.cameras.main.height);
+            let currentViewDimensions = {width: bottomright.x - topleft.x, height: bottomright.y - topleft.y};
+
+            // Get aspect ratio of each:
+            let currentAspectRatio = currentViewDimensions.width / currentViewDimensions.height;
+            let extentsAspectRatio = extentsDimensions.width / extentsDimensions.height;
+
+            let neededZoom = 1;
+            if (currentAspectRatio >= extentsAspectRatio) {
+                // Our current width is greater than in the json. We're going to have to match height to get it to fit correctly.
+                neededZoom = (currentViewDimensions.height / extentsDimensions.height);
+            } else {
+                // Our current height is greater than in the json. We're going to have to match width to get it to fit correctly.
+                neededZoom = (currentViewDimensions.width / extentsDimensions.width);
+            }
+
+            this.cameras.main.setZoom(neededZoom * this.cameras.main.zoom * 0.9);
+        } else {
+            // Determine the old center
+            let oldCenterX = this.cameras.main.centerX - ((gameSize.width - previousWidth) / 2);
+            let oldCenterY = this.cameras.main.centerY - ((gameSize.height - previousHeight) / 2);
+            let newPoint = this.cameras.main.getWorldPoint(oldCenterX, oldCenterY);
+
+            this.cameras.main.centerOn(newPoint.x, newPoint.y);
+
+            let neededZoom = (gameSize.width / previousWidth);
+
+
+            this.cameras.main.setZoom(neededZoom * this.cameras.main.zoom);
+        }
+
+    }
+
+// ---------------------------------------- SET UP THE LEFT SIDE PART BUTTONS ---------------------------------------------------- //
+    function positionLeftSideButtons() {
+        let leftMargin = 6;
+        let topMargin = 6;
+        let spaceHeight = this.cameras.main.height;
+
+        let buttons = [this.chainbutton,
+            this.motorbutton,
+            this.tilebutton,
+            this.junctionbutton,
+            this.resistorbutton,
+            this.capacitorbutton,
+            this.inductorbutton,
+            this.phonographbutton,
+            this.diodebutton,
+            this.buttonbutton,
+            this.transistorbutton,
+            this.levelchangerbutton
         ];
 
-    let xPos = (buttonWidth /2) + leftMargin;
-    let yPos = topMargin + (buttonHeight /2);
-    for (let i = 0; i < buttons.length; i++)
-    {
-        buttons[i].setPosition(xPos, yPos);
-        yPos += buttonHeight + 10;
-        if (yPos > spaceHeight - (buttonHeight / 2) - topMargin)
-        {
-            yPos = topMargin + (buttonHeight / 2);
-            xPos += buttonWidth + 10;
+        let buttonsPerColumn = Math.floor((spaceHeight - (topMargin * 2) - buttonHeight) / (buttonHeight + 10)) + 1;
+        let numColumns = Math.ceil(buttons.length / buttonsPerColumn);
+        let remainder = buttons.length - (buttonsPerColumn * (numColumns - 1));
+
+        let xPos = (buttonWidth / 2) + leftMargin;
+        let yPos = topMargin + (buttonHeight /2);
+
+
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].setPosition(xPos, yPos);
+            yPos += buttonHeight + 10;
+            if (yPos > spaceHeight - (buttonHeight / 2) + topMargin) {
+                yPos = topMargin + (buttonHeight / 2);
+                xPos += buttonWidth + 10;
+            }
         }
     }
-}
 
-function positionRightSideButtons()
-{
-    let spaceWidth = this.cameras.main.width;
-    let spaceHeight = this.cameras.main.height;
-    let topMargin = 6;
-    let rightMargin = 6;
+// ---------------------------------------- SET UP THE RIGHT SIDE TOOL BUTTONS ---------------------------------------------------- //
+    function positionRightSideButtons() {
+        let spaceWidth = this.cameras.main.width;
+        let spaceHeight = this.cameras.main.height;
+        let topMargin = 6;
+        let rightMargin = 6;
 
 
-    let buttons;
-    if (!this.viewOnly)
-    {
-        buttons = [this.interactbutton,
-            this.movebutton,
-            this.deletebutton,
-            this.editbutton,
-            this.zoominbutton,
-            this.zoomoutbutton,
-            this.linkbutton,
-            this.savebutton,
-            this.loadbutton,
-            this.removeallbutton];
-    }
-    else
-    {
-        buttons = [this.zoominbutton,
-            this.zoomoutbutton,
-            this.fullscreenbutton]
-    }
+        let buttons;
+        if (!this.viewOnly) {
+            buttons = [this.interactbutton,
+                this.movebutton,
+                this.deletebutton,
+                this.editbutton,
+                this.zoominbutton,
+                this.zoomoutbutton,
+                this.linkbutton,
+                this.savebutton,
+                this.loadbutton,
+                this.removeallbutton,
+                this.helpbutton];
+        } else {
+            buttons = [this.zoominbutton,
+                this.zoomoutbutton,
+                this.fullscreenbutton]
+        }
 
-    let buttonsPerColumn = Math.floor((spaceHeight - (topMargin * 2) - buttonHeight) / (buttonHeight + 10)) + 1;
-    let numColumns = Math.ceil(buttons.length / buttonsPerColumn);
-    let remainder = buttons.length - (buttonsPerColumn * (numColumns - 1));
+        let buttonsPerColumn = Math.floor((spaceHeight - (topMargin * 2) - buttonHeight) / (buttonHeight + 10)) + 1;
+        let numColumns = Math.ceil(buttons.length / buttonsPerColumn);
+        let remainder = buttons.length - (buttonsPerColumn * (numColumns - 1));
 
-    let xPos = spaceWidth - 6 - (buttonWidth / 2) - ((numColumns - 1) * (buttonWidth + 10));
-    let yPos = topMargin + (buttonHeight /2);
-    let firstColumn = true;
-    for (let i = 0; i < buttons.length; i++)
-    {
-        buttons[i].setPosition(xPos, yPos);
-        yPos += buttonHeight + 10;
-        if ((firstColumn && i == (remainder - 1)) || (yPos > spaceHeight - (buttonHeight / 2) + topMargin))
-        {
-            firstColumn = false;
-            yPos = topMargin + (buttonHeight /2);
-            xPos += buttonWidth + 10;
+        let xPos = spaceWidth - 6 - (buttonWidth / 2) - ((numColumns - 1) * (buttonWidth + 10));
+        let yPos = topMargin + (buttonHeight / 2);
+        let firstColumn = true;
+        // console.log("buttons per column: ", buttonsPerColumn, " numColumns: ", numColumns, " remainder: ", remainder);
+        // console.log("x position: ", xPos, " y position: ", yPos);
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].setPosition(xPos, yPos);
+            yPos += buttonHeight + 10;
+            if ((firstColumn && i === (remainder - 1)) || (yPos > spaceHeight - (buttonHeight / 2) + topMargin)) {
+                firstColumn = false;
+                yPos = topMargin + (buttonHeight / 2);
+                xPos += buttonWidth + 10;
+            }
         }
     }
-}
