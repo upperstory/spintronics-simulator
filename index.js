@@ -76,11 +76,12 @@ createDatabaseAndTableIfNotExist();
 console.log("Start persistent connection to database.");
 const client = process.env.NODE_ENV == 'local' ? new pg.Client({database: "circuit_db"}) : new pg.Client(
     {
-        user: process.env.REMOTE_PGUSER,
+        /*user: process.env.REMOTE_PGUSER,
         password: process.env.REMOTE_PGPASSWORD,
         database:  process.env.REMOTE_PGDATABASE,
         port: process.env.REMOTE_PGPORT,
-        host: process.env.REMOTE_PGHOST,
+        host: process.env.REMOTE_PGHOST,*/
+        connectionString: process.env.DATABASE_URL,
         ssl: {
             rejectUnauthorized: false
         }

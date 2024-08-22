@@ -12,13 +12,14 @@ export class TransistorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'transistor';
+        this.hasChainConnection = 'open';
         this.partImage = scene.add.image(this.x, this.y,'transistor-gate');
         this.partImage.setScale(0.5);
         this.partImage.setDepth(8);
         //this.partImage.setAlpha(0.0);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
 
         this.transistorGuideImage = scene.add.image(this.x, this.y,'transistor-guide');
         this.transistorGuideImage.setScale(0.5);
@@ -383,29 +384,29 @@ export class TransistorPart extends PartBase
 
         let brakeRadius = 56;
 
-        if (this.partImage != undefined)
+        if (this.partImage !== undefined)
             this.partImage.setPosition(x, y);
-        if (this.transistorGuideImage != undefined)
+        if (this.transistorGuideImage !== undefined)
             this.transistorGuideImage.setPosition(x, y);
-        if (this.transistorBaseImage != undefined)
+        if (this.transistorBaseImage !== undefined)
             this.transistorBaseImage.setPosition(x, y);
-        if (this.transistorTabImage != undefined)
+        if (this.transistorTabImage !== undefined)
             this.transistorTabImage.setPosition(x, y + 86);
-        if (this.transistorMidCapImage != undefined)
+        if (this.transistorMidCapImage !== undefined)
             this.transistorMidCapImage.setPosition(x, y);
-        if (this.transistorResistorImage != undefined)
+        if (this.transistorResistorImage !== undefined)
             this.transistorResistorImage.setPosition(x, y);
-        if (this.transistorBrake1Image != undefined)
+        if (this.transistorBrake1Image !== undefined)
             this.transistorBrake1Image.setPosition(this.x, this.y - brakeRadius,'transistor-brake');
-        if (this.transistorBrake2Image != undefined)
+        if (this.transistorBrake2Image !== undefined)
             this.transistorBrake2Image.setPosition(this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius);
-        if (this.transistorBrake3Image != undefined)
+        if (this.transistorBrake3Image !== undefined)
             this.transistorBrake3Image.setPosition(this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake');
-        if (this.transistorBall1Image != undefined)
+        if (this.transistorBall1Image !== undefined)
             this.transistorBall1Image.setPosition(x, y);
-        if (this.transistorBall2Image != undefined)
+        if (this.transistorBall2Image !== undefined)
             this.transistorBall2Image.setPosition(x, y);
-        if (this.transistorBall3Image != undefined)
+        if (this.transistorBall3Image !== undefined)
             this.transistorBall3Image.setPosition(x, y);
     }
 

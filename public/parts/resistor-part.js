@@ -11,7 +11,7 @@ export class ResistorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'resistor';
-
+        this.hasChainConnection = 'open';
         // Set the starting resistance
         this.resistance = 1000; // 1000 ohms default
 
@@ -21,12 +21,8 @@ export class ResistorPart extends PartBase
         this.partImage.setDepth(8);
         //this.add(this.partImage);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
-        //this.setSize(this.partWidth, this.partHeight);
-
-        //this.partCenterX = this.partWidth / 2;
-        //this.partCenterY = this.partHeight / 2;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
 
         // Set the listeners
         this.partImage.setInteractive({
@@ -159,19 +155,19 @@ export class ResistorPart extends PartBase
         this.resistance = ResistorPart.possibleResistorValues[index];
         //this.resistanceText.setText(this.getResistanceString());
 
-        if (index == 0)
+        if (index === 0)
             this.partImage.setTexture('resistor-100');
-        else if (index == 1)
+        else if (index === 1)
             this.partImage.setTexture('resistor-200');
-        else if (index == 2)
+        else if (index === 2)
             this.partImage.setTexture('resistor-500');
-        else if (index == 3)
+        else if (index === 3)
             this.partImage.setTexture('resistor-1000');
-        else if (index == 4)
+        else if (index === 4)
             this.partImage.setTexture('resistor-2000');
-        else if (index == 5)
+        else if (index === 5)
             this.partImage.setTexture('resistor-20');
-        else if (index == 6)
+        else if (index === 6)
             this.partImage.setTexture('resistor-50');
 
         let dampingRatio = 100;
@@ -222,7 +218,7 @@ export class ResistorPart extends PartBase
     {
         this.x = x;
         this.y = y;
-        if (this.partImage != undefined)
+        if (this.partImage !== undefined)
             this.partImage.setPosition(x, y);
     }
 

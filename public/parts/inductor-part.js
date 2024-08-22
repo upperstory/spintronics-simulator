@@ -10,13 +10,13 @@ export class InductorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'inductor';
-
+        this.hasChainConnection = 'open';
         this.partImage = scene.add.image(this.x, this.y,'inductor-weights');
         this.partImage.setScale(0.5);
         this.partImage.setDepth(10);
 
-        this.partWidth = this.partImage.displayWidth;
-        this.partHeight = this.partImage.displayHeight;
+        // this.partWidth = this.partImage.displayWidth;
+        // this.partHeight = this.partImage.displayHeight;
 
         this.inductorBaseImage = scene.add.image(this.x, this.y,'inductor-base');
         this.inductorBaseImage.setScale(0.5);

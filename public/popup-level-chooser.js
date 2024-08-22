@@ -26,6 +26,7 @@ export class PopupLevelChooser extends Phaser.GameObjects.Container {
         this.buttonWidth = buttonWidth;
         this.buttonHeight = buttonHeight;
         this.selectableButtons = selectableLevels;
+        // console.log("OptionSelectedCallback: ", optionSelectedCallback);
         this.optionSelectedCallback = optionSelectedCallback;
 
         // Fill the scene with the container.
@@ -77,6 +78,7 @@ export class PopupLevelChooser extends Phaser.GameObjects.Container {
             let desiredPos = {
                 x: (this.popupX - this.thisScene.cameras.main.centerX)/* + (this.buttonWidth/2)*/,
                 y: ((this.popupY + buttonTop) - this.thisScene.cameras.main.centerY) + (this.buttonHeight/2) + 3};
+            // console.log("in popup level chooser js - create some buttons - width & height: ", buttonWidth, " & ", buttonHeight);
             this.buttons[i] = new ToggleButton(scene, (this.buttonCount - i).toString(), desiredPos.x, desiredPos.y, buttonWidth, buttonHeight, 'level-button-default-background', 'level-button-hover-background', 'level-button-selected-background', textureNames[this.buttonCount - i - 1], this.onButtonPressed, 'level-button-disabled-background');
             this.add(this.buttons[i]);
 
@@ -85,15 +87,16 @@ export class PopupLevelChooser extends Phaser.GameObjects.Container {
             let selectable = false;
             for (let j = 0; j < selectableLevels.length; j++)
             {
-                if (this.buttonCount - i - 1 == selectableLevels[j])
+                if (this.buttonCount - i - 1 === selectableLevels[j])
                 {
                     selectable = true;
                     break;
                 }
             }
 
-            if (!selectable)
+            if (!selectable) {
                 this.buttons[i].setDisabled(true);
+            }
         }
     }
 
@@ -111,10 +114,12 @@ export class PopupLevelChooser extends Phaser.GameObjects.Container {
 
     onButtonPressed(name, statePressed)
     {
+        // console.log("In Level onButtonPressed...");
         for (let i = 0; i < this.buttons.length; i++)
         {
             this.buttons[i].destroy();
         }
+        // console.log("parentcontainer: ", name, " ", (parseInt(name) - 1));
         this.optionSelectedCallback.bind(this.parentContainer)(parseInt(name) - 1);
         this.backdrop.destroy();
         this.destroy();

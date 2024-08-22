@@ -19,6 +19,7 @@
     "express-sslify": "^1.2.0",
     "pg": "^8.7.3",
     "pgtools": "^0.3.2",
+    "phaser3-rex-plugins": "^1.1.70",
     "ssl-express-www": "^3.0.8"
   },
   "devDependencies": {

@@ -37849,7 +37849,7 @@ var Container = new Class({
      * @method Phaser.GameObjects.Container#add
      * @since 3.4.0
      *
-     * @param {Phaser.GameObjects.GameObject|Phaser.GameObjects.GameObject[]} child - The Game Object, or array of Game Objects, to add to the Container.
+     * @param {string} child - The Game Object, or array of Game Objects, to add to the Container.
      *
      * @return {Phaser.GameObjects.Container} This Container instance.
      */

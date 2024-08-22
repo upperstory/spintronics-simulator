@@ -9,7 +9,7 @@ export class ButtonPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'button';
-
+        this.hasChainConnection = 'open';
         this.partImage = scene.add.image(this.x, this.y,'button-sprocket');
         this.partImage.setScale(0.5);
         this.partImage.setDepth(8);
