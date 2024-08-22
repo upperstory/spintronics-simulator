@@ -22,8 +22,8 @@ let width = window.innerWidth * dpr;
 let height = window.innerHeight * dpr;
 // console.log("ON LOAD -- innerWidth: ", innerWidth, ", innerHeight: ", innerHeight, ", dpr: ", dpr);
 
-let mapWidth = 4000;
-let mapHeight = 4000;
+let mapWidth = 18000;
+let mapHeight = 18000;
 let buttonWidth = 45;
 let buttonHeight = 45;
 // Kelly testing file upload click element
