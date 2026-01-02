@@ -1,0 +1,117 @@
+{
+  "lang": "de",
+  "name": "Deutsch",
+  "components": {
+    "chain": {
+      "name": "Kette",
+      "shortcut": "N",
+      "description": "Verbindet Komponenten miteinander. Klicken Sie auf Zahnrader, um einen Kettenpfad zu erstellen. Ketten transportieren den 'Strom' (Drehbewegung) zwischen den Teilen.",
+      "electronic_equivalent": "Draht / Leiter"
+    },
+    "junction": {
+      "name": "Knotenpunkt",
+      "shortcut": "J",
+      "description": "Ein Verbindungspunkt, an dem mehrere Ketten zusammentreffen konnen. Der in einen Knotenpunkt fliessende Strom teilt sich auf die ausgehenden Ketten auf, wie bei einer Drahtverbindung in der Elektronik.",
+      "electronic_equivalent": "Drahtverbindung / Knoten"
+    },
+    "motor": {
+      "name": "Batterie",
+      "shortcut": "B",
+      "description": "Die Energiequelle fur Ihren Stromkreis. Ziehen Sie sie auf, um Energie zu speichern, und lassen Sie los, um Strom durch Ihren Stromkreis zu treiben. Klicken zum Aufziehen oder Loslassen.",
+      "electronic_equivalent": "Batterie / Gleichstromquelle"
+    },
+    "resistor": {
+      "name": "Widerstand",
+      "shortcut": "R",
+      "description": "Verlangsamt die Drehbewegung durch Reibung. Hohere Widerstandswerte erzeugen mehr Reibung und reduzieren den Stromfluss. Klicken Sie, um den Wert zu andern.",
+      "electronic_equivalent": "Elektrischer Widerstand"
+    },
+    "capacitor": {
+      "name": "Kondensator",
+      "shortcut": "C",
+      "description": "Speichert Rotationsenergie in einem Federmechanismus. Ladt sich auf, wenn Strom hineinfliesst, und gibt diese Energie wieder ab, wenn der Stromkreis es erlaubt. Klicken Sie, um die Kapazitat zu andern.",
+      "electronic_equivalent": "Elektrischer Kondensator"
+    },
+    "inductor": {
+      "name": "Spule",
+      "shortcut": "I",
+      "description": "Verwendet rotierende Gewichte, um Anderungen im Stromfluss zu widerstehen. Je schwerer die Gewichte, desto mehr Widerstand gegen plotzliche Anderungen. Speichert Energie als Drehimpuls.",
+      "electronic_equivalent": "Elektrische Spule"
+    },
+    "phonograph": {
+      "name": "Audio-Messgerät",
+      "shortcut": "P",
+      "description": "Erzeugt Ton basierend auf dem Stromfluss. Tonhohe und Lautstarke andern sich mit der Kettengeschwindigkeit. Verwenden Sie es, um das Verhalten Ihres Stromkreises zu horen.",
+      "electronic_equivalent": "Audio-Oszillator / Lautsprecher"
+    },
+    "ammeter": {
+      "name": "Zeiger-Amperemeter",
+      "shortcut": "A",
+      "description": "Zeigt den Strom als visuelle Anzeige mit Nadelanzeige an. Klicken Sie, um den Skalenbereich zu andern. Zeigt sowohl Starke als auch Richtung des Stromflusses.",
+      "electronic_equivalent": "Analoges Amperemeter / Galvanometer"
+    },
+    "diode": {
+      "name": "Diode",
+      "shortcut": "D",
+      "description": "Lasst Strom nur in eine Richtung fliessen. Wenn Strom versucht, ruckwarts zu fliessen, blockiert die Diode ihn wie ein Einwegventil.",
+      "electronic_equivalent": "Halbleiterdiode"
+    },
+    "button": {
+      "name": "Schalter",
+      "shortcut": "U",
+      "description": "Ein manueller Ein/Aus-Schalter. Klicken Sie, um zwischen offen (kein Strom) und geschlossen (Strom fliesst) zu wechseln. Verwenden Sie ihn zur Steuerung Ihres Stromkreises.",
+      "electronic_equivalent": "SPST-Schalter"
+    },
+    "transistor": {
+      "name": "Transistor",
+      "shortcut": "T",
+      "description": "Ein elektronischer Schalter, der durch Strom gesteuert wird. Ein kleiner Strom am Gate (Basis) steuert, ob ein grosserer Strom durch den Hauptpfad fliessen kann.",
+      "electronic_equivalent": "BJT / MOSFET-Transistor"
+    },
+    "level-changer": {
+      "name": "Ebenenwechsler",
+      "shortcut": "L",
+      "description": "Verbindet Ketten auf verschiedenen Hohenebenen. Verwenden Sie dies, um Ketten uber oder unter anderen zu fuhren und komplexere 3D-Schaltkreislayouts zu ermoglichen.",
+      "electronic_equivalent": "Drahtbrucke / PCB-Via"
+    },
+    "tile": {
+      "name": "Kachel",
+      "shortcut": "H",
+      "description": "Grundplatte zur Montage von Komponenten. Bietet ein stabiles Fundament, hat aber keine elektrische Funktion. Verwenden Sie sie zur Organisation Ihres Schaltkreislayouts.",
+      "electronic_equivalent": "Leiterplatte / Steckbrett"
+    }
+  },
+  "tools": {
+    "interact": {
+      "name": "Interagieren",
+      "shortcut": "SPACE",
+      "description": "Klicken Sie auf Komponenten, um mit ihnen zu interagieren. Ziehen Sie Batterien auf, drucken Sie Schalter und beobachten Sie Ihren Stromkreis in Aktion."
+    },
+    "move": {
+      "name": "Verschieben",
+      "shortcut": "V",
+      "description": "Ziehen Sie Komponenten, um sie auf der Arbeitsflache neu zu positionieren. Ketten dehnen sich oder reissen, wenn Sie verbundene Teile verschieben."
+    },
+    "delete": {
+      "name": "Loschen",
+      "shortcut": "X",
+      "description": "Klicken Sie auf Komponenten oder Ketten, um sie aus dem Stromkreis zu entfernen. Geloschte Teile sind dauerhaft weg."
+    },
+    "edit": {
+      "name": "Bearbeiten",
+      "shortcut": "E",
+      "description": "Klicken Sie auf Komponenten, um ihre Werte zu andern. Passen Sie Widerstand, Kapazitat oder andere Eigenschaften an."
+    }
+  },
+  "ui": {
+    "language": "Sprache",
+    "loading": "Laden...",
+    "save_circuit": "Stromkreis Speichern",
+    "load_circuit": "Stromkreis Laden",
+    "my_circuits": "Meine Stromkreise",
+    "remove_all": "Alles Entfernen",
+    "zoom_in": "Vergroessern",
+    "zoom_out": "Verkleinern",
+    "fullscreen": "Im Vollsimulator Offnen"
+  }
+}

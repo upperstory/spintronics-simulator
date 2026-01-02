@@ -67,45 +67,6 @@ export class Chain
         //this.chainGraphics.lineWidth = 10;
         //this.chainGraphics.strokeRect(100, 100, 100, 100);
 
-        //this.backImage.setInteractive(scene.input.makePixelPerfect(1));
-
-        //this.chainGraphics.generateTexture('chain', scene.cameras.main.width, scene.cameras.main.height);
-        //this.rTexture = new Phaser.GameObjects.RenderTexture(this.scene, 0, 0, this.scene.cameras.main.width, this.scene.cameras.main.height);
-
-        //this.rTexture = new Phaser.GameObjects.RenderTexture(scene, 0, 0, this.scene.cameras.main.width, this.scene.cameras.main.height);
-
-        /*this.chainGraphics.setInteractive(new Phaser.GameObjects.Rectangle(this.scene, 0, 0, this.scene.cameras.main.width, this.scene.cameras.main.height ));
-        this.chainGraphics.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.chainGraphics.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.chainGraphics.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));*/
-
-        /*this.rTexture = scene.add.renderTexture(0, 0, this.scene.cameras.main.width, this.scene.cameras.main.height);
-        this.rTexture.setInteractive();
-        this.rTexture.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.rTexture.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.rTexture.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));*/
-
-        //this.rTexture.saveTexture('chain');
-
-        //this.tempgraphics = this.scene.add.graphics();
-        //this.tempgraphics.fillStyle(0xFF0000);
-        //this.tempgraphics.fillRect(200,200,50,50);
-        //this.tempgraphics.setInteractive(this.tempgraphics, (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        //this.tempgraphics.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        //this.tempgraphics.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        //this.tempgraphics.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-
-
-
-        //this.hitTexture = scene.add.image(scene.cameras.main.centerX, scene.cameras.main.centerY, 'chain');
-        //this.chainGraphics.destroy();
-        //this.chainGraphics = null;
-        //this.hitTexture.setInteractive(scene.input.makePixelPerfect(1));
-        //this.hitTexture.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        //this.hitTexture.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        //this.hitTexture.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        //this.rTexture = new Phaser.GameObjects.RenderTexture(this.scene, scene.cameras.main.centerX, scene.cameras.main.centerY, this.scene.cameras.main.width, this.scene.cameras.main.height);
-
     }
 
     setPointerDownCallback (callback, parentClass)
@@ -125,29 +86,6 @@ export class Chain
         this.parentClass = parentClass;
         this.pointerOutCallback = callback;
     }
-
-/*canvasT = null;
-
-    onGotColor(color)
-    {
-        console.log(color);
-        if (color.a > 0)
-        {
-            console.log('tint');
-            //this.rTexture.setVisible(true);
-            this.rTexture.setTintFill(0xFF0000);
-            this.rTexture.setAlpha(0.5);
-            //if (this.pointerOnChain == false)
-            //{
-                this.pointerOnChain = true;
-            //}
-        }
-        else
-        {
-            this.rTexture.clearTint();
-            //this.rTexture.setAlpha(0);
-        }
-    }*/
 
     setTintFill(color)
     {
@@ -201,12 +139,14 @@ export class Chain
 
     destroy ()
     {
+        // Remove event listeners before destroying to prevent memory leaks
+        this.backImage.off('pointerdown');
+        this.backImage.off('pointermove');
+        this.backImage.off('pointerout');
+
         this.backImage.destroy();
         this.finalLineGraphics.destroy();
         this.scene.textures.remove(this.textureName);
-
-        //this.chainGraphics.destroy();
-        //this.rTexture.destroy();
     }
 
     // Redraw this chain on our graphics object.

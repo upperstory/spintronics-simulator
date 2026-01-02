@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express')
 const session = require('express-session')
 const cookieParser = require('cookie-parser');
@@ -5,14 +7,10 @@ const secure = require('ssl-express-www');
 const pg = require('pg');
 const path = require('path')
 
-let crypto;
-try {
-    crypto = require('crypto');
-} catch (err) {
-    console.log('crypto support is disabled!');
-}
+// Crypto is required for session encryption - fail fast if unavailable
+const crypto = require('crypto');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Maximum age of sessions. What happens when cookie expires, but webpage still has old code?
 const oneDay = 1000 * 60 * 60 * 24;
@@ -26,32 +24,23 @@ if (process.env.NODE_ENV != "local") {
     app.use(secure);
 }
 
-// For CORS
-/*if (process.env.NODE_ENV == "local") {
-    app.use(function (req, res, next) {
-        // Website you wish to allow to connect
-        res.setHeader('Access-Control-Allow-Origin', 'http://simulator');
-        // Request methods you wish to allow
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-        // Request headers you wish to allow
-        res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-        // Set to true if you need the website to include cookies in the requests sent
-        // to the API (e.g. in case you use sessions)
-        res.setHeader('Access-Control-Allow-Credentials', true);
-        // Pass to next layer of middleware
-        next();
-    });
-}*/
+// Validate session secret is configured
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+    console.error('WARNING: SESSION_SECRET should be set and at least 32 characters for security');
+}
 
-// session middleware
+// Session middleware configuration
+// Note: sameSite:'none' is required in production because this app is designed to be
+// embedded in iframes on external sites. This requires secure:true (HTTPS).
 app.use(session({
     proxy: true,
     secret: process.env.SESSION_SECRET,
-    saveUninitialized:true,
+    saveUninitialized: false,  // Don't create sessions for unauthenticated users
     cookie: {
         maxAge: oneDay,
-        secure: process.env.NODE_ENV == "local" ? false : true, // when true, only works if proxy is also set to true
-        sameSite: process.env.NODE_ENV == "local" ? 'Lax' : 'none' // Allows us to set a cookie even when we're in an iframe
+        secure: process.env.NODE_ENV !== "local",  // HTTPS required in production
+        sameSite: process.env.NODE_ENV === "local" ? 'Lax' : 'none',  // 'none' required for iframe embedding
+        httpOnly: true  // Prevent client-side JS access to cookie
     },
     resave: false
 }));
@@ -61,34 +50,50 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-//Test postgres
-const pgconfig = {
-    user: process.env.PG_USER,
-    host: process.env.PG_HOST,
-    password: process.env.PG_PASS,
-    port: process.env.PG_PORT
-};
-
-// Create the table in the database if it doesn't exist.
-createDatabaseAndTableIfNotExist();
+// Track database connection status
+let dbConnected = false;
 
 // Connect to the circuit_db database. We leave the connection open all the time.
 console.log("Start persistent connection to database.");
-const client = process.env.NODE_ENV == 'local' ? new pg.Client({database: "circuit_db"}) : new pg.Client(
-    {
+const client = process.env.NODE_ENV === 'local'
+    ? new pg.Client({database: "circuit_db"})
+    : new pg.Client({
         user: process.env.REMOTE_PGUSER,
         password: process.env.REMOTE_PGPASSWORD,
-        database:  process.env.REMOTE_PGDATABASE,
+        database: process.env.REMOTE_PGDATABASE,
         port: process.env.REMOTE_PGPORT,
         host: process.env.REMOTE_PGHOST,
         ssl: {
+            // WARNING: rejectUnauthorized:false disables certificate validation.
+            // This is required for some cloud database providers (e.g., Heroku) that use
+            // self-signed certificates. For production with proper certs, set to true.
             rejectUnauthorized: false
         }
     });
-client.connect();
+
+// Attempt connection asynchronously (non-blocking)
+client.connect()
+    .then(() => {
+        console.log('✓ Database connected successfully');
+        dbConnected = true;
+        // Create table if needed after successful connection
+        return createTableIfNotExist();
+    })
+    .catch(err => {
+        console.warn('⚠ Database connection failed - save/load features disabled');
+        console.warn('⚠ Circuit simulator will work normally');
+        console.warn('Error:', err.message);
+    });
 
 // Endpoints
 app.get('/getcode', function(req, res){
+    // Check database availability first
+    if (!dbConnected) {
+        return res.status(503).json({
+            error: 'Database not available'
+        });
+    }
+
     if (req.session.timetoken) {
         // Already have a code in this session - just return the same code
         res.json({code: req.session.encrypted});
@@ -110,6 +115,14 @@ app.get('/getcode', function(req, res){
 });
 
 app.post('/savecircuit', function(req, res){
+    // Check database availability first
+    if (!dbConnected) {
+        return res.status(503).json({
+            error: 'Database not available',
+            message: 'Cannot save circuits without database connection'
+        });
+    }
+
     // Decipher the encrypted token
     console.log("Saving circuit")
     const decipher = crypto.createDecipheriv(process.env.CIPHER_ALGORITHM, process.env.CIPHER_SECRET, Buffer.from(req.session.iv, 'hex'));
@@ -147,6 +160,13 @@ app.post('/savecircuit', function(req, res){
 });
 
 app.post('/getlink', function(req, res) {
+    // Check database availability first
+    if (!dbConnected) {
+        return res.status(503).json({
+            error: 'Database not available'
+        });
+    }
+
     const decipher = crypto.createDecipheriv(process.env.CIPHER_ALGORITHM, process.env.CIPHER_SECRET, Buffer.from(req.session.iv, 'hex'));
     let decrypted = Buffer.concat([decipher.update(Buffer.from(req.body.code, 'base64')), decipher.final()]).toString();
 
@@ -175,23 +195,29 @@ app.post('/getlink', function(req, res) {
 });
 
 app.post('/getcircuit', function(req, res) {
+    // Check database availability first
+    if (!dbConnected) {
+        return res.status(503).json({
+            error: 'Database not available'
+        });
+    }
+
     const decipher = crypto.createDecipheriv(process.env.CIPHER_ALGORITHM, process.env.CIPHER_SECRET, Buffer.from(req.session.iv, 'hex'));
     let decrypted = Buffer.concat([decipher.update(Buffer.from(req.body.code, 'base64')), decipher.final()]).toString();
 
     if (decrypted == req.session.timetoken) {
         console.log("getcircuit: Code accepted.");
-        /*if (req.session.loadingCircuit)
-        {
-            // No circuit data just yet...
-            console.log("getcircuit: Still loading circuit.");
-            res.end(JSON.stringify({status: "Please wait. Still loading circuit.", circuitJSON: ''}));
 
+        // Validate linkID is a positive integer
+        const linkID = parseInt(req.body.linkID, 10);
+        if (isNaN(linkID) || linkID <= 0) {
+            return res.status(400).json({status: "Invalid link ID.", circuitJSON: ''});
         }
-        else {*/
+
         // Find the linkID in the circuit JSONs we have.
-        positionOfLinkID = -1;
+        let positionOfLinkID = -1;
         for (let i = 0; i < req.session.circuitJSONArray.length; i++) {
-            if (req.session.circuitJSONArray[i].linkID == req.body.linkID) {
+            if (req.session.circuitJSONArray[i].linkID == linkID) {
                 positionOfLinkID = i;
                 break;
             }
@@ -219,13 +245,27 @@ app.post('/getcircuit', function(req, res) {
 });
 
 app.post('/loadcircuit', function(req, res) {
+    // Check database availability first
+    if (!dbConnected) {
+        return res.status(503).json({
+            error: 'Database not available',
+            message: 'Cannot load circuits without database connection'
+        });
+    }
+
     const decipher = crypto.createDecipheriv(process.env.CIPHER_ALGORITHM, process.env.CIPHER_SECRET, Buffer.from(req.session.iv, 'hex'));
     let decrypted = Buffer.concat([decipher.update(Buffer.from(req.body.code, 'base64')), decipher.final()]).toString();
 
     if (decrypted == req.session.timetoken) {
         console.log("loadcircuit: Code accepted.");
 
-        let result = loadFromDatabase(req.session, req.body.linkID);
+        // Validate linkID is a positive integer to prevent injection attacks
+        const linkID = parseInt(req.body.linkID, 10);
+        if (isNaN(linkID) || linkID <= 0) {
+            return res.status(400).json({result: "Invalid link ID."});
+        }
+
+        let result = loadFromDatabase(req.session, linkID);
 
         if (result)
         {
@@ -254,28 +294,32 @@ async function loadFromDatabase(session, linkID)
     let circuitLoadedCorrectly = false;
 
     // Load the JSON data from the row at the link id.
-    await client.query("SELECT circuit_json FROM circuit_table WHERE link_id = " + linkID + ";").then(res => {
+    // Using parameterized query to prevent SQL injection
+    await client.query("SELECT circuit_json FROM circuit_table WHERE link_id = $1", [linkID]).then(res => {
         if (res.rowCount > 0) {
             let circuitJSON = {linkID: linkID, circuitJSON: res.rows[0]['circuit_json']};
             session.circuitJSONArray.push(circuitJSON);
             circuitLoadedCorrectly = true;
         }
     }).catch(err => {
-        //console.log(err.stack);
-        console.log("Failed to retrieve circuit.");
-    }).finally(() => {
-
+        console.error("Failed to retrieve circuit for linkID:", linkID);
+        console.error("Database error:", err.message);
+        if (process.env.NODE_ENV === 'local') {
+            console.error(err.stack);
+        }
     });
 
     if (circuitLoadedCorrectly) {
         // Increment the number of times accessed by 1.
-        await client.query("UPDATE circuit_table SET times_accessed = times_accessed + 1 WHERE link_id = " + linkID + ";").then(res => {
-            console.log("Incremented access count.")
+        // Using parameterized query to prevent SQL injection
+        await client.query("UPDATE circuit_table SET times_accessed = times_accessed + 1 WHERE link_id = $1", [linkID]).then(res => {
+            console.log("Incremented access count for linkID:", linkID);
         }).catch(err => {
-            //console.log(err.stack);
-            console.log("Failed to increment access count.");
-        }).finally(() => {
-
+            console.error("Failed to increment access count for linkID:", linkID);
+            console.error("Database error:", err.message);
+            if (process.env.NODE_ENV === 'local') {
+                console.error(err.stack);
+            }
         });
     }
 
@@ -300,16 +344,24 @@ async function saveToDatabase(session, user_IP, circuitJSON)
 
     console.log('saveToDatabase: About to INSERT circuit');
     // Insert the circuit into the table.
-    await client.query("INSERT INTO circuit_table (user_ip, date_added, times_accessed, circuit_json) VALUES ('" + user_IP + "', current_timestamp, 0, '" + circuitJSON + "') RETURNING link_id").then(res => {
-        console.log("Inserted circuit successfully with link_id: " + res.rows[0]['link_id']);
+    // Using parameterized query to prevent SQL injection
+    try {
+        const res = await client.query(
+            "INSERT INTO circuit_table (user_ip, date_added, times_accessed, circuit_json) VALUES ($1, current_timestamp, 0, $2) RETURNING link_id",
+            [user_IP, circuitJSON]
+        );
+        console.log("Inserted circuit successfully with link_id:", res.rows[0]['link_id']);
         session.link_ID = res.rows[0]['link_id'];
-    }).catch(err => {
-        //console.log(err.stack);
-        console.log("Failed to insert circuit.");
-    }).finally(() => {
+    } catch (err) {
+        console.error("Failed to insert circuit from IP:", user_IP);
+        console.error("Database error:", err.message);
+        if (process.env.NODE_ENV === 'local') {
+            console.error(err.stack);
+        }
+    } finally {
         session.savingCircuit = false;
         session.save();
-    });
+    }
 }
 
 // Make sure it has all the JSON fields it should.
@@ -317,7 +369,26 @@ async function saveToDatabase(session, user_IP, circuitJSON)
 // Make sure it is not ridiculously large.
 function validateCircuit(circuitJSON)
 {
-    let circuitData = JSON.parse(circuitJSON);
+    // Validate input type
+    if (typeof circuitJSON !== 'string' || circuitJSON.length === 0) {
+        console.log("Invalid circuit JSON: not a string or empty.");
+        return false;
+    }
+
+    // Check size limit first (before parsing)
+    if (circuitJSON.length > 100000) {
+        console.log("Circuit JSON too large.");
+        return false;
+    }
+
+    let circuitData;
+    try {
+        circuitData = JSON.parse(circuitJSON);
+    } catch (err) {
+        console.log("Invalid circuit JSON: parse error -", err.message);
+        return false;
+    }
+
     if (circuitData['version'])
     {
         if (circuitData['version'] == 1) {
@@ -337,9 +408,6 @@ function validateCircuit(circuitJSON)
                 return false;
             }
 
-            if (circuitJSON.length > 100000)
-                return false;
-
             return true;
         }
         console.log("No version 1");
@@ -349,78 +417,21 @@ function validateCircuit(circuitJSON)
     return false;
 }
 
-app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
-async function createDatabaseAndTableIfNotExist() {
-    let client;
-    let db_exists = true;
+server.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Please kill the process using this port or use a different port.`);
+    process.exit(1);
+  }
+});
 
-    if (process.env.NODE_ENV == 'local') {
-        client = new pg.Client();
-        client.connect();
-
-        // Check if the circuit_db database exists
-        await client.query("SELECT datname FROM pg_catalog.pg_database WHERE datname=\'circuit_db\';").then(res => {
-            //const fields = res.fields.map(field => field.name);
-            //console.log("Database exists.");
-            //console.log(res.rowCount);
-            if (res.rowCount > 0) {
-                console.log("Database exists.")
-                db_exists = true;
-            } else {
-                console.log("Database does not exist.")
-                db_exists = false;
-            }
-
-        }).catch(err => {
-            //console.log(err.stack);
-            console.log("Error checking if database exists.");
-        }).finally(() => {
-
-        });
-
-        // If the database doesn't exist, create it.
-        if (!db_exists) {
-            await client.query('CREATE DATABASE circuit_db').then(res => {
-                console.log("Created the database successfully.");
-                db_exists = true;
-            }).catch(err => {
-                console.log("Couldn't create the database.");
-            }).finally(() => {
-
-            });
-        }
-
-        // Disconnect from the database.
-        client.end();
-    }
-
-    // Now connect to the database and check to see if it has the required data table.
-    if (db_exists) {
-        // Connect to the circuit_db database.
-        console.log("Connecting to database.");
-        client = process.env.NODE_ENV == 'local' ? new pg.Client({database: "circuit_db"}) : new pg.Client(
-            {
-                user: process.env.REMOTE_PGUSER,
-                password: process.env.REMOTE_PGPASSWORD,
-                database:  process.env.REMOTE_PGDATABASE,
-                port: process.env.REMOTE_PGPORT,
-                host: process.env.REMOTE_PGHOST,
-                ssl: {
-                    rejectUnauthorized: false
-                }
-            });
-        client.connect();
-
-        await client.query("CREATE TABLE circuit_table (link_id SERIAL PRIMARY KEY, user_IP VARCHAR(255), date_added TIMESTAMPTZ, times_accessed BIGINT, circuit_json TEXT);").then(res => {
-            console.log("Table created successfully.")
-        }).catch(err => {
-            //console.log(err.stack);
-            console.log("Table creation failed. (It probably already exists.)");
-        }).finally(() => {
-
-        });
-
-        client.end();
+// Simplified function to create table if needed (assumes already connected to database)
+async function createTableIfNotExist() {
+    try {
+        await client.query("CREATE TABLE IF NOT EXISTS circuit_table (link_id SERIAL PRIMARY KEY, user_IP VARCHAR(255), date_added TIMESTAMPTZ, times_accessed BIGINT, circuit_json TEXT);");
+        console.log("Table ready.");
+    } catch (err) {
+        console.log("Table creation failed:", err.message);
     }
 }

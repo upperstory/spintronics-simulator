@@ -1,0 +1,117 @@
+{
+  "lang": "fr",
+  "name": "Francais",
+  "components": {
+    "chain": {
+      "name": "Chaine",
+      "shortcut": "N",
+      "description": "Relie les composants entre eux. Cliquez sur les pignons pour creer un chemin de chaine. Les chaines transportent le 'courant' (mouvement de rotation) entre les pieces.",
+      "electronic_equivalent": "Fil / conducteur"
+    },
+    "junction": {
+      "name": "Jonction",
+      "shortcut": "J",
+      "description": "Un point de connexion ou plusieurs chaines peuvent se rejoindre. Le courant entrant dans une jonction se divise entre les chaines sortantes, comme une jonction de fils en electronique.",
+      "electronic_equivalent": "Jonction de fils / noeud"
+    },
+    "motor": {
+      "name": "Batterie",
+      "shortcut": "B",
+      "description": "La source d'energie de votre circuit. Remontez-la pour stocker de l'energie, puis relâchez pour faire circuler le courant. Cliquez pour remonter ou relâcher.",
+      "electronic_equivalent": "Batterie / alimentation CC"
+    },
+    "resistor": {
+      "name": "Resistance",
+      "shortcut": "R",
+      "description": "Ralentit le mouvement de rotation par friction. Des valeurs de resistance plus elevees creent plus de friction, reduisant le flux de courant. Cliquez pour changer la valeur.",
+      "electronic_equivalent": "Resistance electrique"
+    },
+    "capacitor": {
+      "name": "Condensateur",
+      "shortcut": "C",
+      "description": "Stocke l'energie de rotation dans un mecanisme a ressort. Se charge quand le courant entre, puis libere cette energie quand le circuit le permet. Cliquez pour changer la capacite.",
+      "electronic_equivalent": "Condensateur electrique"
+    },
+    "inductor": {
+      "name": "Inductance",
+      "shortcut": "I",
+      "description": "Utilise des poids rotatifs pour resister aux changements de courant. Plus les poids sont lourds, plus la resistance aux changements brusques est grande. Stocke l'energie sous forme de moment cinetique.",
+      "electronic_equivalent": "Inductance electrique"
+    },
+    "phonograph": {
+      "name": "Compteur Audio",
+      "shortcut": "P",
+      "description": "Produit du son base sur le flux de courant. La hauteur et le volume changent avec la vitesse de la chaine. Utilisez-le pour entendre le comportement de votre circuit.",
+      "electronic_equivalent": "Oscillateur audio / haut-parleur"
+    },
+    "ammeter": {
+      "name": "Amperemetre a Aiguille",
+      "shortcut": "A",
+      "description": "Affiche le courant sous forme de jauge visuelle avec indicateur a aiguille. Cliquez pour changer l'echelle. Montre l'amplitude et la direction du courant.",
+      "electronic_equivalent": "Amperemetre analogique / galvanometre"
+    },
+    "diode": {
+      "name": "Diode",
+      "shortcut": "D",
+      "description": "Permet au courant de circuler dans une seule direction. Quand le courant essaie de circuler a l'envers, la diode le bloque comme une valve unidirectionnelle.",
+      "electronic_equivalent": "Diode a semi-conducteur"
+    },
+    "button": {
+      "name": "Interrupteur",
+      "shortcut": "U",
+      "description": "Un interrupteur marche/arret manuel. Cliquez pour basculer entre ouvert (pas de courant) et ferme (le courant circule). Utilisez pour controler votre circuit.",
+      "electronic_equivalent": "Interrupteur SPST"
+    },
+    "transistor": {
+      "name": "Transistor",
+      "shortcut": "T",
+      "description": "Un interrupteur electronique controle par le courant. Un petit courant a la grille (base) controle si un courant plus important peut circuler dans le chemin principal.",
+      "electronic_equivalent": "Transistor BJT / MOSFET"
+    },
+    "level-changer": {
+      "name": "Changeur de Niveau",
+      "shortcut": "L",
+      "description": "Connecte des chaines a differents niveaux de hauteur. Utilisez ceci pour faire passer des chaines au-dessus ou en dessous d'autres, permettant des configurations 3D plus complexes.",
+      "electronic_equivalent": "Pont de fil / via PCB"
+    },
+    "tile": {
+      "name": "Tuile",
+      "shortcut": "H",
+      "description": "Plaque de base pour monter les composants. Fournit une fondation stable mais n'a pas de fonction electrique. Utilisez pour organiser votre circuit.",
+      "electronic_equivalent": "PCB / plaque d'essai"
+    }
+  },
+  "tools": {
+    "interact": {
+      "name": "Interagir",
+      "shortcut": "SPACE",
+      "description": "Cliquez sur les composants pour interagir avec eux. Remontez les batteries, appuyez sur les interrupteurs et regardez votre circuit en action."
+    },
+    "move": {
+      "name": "Deplacer",
+      "shortcut": "V",
+      "description": "Faites glisser les composants pour les repositionner sur l'espace de travail. Les chaines s'etireront ou se briseront quand vous deplacez des pieces connectees."
+    },
+    "delete": {
+      "name": "Supprimer",
+      "shortcut": "X",
+      "description": "Cliquez sur les composants ou les chaines pour les retirer du circuit. Les pieces supprimees disparaissent definitivement."
+    },
+    "edit": {
+      "name": "Modifier",
+      "shortcut": "E",
+      "description": "Cliquez sur les composants pour changer leurs valeurs. Ajustez la resistance, la capacite ou d'autres proprietes."
+    }
+  },
+  "ui": {
+    "language": "Langue",
+    "loading": "Chargement...",
+    "save_circuit": "Sauvegarder le Circuit",
+    "load_circuit": "Charger un Circuit",
+    "my_circuits": "Mes Circuits",
+    "remove_all": "Tout Supprimer",
+    "zoom_in": "Zoom Avant",
+    "zoom_out": "Zoom Arriere",
+    "fullscreen": "Ouvrir dans le Simulateur Complet"
+  }
+}

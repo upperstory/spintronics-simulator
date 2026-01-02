@@ -1,0 +1,9 @@
+{
+  "languages": [
+    { "code": "en", "name": "English", "flag": "GB" },
+    { "code": "nl", "name": "Nederlands", "flag": "NL" },
+    { "code": "fr", "name": "Francais", "flag": "FR" },
+    { "code": "de", "name": "Deutsch", "flag": "DE" }
+  ],
+  "default": "en"
+}

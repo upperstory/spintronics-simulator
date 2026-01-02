@@ -1,0 +1,117 @@
+{
+  "lang": "en",
+  "name": "English",
+  "components": {
+    "chain": {
+      "name": "Chain",
+      "shortcut": "N",
+      "description": "Connects components together. Click on sprockets to create a chain path. Chains carry the 'current' (rotational motion) between parts.",
+      "electronic_equivalent": "Wire / conductor"
+    },
+    "junction": {
+      "name": "Junction",
+      "shortcut": "J",
+      "description": "A connection point where multiple chains can meet. Current flowing into a junction splits among outgoing chains, just like a wire junction in electronics.",
+      "electronic_equivalent": "Wire junction / node"
+    },
+    "motor": {
+      "name": "Battery",
+      "shortcut": "B",
+      "description": "The power source for your circuit. Wind it up to store energy, then release to drive current through your circuit. Click to wind or release.",
+      "electronic_equivalent": "Battery / DC power supply"
+    },
+    "resistor": {
+      "name": "Resistor",
+      "shortcut": "R",
+      "description": "Slows down spinning motion using friction. Higher resistance values create more friction, reducing current flow. Click to change resistance value.",
+      "electronic_equivalent": "Electrical resistor"
+    },
+    "capacitor": {
+      "name": "Capacitor",
+      "shortcut": "C",
+      "description": "Stores rotational energy in a spring mechanism. Charges up when current flows in, then releases that energy when the circuit allows. Click to change capacitance.",
+      "electronic_equivalent": "Electrical capacitor"
+    },
+    "inductor": {
+      "name": "Inductor",
+      "shortcut": "I",
+      "description": "Uses spinning weights to resist changes in current flow. The heavier the weights, the more it resists sudden changes. Stores energy as rotational momentum.",
+      "electronic_equivalent": "Electrical inductor"
+    },
+    "phonograph": {
+      "name": "Audio Meter",
+      "shortcut": "P",
+      "description": "Produces sound based on current flow. The pitch and volume change with chain speed. Use it to hear your circuit's behavior.",
+      "electronic_equivalent": "Audio oscillator / speaker"
+    },
+    "ammeter": {
+      "name": "Gauge Ammeter",
+      "shortcut": "A",
+      "description": "Displays current as a visual gauge with needle indicator. Click to change scale range. Shows both magnitude and direction of current flow.",
+      "electronic_equivalent": "Analog ammeter / galvanometer"
+    },
+    "diode": {
+      "name": "Diode",
+      "shortcut": "D",
+      "description": "Allows current to flow in only one direction. When current tries to flow backwards, the diode blocks it like a one-way valve.",
+      "electronic_equivalent": "Semiconductor diode"
+    },
+    "button": {
+      "name": "Switch",
+      "shortcut": "U",
+      "description": "A manual on/off switch. Click to toggle the connection between open (no current) and closed (current flows). Use to control your circuit.",
+      "electronic_equivalent": "SPST switch"
+    },
+    "transistor": {
+      "name": "Transistor",
+      "shortcut": "T",
+      "description": "An electronic switch controlled by current. A small current at the gate (base) controls whether a larger current can flow through the main path.",
+      "electronic_equivalent": "BJT / MOSFET transistor"
+    },
+    "level-changer": {
+      "name": "Level Changer",
+      "shortcut": "L",
+      "description": "Connects chains at different height levels. Use this to route chains over or under each other, enabling more complex 3D circuit layouts.",
+      "electronic_equivalent": "Wire bridge / PCB via"
+    },
+    "tile": {
+      "name": "Tile",
+      "shortcut": "H",
+      "description": "Base plate for mounting components. Provides a stable foundation but has no electrical function. Use to organize your circuit layout.",
+      "electronic_equivalent": "PCB / breadboard"
+    }
+  },
+  "tools": {
+    "interact": {
+      "name": "Interact",
+      "shortcut": "SPACE",
+      "description": "Click components to interact with them. Wind up batteries, press switches, and watch your circuit in action."
+    },
+    "move": {
+      "name": "Move",
+      "shortcut": "V",
+      "description": "Drag components to reposition them on the workspace. Chains will stretch or break when you move connected parts."
+    },
+    "delete": {
+      "name": "Delete",
+      "shortcut": "X",
+      "description": "Click on components or chains to remove them from the circuit. Deleted parts are gone permanently."
+    },
+    "edit": {
+      "name": "Edit",
+      "shortcut": "E",
+      "description": "Click components to change their values. Adjust resistance, capacitance, or other properties."
+    }
+  },
+  "ui": {
+    "language": "Language",
+    "loading": "Loading...",
+    "save_circuit": "Save Circuit",
+    "load_circuit": "Load Circuit",
+    "my_circuits": "My Circuits",
+    "remove_all": "Remove All",
+    "zoom_in": "Zoom In",
+    "zoom_out": "Zoom Out",
+    "fullscreen": "Open in Full Simulator"
+  }
+}

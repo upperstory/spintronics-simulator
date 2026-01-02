@@ -1,0 +1,117 @@
+{
+  "lang": "nl",
+  "name": "Nederlands",
+  "components": {
+    "chain": {
+      "name": "Ketting",
+      "shortcut": "N",
+      "description": "Verbindt componenten met elkaar. Klik op tandwielen om een kettingpad te maken. Kettingen dragen de 'stroom' (roterende beweging) tussen onderdelen.",
+      "electronic_equivalent": "Draad / geleider"
+    },
+    "junction": {
+      "name": "Knooppunt",
+      "shortcut": "J",
+      "description": "Een verbindingspunt waar meerdere kettingen samenkomen. Stroom die een knooppunt binnenkomt, verdeelt zich over uitgaande kettingen, net als een draadknooppunt in elektronica.",
+      "electronic_equivalent": "Draadknooppunt / node"
+    },
+    "motor": {
+      "name": "Batterij",
+      "shortcut": "B",
+      "description": "De energiebron voor je circuit. Wind hem op om energie op te slaan en laat los om stroom door je circuit te sturen. Klik om op te winden of los te laten.",
+      "electronic_equivalent": "Batterij / gelijkstroombron"
+    },
+    "resistor": {
+      "name": "Weerstand",
+      "shortcut": "R",
+      "description": "Vertraagt de draaibeweging door wrijving. Hogere weerstandswaarden creeren meer wrijving en verminderen de stroomsterkte. Klik om de waarde te wijzigen.",
+      "electronic_equivalent": "Elektrische weerstand"
+    },
+    "capacitor": {
+      "name": "Condensator",
+      "shortcut": "C",
+      "description": "Slaat rotatie-energie op in een veermechanisme. Laadt op wanneer stroom binnenstroomt en geeft die energie weer af wanneer het circuit dit toelaat. Klik om de capaciteit te wijzigen.",
+      "electronic_equivalent": "Elektrische condensator"
+    },
+    "inductor": {
+      "name": "Spoel",
+      "shortcut": "I",
+      "description": "Gebruikt draaiende gewichten om veranderingen in stroomsterkte tegen te gaan. Hoe zwaarder de gewichten, hoe meer weerstand tegen plotselinge veranderingen. Slaat energie op als rotatieimpuls.",
+      "electronic_equivalent": "Elektrische spoel"
+    },
+    "phonograph": {
+      "name": "Audiometer",
+      "shortcut": "P",
+      "description": "Produceert geluid op basis van stroomsterkte. De toonhoogte en het volume veranderen met de kettingsnelheid. Gebruik deze om het gedrag van je circuit te horen.",
+      "electronic_equivalent": "Audio-oscillator / luidspreker"
+    },
+    "ammeter": {
+      "name": "Wijzer-Ampèremeter",
+      "shortcut": "A",
+      "description": "Toont stroom als visuele meter met naaldaanwijzer. Klik om het schaalbereik te wijzigen. Toont zowel de sterkte als de richting van de stroom.",
+      "electronic_equivalent": "Analoge ampèremeter / galvanometer"
+    },
+    "diode": {
+      "name": "Diode",
+      "shortcut": "D",
+      "description": "Laat stroom slechts in één richting door. Wanneer stroom achteruit probeert te stromen, blokkeert de diode dit als een eenrichtingsklep.",
+      "electronic_equivalent": "Halfgeleiderdiode"
+    },
+    "button": {
+      "name": "Schakelaar",
+      "shortcut": "U",
+      "description": "Een handmatige aan/uit-schakelaar. Klik om te wisselen tussen open (geen stroom) en gesloten (stroom loopt). Gebruik om je circuit te bedienen.",
+      "electronic_equivalent": "SPST-schakelaar"
+    },
+    "transistor": {
+      "name": "Transistor",
+      "shortcut": "T",
+      "description": "Een elektronische schakelaar bestuurd door stroom. Een kleine stroom bij de gate (basis) bepaalt of een grotere stroom door het hoofdpad kan lopen.",
+      "electronic_equivalent": "BJT / MOSFET-transistor"
+    },
+    "level-changer": {
+      "name": "Niveauwisselaar",
+      "shortcut": "L",
+      "description": "Verbindt kettingen op verschillende hoogtesniveaus. Gebruik dit om kettingen over of onder elkaar te leiden, voor complexere 3D-circuitindelingen.",
+      "electronic_equivalent": "Draadbrug / PCB-via"
+    },
+    "tile": {
+      "name": "Tegel",
+      "shortcut": "H",
+      "description": "Basisplaat voor het monteren van componenten. Biedt een stabiele fundering maar heeft geen elektrische functie. Gebruik om je circuit te organiseren.",
+      "electronic_equivalent": "PCB / breadboard"
+    }
+  },
+  "tools": {
+    "interact": {
+      "name": "Interactie",
+      "shortcut": "SPACE",
+      "description": "Klik op componenten om ermee te werken. Wind batterijen op, druk op schakelaars en bekijk je circuit in actie."
+    },
+    "move": {
+      "name": "Verplaatsen",
+      "shortcut": "V",
+      "description": "Sleep componenten om ze te verplaatsen op het werkblad. Kettingen rekken uit of breken wanneer je verbonden onderdelen verplaatst."
+    },
+    "delete": {
+      "name": "Verwijderen",
+      "shortcut": "X",
+      "description": "Klik op componenten of kettingen om ze uit het circuit te verwijderen. Verwijderde onderdelen zijn permanent weg."
+    },
+    "edit": {
+      "name": "Bewerken",
+      "shortcut": "E",
+      "description": "Klik op componenten om hun waarden te wijzigen. Pas weerstand, capaciteit of andere eigenschappen aan."
+    }
+  },
+  "ui": {
+    "language": "Taal",
+    "loading": "Laden...",
+    "save_circuit": "Circuit Opslaan",
+    "load_circuit": "Circuit Laden",
+    "my_circuits": "Mijn Circuits",
+    "remove_all": "Alles Verwijderen",
+    "zoom_in": "Inzoomen",
+    "zoom_out": "Uitzoomen",
+    "fullscreen": "Openen in Volledige Simulator"
+  }
+}

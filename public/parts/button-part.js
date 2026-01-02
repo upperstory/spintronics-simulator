@@ -158,8 +158,26 @@ export class ButtonPart extends PartBase
 
     destroy()
     {
+        // Remove event listeners before destroying to prevent memory leaks
+        this.partImage.off('pointerdown');
+        this.partImage.off('pointermove');
+        this.partImage.off('pointerout');
+        this.partImage.off('dragstart');
+        this.partImage.off('dragend');
+        this.partImage.off('drag');
+
+        this.buttonBaseImage.off('pointerdown');
+        this.buttonBaseImage.off('pointermove');
+        this.buttonBaseImage.off('pointerout');
+        this.buttonBaseImage.off('dragstart');
+        this.buttonBaseImage.off('dragend');
+        this.buttonBaseImage.off('drag');
+
+        // Destroy game objects
         this.partImage.destroy();
         this.buttonBaseImage.destroy();
+
+        // Destroy physics bodies
         this.world.destroyBody(this.buttonBody);
         this.world.destroyBody(this.ground);
     }

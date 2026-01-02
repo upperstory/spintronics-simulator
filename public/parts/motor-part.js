@@ -19,33 +19,35 @@ export class MotorPart extends PartBase
         this.buttonWidth = 300;
         this.buttonHeight = 50;
 
-        // Create the reset button textures
+        // Create the reset button textures only once (check if they already exist)
         this.resetButtonYOffset = 140;
-        let graphics = scene.add.graphics();
-        graphics.fillStyle(0xED1C24, 1);
-        graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
-        graphics.generateTexture('reset-button-default-background', this.buttonWidth, this.buttonHeight);
-        graphics.destroy();
+        if (!scene.textures.exists('reset-button-default-background')) {
+            let graphics = scene.add.graphics();
+            graphics.fillStyle(0xED1C24, 1);
+            graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
+            graphics.generateTexture('reset-button-default-background', this.buttonWidth, this.buttonHeight);
+            graphics.destroy();
 
-        graphics = scene.add.graphics();
-        graphics.fillStyle(0xD6212E, 1);
-        graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
-        graphics.generateTexture('reset-button-hover-background', this.buttonWidth, this.buttonHeight);
-        graphics.destroy();
+            graphics = scene.add.graphics();
+            graphics.fillStyle(0xD6212E, 1);
+            graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
+            graphics.generateTexture('reset-button-hover-background', this.buttonWidth, this.buttonHeight);
+            graphics.destroy();
 
-        graphics = scene.add.graphics();
-        graphics.fillStyle(0xED1C24, 1);
-        graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
-        graphics.generateTexture('reset-button-disabled-background', this.buttonWidth, this.buttonHeight);
-        graphics.destroy();
+            graphics = scene.add.graphics();
+            graphics.fillStyle(0xED1C24, 1);
+            graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
+            graphics.generateTexture('reset-button-disabled-background', this.buttonWidth, this.buttonHeight);
+            graphics.destroy();
 
-        graphics = scene.add.graphics();
-        graphics.fillStyle(0xB51F2B, 1);
-        graphics.lineStyle(2,0x111111, 0.8);
-        graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
-        graphics.strokeRoundedRect(1, 1, this.buttonWidth-2, this.buttonHeight-2, 10);
-        graphics.generateTexture('reset-button-selected-background', this.buttonWidth, this.buttonHeight);
-        graphics.destroy();
+            graphics = scene.add.graphics();
+            graphics.fillStyle(0xB51F2B, 1);
+            graphics.lineStyle(2,0x111111, 0.8);
+            graphics.fillRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, 10);
+            graphics.strokeRoundedRect(1, 1, this.buttonWidth-2, this.buttonHeight-2, 10);
+            graphics.generateTexture('reset-button-selected-background', this.buttonWidth, this.buttonHeight);
+            graphics.destroy();
+        }
 
         this.onSwitchToggled = this.onSwitchToggled.bind(this);
 
@@ -351,6 +353,30 @@ export class MotorPart extends PartBase
 
     destroy()
     {
+        // Helper to remove all event listeners from an image
+        const removeEvents = (img) => {
+            if (img) {
+                img.off('pointerdown');
+                img.off('pointermove');
+                img.off('pointerout');
+                img.off('dragstart');
+                img.off('dragend');
+                img.off('drag');
+            }
+        };
+
+        // Remove all event listeners before destroying to prevent memory leaks
+        removeEvents(this.partImage);
+        removeEvents(this.motorBaseUnderImage);
+        removeEvents(this.motorBaseTileImage);
+        removeEvents(this.motorPawlClosedImage);
+        removeEvents(this.motorPawlOpenImage);
+        removeEvents(this.motorScrewImage);
+        removeEvents(this.motorDriveGearImage);
+        removeEvents(this.motorIntermediateGearImage);
+        removeEvents(this.motorSpannerImage);
+
+        // Destroy game objects
         this.partImage.destroy();
         this.motorBaseUnderImage.destroy();
         this.motorBaseTileImage.destroy();
@@ -360,7 +386,9 @@ export class MotorPart extends PartBase
         this.motorDriveGearImage.destroy();
         this.motorIntermediateGearImage.destroy();
         this.motorSpannerImage.destroy();
-        this.resetButton.destroy();
+        if (this.resetButton) this.resetButton.destroy();
+
+        // Destroy physics - joints first, then bodies
         this.world.destroyJoint(this.motorIntermediateGearGearJoint);
         this.world.destroyJoint(this.motorDriveGearGearJoint);
         this.world.destroyBody(this.motorWheelSprocketBody);

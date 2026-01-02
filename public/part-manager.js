@@ -9,9 +9,11 @@ import { MotorPart } from './parts/motor-part.js';
 import { LevelChangerPart } from './parts/level-changer-part.js';
 import { DiodePart } from './parts/diode-part.js';
 import { PhonographPart } from './parts/phonograph-part.js';
+import { AmmeterPart } from './parts/ammeter-part.js';
 import { TilePart } from './parts/tile-part.js'
 import { TileConnectorPart } from './parts/tile-connector-part.js'
 import { Chain } from './chain.js'
+import { i18n } from './i18n.js';
 
 import { worldScale } from './constants.js';
 import { tileSpacing } from './constants.js';
@@ -29,6 +31,16 @@ export class PartManager {
     mapWidth = 0;
     mapHeight = 0;
     world = null;
+
+    // Tooltip-related properties
+    tooltipTimer = null;
+    tooltipDelay = 500; // ms delay before showing tooltip
+    tooltipGraphics = null;
+    tooltipTexts = [];
+    tooltipPart = null;
+    static TOOLTIP_MAX_WIDTH = 240;
+    static TOOLTIP_PADDING = 8;
+    static TOOLTIP_LINE_HEIGHT = 16;
 
     constructor (scene, gridSpacing, mapWidth, mapHeight, planckWorld)
     {
@@ -163,6 +175,28 @@ export class PartManager {
             this.parts.push(newPart);
             return newPart;
         }
+        else if (partType == 'ammeter') {
+            var newPart = new AmmeterPart(this.scene, x, y, this.world);
+            newPart.setPointerDownCallback(this.onPartClicked, this);
+            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
+            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
+            newPart.setDragStartCallback(this.onPartDragStart, this);
+            newPart.setDragCallback(this.onPartDrag, this);
+            newPart.setDragEndCallback(this.onPartDragEnd, this);
+            if (value != null) {
+                // Restore the scale index
+                const scaleIndex = AmmeterPart.scaleRanges.indexOf(value) !== -1
+                    ? AmmeterPart.scaleRanges.indexOf(value)
+                    : value;
+                if (typeof scaleIndex === 'number' && scaleIndex >= 0 && scaleIndex < AmmeterPart.scaleRanges.length) {
+                    newPart.scaleIndex = scaleIndex;
+                    newPart.maxCurrent = AmmeterPart.scaleRanges[scaleIndex];
+                    newPart.scaleText.setText(AmmeterPart.scaleLabels[scaleIndex]);
+                }
+            }
+            this.parts.push(newPart);
+            return newPart;
+        }
         else if (partType == 'motor') {
             var newPart = new MotorPart(this.scene, x, y, this.world);
             newPart.setPointerDownCallback(this.onPartClicked, this);
@@ -271,11 +305,13 @@ export class PartManager {
         if (this.chainBeingBuilt == null)
             return retVal;
 
+        // Check if chain has any connections before accessing
+        if (this.chainBeingBuilt.connections.length === 0)
+            return retVal;
+
         for (let i = 0; i < this.parts.length; i++)
         {
-            //console.log(this.parts[partIndex]);
             if (this.chainBeingBuilt.connections[0].part == this.parts[i]) {
-
                 retVal.partIndex = i;
                 retVal.cw = this.chainBeingBuilt.connections[0].cw;
                 retVal.level = this.chainBeingBuilt.connections[0].level;
@@ -354,7 +390,7 @@ export class PartManager {
 
     getLevelOfChainBeingBuilt()
     {
-        if (this.chainBeingBuilt != null)
+        if (this.chainBeingBuilt != null && this.chainBeingBuilt.connections.length > 0)
             return this.chainBeingBuilt.connections[0].level;
         return -1;
     }
@@ -524,6 +560,19 @@ export class PartManager {
         {
             part.setPartTint(0xDDDDDD);
         }
+        else if (this.toolMode == 'interact')
+        {
+            // Start tooltip timer for interact mode (only if not already showing for this part)
+            if (this.tooltipPart !== part) {
+                // Hide any existing tooltip first
+                this.hidePartTooltip();
+
+                // Start timer to show tooltip after delay
+                this.tooltipTimer = setTimeout(() => {
+                    this.showPartTooltip(part);
+                }, this.tooltipDelay);
+            }
+        }
     }
 
     onPointerMoveOutOfPart(part, pointer)
@@ -542,6 +591,9 @@ export class PartManager {
         {
             part.clearPartTint();
         }
+
+        // Always hide tooltip when moving off a part (regardless of tool mode)
+        this.hidePartTooltip();
     }
 
     onPointerMoveOverChain(chain, pointer)
@@ -662,6 +714,10 @@ export class PartManager {
         if (nextSprocket == null)
             return null;
 
+        // Ensure chain has connections before accessing
+        if (this.chainBeingBuilt.connections.length === 0)
+            return null;
+
         let currentChainLevel = this.chainBeingBuilt.connections[0].level;
         let nextPart = this.parts[nextSprocket.partIndex];
         let lastChainPart = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
@@ -753,11 +809,11 @@ export class PartManager {
 
     getLastSprocketBoundsOfChainBeingBuilt()
     {
-        if (this.chainBeingBuilt == null)
+        if (this.chainBeingBuilt == null || this.chainBeingBuilt.connections.length === 0)
             return null;
 
         const part = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].part;
-        const level = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].level
+        const level = this.chainBeingBuilt.connections[this.chainBeingBuilt.connections.length - 1].level;
         let bounds = {
             x: part.x + part.sprocketCenter[level].x,
             y: part.y + part.sprocketCenter[level].y,
@@ -841,6 +897,154 @@ export class PartManager {
             this.mouseMove.x = point.x;
             this.mouseMove.y = point.y;
         }
+    }
+
+    /**
+     * Helper to wrap text to a maximum width
+     */
+    wrapText(text, maxWidth, fontSize = 13)
+    {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        // Approximate character width (will vary by font)
+        const charWidth = fontSize * 0.55;
+        const maxChars = Math.floor(maxWidth / charWidth);
+
+        for (const word of words) {
+            const testLine = currentLine ? `${currentLine} ${word}` : word;
+            if (testLine.length > maxChars && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+        return lines;
+    }
+
+    /**
+     * Show a tooltip for a part with i18n translated content
+     */
+    showPartTooltip(part)
+    {
+        // Get component info from i18n
+        const componentInfo = i18n.getComponentInfo(part.partType);
+        if (!componentInfo) return;
+
+        const padding = PartManager.TOOLTIP_PADDING;
+        const maxWidth = PartManager.TOOLTIP_MAX_WIDTH;
+        const lineHeight = PartManager.TOOLTIP_LINE_HEIGHT;
+
+        // Build tooltip content
+        const headerText = componentInfo.shortcut
+            ? `${componentInfo.name} [${componentInfo.shortcut}]`
+            : componentInfo.name;
+        const descriptionLines = this.wrapText(componentInfo.description, maxWidth - padding * 2, 13);
+        const equivalentText = componentInfo.electronic_equivalent
+            ? `= ${componentInfo.electronic_equivalent}`
+            : '';
+
+        // Calculate total height
+        const headerHeight = 26;
+        const descriptionHeight = descriptionLines.length * lineHeight;
+        const equivalentHeight = equivalentText ? 22 : 0;
+        const dividerHeight = 1;
+        const totalHeight = headerHeight + dividerHeight + descriptionHeight +
+            (equivalentText ? dividerHeight + equivalentHeight : 0) + padding;
+
+        // Position tooltip near the part (to the right)
+        const tooltipX = part.x + 60;
+        const tooltipY = part.y - totalHeight / 2;
+
+        // Create graphics for background
+        this.tooltipGraphics = this.scene.add.graphics();
+        this.tooltipGraphics.setDepth(100);
+
+        // Main background with shadow effect
+        this.tooltipGraphics.fillStyle(0x000000, 0.1);
+        this.tooltipGraphics.fillRoundedRect(tooltipX + 2, tooltipY + 2, maxWidth, totalHeight, 8);
+
+        this.tooltipGraphics.fillStyle(0xffffff, 0.95);
+        this.tooltipGraphics.lineStyle(1, 0xcccccc, 1);
+        this.tooltipGraphics.fillRoundedRect(tooltipX, tooltipY, maxWidth, totalHeight, 8);
+        this.tooltipGraphics.strokeRoundedRect(tooltipX, tooltipY, maxWidth, totalHeight, 8);
+
+        // Header background (subtle)
+        this.tooltipGraphics.fillStyle(0xf0f0f0, 1);
+        this.tooltipGraphics.fillRoundedRect(tooltipX, tooltipY, maxWidth, headerHeight, { tl: 8, tr: 8, bl: 0, br: 0 });
+
+        // Divider line after header
+        this.tooltipGraphics.lineStyle(1, 0xe0e0e0, 1);
+        this.tooltipGraphics.lineBetween(tooltipX + padding, tooltipY + headerHeight, tooltipX + maxWidth - padding, tooltipY + headerHeight);
+
+        // Header text (bold)
+        const headerTextObj = this.scene.add.text(tooltipX + padding, tooltipY + 5, headerText, {
+            font: 'bold 14px Roboto',
+            color: '#222222'
+        });
+        headerTextObj.setDepth(101);
+        this.tooltipTexts.push(headerTextObj);
+
+        // Description text
+        let currentY = tooltipY + headerHeight + 6;
+        for (const line of descriptionLines) {
+            const lineText = this.scene.add.text(tooltipX + padding, currentY, line, {
+                font: '13px Roboto',
+                color: '#444444'
+            });
+            lineText.setDepth(101);
+            this.tooltipTexts.push(lineText);
+            currentY += lineHeight;
+        }
+
+        // Electronic equivalent (if provided)
+        if (equivalentText) {
+            currentY += 2;
+            // Divider before equivalent
+            this.tooltipGraphics.lineBetween(tooltipX + padding, currentY, tooltipX + maxWidth - padding, currentY);
+            currentY += 4;
+
+            const equivText = this.scene.add.text(tooltipX + padding, currentY, equivalentText, {
+                font: 'italic 12px Roboto',
+                color: '#666666'
+            });
+            equivText.setDepth(101);
+            this.tooltipTexts.push(equivText);
+        }
+
+        this.tooltipPart = part;
+    }
+
+    /**
+     * Hide the part tooltip
+     */
+    hidePartTooltip()
+    {
+        // Clear the timer if it's running
+        if (this.tooltipTimer) {
+            clearTimeout(this.tooltipTimer);
+            this.tooltipTimer = null;
+        }
+
+        // Destroy tooltip graphics
+        if (this.tooltipGraphics) {
+            this.tooltipGraphics.destroy();
+            this.tooltipGraphics = null;
+        }
+
+        // Destroy all tooltip text elements
+        for (const textObj of this.tooltipTexts) {
+            if (textObj && textObj.destroy) {
+                textObj.destroy();
+            }
+        }
+        this.tooltipTexts = [];
+        this.tooltipPart = null;
     }
 
     serializeParts()

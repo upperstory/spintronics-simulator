@@ -1,38 +1,48 @@
 {
-  "name": "node-js-getting-started",
-  "version": "0.3.0",
-  "description": "A sample Node.js app using Express 4",
+  "name": "spintronics-simulator",
+  "version": "1.0.0",
+  "description": "A web-based simulator for Spintronics circuits - mechanical analogues of electronic circuits using spinning gears and chains",
   "engines": {
-    "node": "14.x"
+    "node": "22.x"
   },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node test.js"
+    "start:local": "NODE_ENV=local node index.js",
+    "test": "node test.js",
+    "build:static": "node scripts/build-static.js",
+    "serve:static": "npx serve dist"
   },
   "dependencies": {
-    "cookie-parser": "^1.4.6",
-    "crypto": "^1.0.1",
-    "ejs": "^3.1.5",
-    "express": "^4.15.2",
-    "express-session": "^1.17.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^4.22.1",
+    "express-session": "^1.18.2",
     "express-sslify": "^1.2.0",
-    "pg": "^8.7.3",
-    "pgtools": "^0.3.2",
-    "ssl-express-www": "^3.0.8"
+    "pg": "^8.16.3",
+    "pgtools": "^1.0.1",
+    "ssl-express-www": "^3.2.1"
   },
   "devDependencies": {
-    "got": "^11.3.0",
-    "tape": "^4.7.0"
+    "canvas": "^3.2.0",
+    "got": "^11.8.6",
+    "serve": "^14.2.5",
+    "tape": "^5.9.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heroku/node-js-getting-started"
+    "url": "https://github.com/your-username/spintronics-simulator"
   },
   "keywords": [
-    "node",
-    "heroku",
-    "express"
+    "spintronics",
+    "circuit",
+    "simulator",
+    "physics",
+    "phaser",
+    "educational"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "author": "Spintronics Team",
+  "homepage": "https://simulator.spintronics.com"
 }
