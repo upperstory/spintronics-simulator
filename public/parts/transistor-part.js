@@ -71,17 +71,13 @@ export class TransistorPart extends PartBase
         this.setupSprocket(2, {x: 0, y: 0}, 181/2, true, gateRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-
         // Create transistor bodies and joints
-        this.transistorGateBody = this.world.createDynamicBody({position: planck.Vec2(0,0/*this.x / worldScale, this.y / worldScale*/), angularDamping: 0.02});
-        this.transistorGateBody.createFixture(planck.Circle(gateRadius), {density: 0.1, filterGroupIndex: -1});
+        this.transistorGateBody = this.standardBody(0.02);
+        PartBase.createFixture(this.transistorGateBody, gateRadius);
         this.sprocketBodies[2] = this.transistorGateBody;
 
-        this.transistorResistorBody = this.world.createDynamicBody({position: planck.Vec2(0,0/*(this.x) / worldScale, (this.y) / worldScale*/), angularDamping: 0.02});
-        this.transistorResistorFixture = this.transistorResistorBody.createFixture(planck.Circle(baseRadius), {density: 10, filterGroupIndex: -1});
+        this.transistorResistorBody = this.standardBody(0.02);
+        this.transistorResistorFixture = PartBase.createFixture(this.transistorResistorBody, baseRadius, 10);
         this.sprocketBodies[0] = this.transistorResistorBody;
 
         this.transistorGateJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.transistorGateBody, this.transistorGateBody.getPosition()));
@@ -89,89 +85,52 @@ export class TransistorPart extends PartBase
         this.transistorResistorJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.transistorResistorBody, this.transistorResistorBody.getPosition()));
         this.sprocketJoints[0] = this.transistorResistorJoint;
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.transistorGateBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.transistorGateBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.transistorGateBody));
+        this.setupInteractions(
+            this.partImage,
+            this.transistorGateBody
+        );
+        
+        this.setupInteractions(
+            this.transistorGuideImage
+        );
+        
+        this.setupInteractions(
+            this.transistorResistorImage,
+            this.transistorResistorBody
+        );
+        
+        
+        this.setupInteractions(
+            this.transistorTabImage
+        );
+        
+        this.setupInteractions(
+            this.transistorMidCapImage
+        );
 
-        this.transistorGuideImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorGuideImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorGuideImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorGuideImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorGuideImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorGuideImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.transistorBaseImage
+        );
 
-        this.transistorResistorImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorResistorImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorResistorImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorResistorImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.transistorResistorBody));
-        this.transistorResistorImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.transistorResistorBody));
-        this.transistorResistorImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.transistorResistorBody));
-
-        this.transistorTabImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorTabImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorTabImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorTabImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorTabImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorTabImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorMidCapImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorMidCapImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorMidCapImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorMidCapImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorMidCapImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorMidCapImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBrake1Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBrake1Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBrake1Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBrake1Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBrake1Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBrake1Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBrake2Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBrake2Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBrake2Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBrake2Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBrake2Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBrake2Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBrake3Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBrake3Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBrake3Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBrake3Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBrake3Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBrake3Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBall1Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBall1Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBall1Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBall1Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBall1Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBall1Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBall2Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBall2Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBall2Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBall2Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBall2Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBall2Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBall3Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBall3Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBall3Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBall3Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBall3Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBall3Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.transistorBrake1Image
+        );
+        this.setupInteractions(
+            this.transistorBrake2Image
+        );
+        this.setupInteractions(
+            this.transistorBrake3Image
+        );
+        
+        this.setupInteractions(
+            this.transistorBall1Image
+        );
+        this.setupInteractions(
+            this.transistorBall2Image
+        );
+        this.setupInteractions(
+            this.transistorBall3Image
+        );
 
         //this.transistorCW = false;
         this.setTransistorCW(false);

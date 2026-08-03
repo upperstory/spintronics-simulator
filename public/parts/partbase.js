@@ -8,6 +8,7 @@ export class PartBase extends Phaser.GameObjects.Container
         // Add this container to the scene
         scene.add.existing(this);
         this.world = planckWorld;
+        this.ground = this.world.createBody();
     }
 
     world = null;
@@ -328,5 +329,23 @@ export class PartBase extends Phaser.GameObjects.Container
         this.sprocketRadius[index] = radius;
         this.sprocketExists[index] = exists;
         this.sprocketPhysicsRadius[index] = physicsRadius; // in m
+    }
+    
+    static createFixture(body, radius, density = 0.1, filterGroupIndex = -1, friction = 0) {
+        return body.createFixture(planck.Circle(radius), {density: density, filterGroupIndex: filterGroupIndex, friction: friction});
+    }
+    
+    standardBody(damping, x = 0, y = 0) {
+        return this.world.createDynamicBody({position: planck.Vec2(x,y), angularDamping: damping});
+    }
+    
+    setupInteractions(interactable, body) {
+            console.log(`setup interactible `)
+            interactable.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
+            interactable.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
+            interactable.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
+            interactable.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, body));
+            interactable.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, body));
+            interactable.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, body));
     }
 }

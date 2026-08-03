@@ -66,18 +66,14 @@ export class CapacitorPart extends PartBase
         this.setupSprocket(2, {x: 0, y: 0}, 117/2, true, capacitorRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-
-        this.capacitorBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 5});
-        this.capacitorFixture = this.capacitorBody.createFixture(planck.Circle(capacitorRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
+        this.capacitorBody = this.standardBody(5);
+        this.capacitorFixture = PartBase.createFixture(this.capacitorBody, capacitorRadius);
         this.sprocketBodies[0] = this.capacitorBody;
         this.sprocketBodies[1] = this.capacitorBody;
         this.sprocketBodies[2] = this.capacitorBody;
 
-        this.capacitorShortHandBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.02});
-        this.capacitorLongHandBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.02});
+        this.capacitorShortHandBody = this.standardBody(0.02);
+        this.capacitorLongHandBody = this.standardBody(0.02);
         //this.capacitorFixture = this.capacitorBody.createFixture(planck.Circle(capacitorRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
 
         this.capacitorJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: false, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.capacitorBody, this.capacitorBody.getPosition()));
@@ -86,56 +82,30 @@ export class CapacitorPart extends PartBase
         this.sprocketJoints[2] = this.capacitorJoint;
         this.capacitorShortHandJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.capacitorShortHandBody, planck.Vec2(this.x / worldScale, this.y / worldScale)));
         this.capacitorLongHandJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.capacitorLongHandBody, this.capacitorBody.getPosition()));
-
-
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.capacitorBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.capacitorBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.capacitorBody));
-
-        this.capacitorCapImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.capacitorCapImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.capacitorCapImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.capacitorCapImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.capacitorCapImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.capacitorCapImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.capacitorShortHandImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.capacitorShortHandImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.capacitorShortHandImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.capacitorShortHandImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.capacitorShortHandImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.capacitorShortHandImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.capacitorLongHandImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.capacitorLongHandImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.capacitorLongHandImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.capacitorLongHandImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.capacitorLongHandImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.capacitorLongHandImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.capacitorSprocketNoValueImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.capacitorSprocketNoValueImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.capacitorSprocketNoValueImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.capacitorSprocketNoValueImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.capacitorBody));
-        this.capacitorSprocketNoValueImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.capacitorBody));
-        this.capacitorSprocketNoValueImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.capacitorBody));
-
-        this.capacitorMeterImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.capacitorMeterImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.capacitorMeterImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.capacitorMeterImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.capacitorMeterImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.capacitorMeterImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.capacitorNumbersImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.capacitorNumbersImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.capacitorNumbersImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.capacitorNumbersImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.capacitorNumbersImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.capacitorNumbersImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        
+        this.setupInteractions(
+            this.partImage,
+            this.capacitorBody
+        );
+        this.setupInteractions(
+            this.capacitorCapImage
+        );
+        this.setupInteractions(
+            this.capacitorShortHandImage
+        );
+        this.setupInteractions(
+            this.capacitorLongHandImage
+        );
+        this.setupInteractions(
+            this.capacitorSprocketNoValueImage,
+            this.capacitorBody
+        );
+        this.setupInteractions(
+            this.capacitorMeterImage
+        );
+        this.setupInteractions(
+            this.capacitorNumbersImage
+        );
 
         // Set the starting resistance
         this.capacitance = CapacitorPart.possibleCapacitanceValues[2]; // 1 mF default

@@ -31,13 +31,8 @@ export class ButtonPart extends PartBase
         this.setupSprocket(2, {x: 0, y: 0}, 117/2, true, buttonRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.buttonBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.02});//this.resistance / 100});
-        this.buttonFixture = this.buttonBody.createFixture(planck.Circle(buttonRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
+        this.buttonBody = this.standardBody(0.02);
+        this.buttonFixture = PartBase.createFixture(this.buttonBody, buttonRadius);
         this.sprocketBodies[0] = this.buttonBody;
         this.sprocketBodies[1] = this.buttonBody;
         this.sprocketBodies[2] = this.buttonBody;
@@ -46,20 +41,15 @@ export class ButtonPart extends PartBase
         this.sprocketJoints[0] = this.buttonJoint;
         this.sprocketJoints[1] = this.buttonJoint;
         this.sprocketJoints[2] = this.buttonJoint;
-
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.buttonBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.buttonBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.buttonBody));
-
-        this.buttonBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.buttonBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.buttonBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.buttonBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.buttonBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.buttonBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        
+        this.setupInteractions(
+            this.partImage,
+            this.buttonBody
+        );
+        
+        this.setupInteractions(
+            this.buttonBaseImage
+        );
 
         this.setButtonState(false);
     }

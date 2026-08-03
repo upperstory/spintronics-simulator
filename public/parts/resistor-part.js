@@ -39,13 +39,8 @@ export class ResistorPart extends PartBase
         this.setupSprocket(2, {x: 0, y: 0}, 117/2, true, 0.041168 / 2);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.resistorBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0});//this.resistance / 100});
-        this.resistorFixture = this.resistorBody.createFixture(planck.Circle(resistorRadius), {density: 10, filterGroupIndex: -1, friction: 0});
+        this.resistorBody = this.standardBody(0);
+        this.resistorFixture = PartBase.createFixture(this.resistorBody, resistorRadius);
         this.sprocketBodies[0] = this.resistorBody;
         this.sprocketBodies[1] = this.resistorBody;
         this.sprocketBodies[2] = this.resistorBody;
@@ -63,12 +58,10 @@ export class ResistorPart extends PartBase
 
         //this.frictionJoint = this.world.createJoint(planck.FrictionJoint({maxTorque: .00003, maxForce: 0.0005}, this.resistorBody, this.ground));//this.resistorBody.getPosition()));
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.resistorBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.resistorBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.resistorBody));
+        this.setupInteractions(
+            this.partImage,
+            this.resistorBody
+        );
 
         this.resistorBody.applyAngularImpulse(0.000001);
 

@@ -8,6 +8,8 @@ const intermediateGearBottomRadius = 0.014 / 2;
 const driveGearRadius = 0.042 / 2;
 const sprocketGearRadius = 0.014 / 2;
 
+//Note from AlphaTechNinja: I'll touch this later as that is a lot of different interactive parts that I need to test
+
 export class MotorPart extends PartBase
 {
     constructor (scene, x, y, planckWorld)
@@ -107,9 +109,6 @@ export class MotorPart extends PartBase
         this.setupSprocket(1, {x: 0.5, y: -91.5}, 75/2, true, motorWheelRadius);
         this.setupSprocket(2, {x: 0.5, y: -91.5}, 75/2, true, motorWheelRadius);
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
         this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
 
         // Create junction bodies and joints

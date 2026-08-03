@@ -37,13 +37,8 @@ export class PhonographPart extends PartBase
         this.setupSprocket(2, {x: 0, y: 0}, 117/2, true, phonographRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.phonographSprocket = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 1});//this.resistance / 100});
-        this.phonographFixture = this.phonographSprocket.createFixture(planck.Circle(phonographRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
+        this.phonographSprocket = this.standardBody(1);
+        this.phonographFixture = PartBase.createFixture(this.phonographSprocket, phonographRadius);
         this.sprocketBodies[0] = this.phonographSprocket;
         this.sprocketBodies[1] = this.phonographSprocket;
         this.sprocketBodies[2] = this.phonographSprocket;
@@ -55,20 +50,15 @@ export class PhonographPart extends PartBase
         this.sprocketJoints[0] = this.phonographJoint;
         this.sprocketJoints[1] = this.phonographJoint;
         this.sprocketJoints[2] = this.phonographJoint;
+        
+        this.setupInteractions(
+            this.partImage,
+            this.phonographSprocket
+        );
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.phonographSprocket));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.phonographSprocket));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.phonographSprocket));
-
-        this.phonographBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.phonographBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.phonographBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.phonographBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.phonographBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.phonographBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.phonographBaseImage
+        );
 
         this.phonographSprocket.applyAngularImpulse(0.00000005);
 

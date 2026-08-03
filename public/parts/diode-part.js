@@ -36,13 +36,8 @@ export class DiodePart extends PartBase
         this.setupSprocket(2, {x: 0, y: 0}, 99/2, true, diodeRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.diodeSprocket = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.05});//this.resistance / 100});
-        this.diodeFixture = this.diodeSprocket.createFixture(planck.Circle(diodeRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
+        this.diodeSprocket = this.standardBody(0.05);
+        this.diodeFixture = PartBase.createFixture(this.diodeSprocket, diodeRadius);
         this.sprocketBodies[0] = this.diodeSprocket;
         this.sprocketBodies[1] = this.diodeSprocket;
         this.sprocketBodies[2] = this.diodeSprocket;
@@ -52,19 +47,14 @@ export class DiodePart extends PartBase
         this.sprocketJoints[1] = this.diodeJoint;
         this.sprocketJoints[2] = this.diodeJoint;
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.diodeSprocket));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.diodeSprocket));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.diodeSprocket));
-
-        this.diodeBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.diodeBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.diodeBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.diodeBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.diodeBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.diodeBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.partImage,
+            this.diodeSprocket
+        );
+        
+        this.setupInteractions(
+            this.diodeBaseImage
+        );
 
         this.diodeSprocket.applyAngularImpulse(0.0000002);
     }

@@ -33,12 +33,7 @@ export class LevelChangerPart extends PartBase
         this.setupSprocket(4, {x: 0, y: 0}, 98/2, true, levelChangerRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.levelChangerBody = this.world.createDynamicBody({position: planck.Vec2(0, 0), angularDamping: 0.02});//this.resistance / 100});
+        this.levelChangerBody = this.standardBody(0.02);
         this.levelChangerFixture = this.levelChangerBody.createFixture(planck.Circle(levelChangerRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
         this.sprocketBodies[0] = this.levelChangerBody;
         this.sprocketBodies[1] = this.levelChangerBody;
@@ -48,13 +43,11 @@ export class LevelChangerPart extends PartBase
         this.sprocketJoints[0] = this.levelChangerJoint;
         this.sprocketJoints[1] = this.levelChangerJoint;
         this.sprocketJoints[2] = this.levelChangerJoint;
-
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.levelChangerBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.levelChangerBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.levelChangerBody));
+        
+        this.setupInteractions(
+            this.partImage,
+            this.levelChangerBody
+        );
 
         this.levelChangerBody.applyAngularImpulse(0.00000005);
     }

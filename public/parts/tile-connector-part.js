@@ -13,6 +13,8 @@ export class TileConnectorPart extends PartBase
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
+        
+        delete this.ground; // delete automatic ground body
     }
 
     serialize()

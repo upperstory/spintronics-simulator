@@ -32,13 +32,8 @@ export class InductorPart extends PartBase
         this.setupSprocket(2, {x: 0, y: 0}, 70/2, true, inductorSprocketRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.inductorBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.5});
-        this.inductorFixture = this.inductorBody.createFixture(planck.Circle(inductorSprocketRadius), {density: 1, filterGroupIndex: -1, friction: 0});
+        this.inductorBody = this.standardBody(0.5);
+        this.inductorFixture = PartBase.createFixture(this.inductorBody, inductorSprocketRadius, 1);
         this.sprocketBodies[0] = this.inductorBody;
         this.sprocketBodies[1] = this.inductorBody;
         this.sprocketBodies[2] = this.inductorBody;
@@ -51,19 +46,14 @@ export class InductorPart extends PartBase
         this.sprocketJoints[1] = this.inductorJoint;
         this.sprocketJoints[2] = this.inductorJoint;
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.inductorBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.inductorBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.inductorBody));
-
-        this.inductorBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.inductorBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.inductorBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.inductorBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.inductorBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.inductorBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.partImage,
+            this.inductorBody
+        );
+        
+        this.setupInteractions(
+            this.inductorBaseImage
+        );
 
         // Set the starting inductance
         this.inductance = 50; // 50 H default
