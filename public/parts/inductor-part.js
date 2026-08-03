@@ -27,18 +27,9 @@ export class InductorPart extends PartBase
             this.inductorBaseImage
         )
 
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 70/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = inductorSprocketRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 70/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = inductorSprocketRadius; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 70/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = inductorSprocketRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 70/2, true, inductorSprocketRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 70/2, true, inductorSprocketRadius);
+        this.setupSprocket(2, {x: 0, y: 0}, 70/2, true, inductorSprocketRadius);
 
         // Create bodies and fixtures for Planck world
 

@@ -34,18 +34,9 @@ export class ResistorPart extends PartBase
         });
 
         // Define the positions of the sprockets.
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 117/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = 0.041168 / 2; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 117/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = 0.041168 / 2; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 117/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = 0.041168 / 2; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 117/2, true, 0.041168 / 2);
+        this.setupSprocket(1, {x: 0, y: 0}, 117/2, true, 0.041168 / 2);
+        this.setupSprocket(2, {x: 0, y: 0}, 117/2, true, 0.041168 / 2);
 
         // Create bodies and fixtures for Planck world
 

@@ -74,18 +74,9 @@ export class JunctionPart extends PartBase
             this.topSprocketImage
         )
 
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 176/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = largeSprocketRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 117/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = mediumSprocketRadius;
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 59/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = smallSprocketRadius;
+        this.setupSprocket(0, {x: 0, y: 0}, 176/2, true, largeSprocketRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 117/2, true, mediumSprocketRadius);
+        this.setupSprocket(2, {x: 0, y: 0}, 59/2, true, smallSprocketRadius);
 
         // Create bodies and fixtures for Planck world
 

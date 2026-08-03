@@ -26,18 +26,9 @@ export class ButtonPart extends PartBase
             this.buttonBaseImage
         )
 
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 117/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = buttonRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 117/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = buttonRadius; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 117/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = buttonRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 117/2, true, buttonRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 117/2, true, buttonRadius);
+        this.setupSprocket(2, {x: 0, y: 0}, 117/2, true, buttonRadius);
 
         // Create bodies and fixtures for Planck world
 

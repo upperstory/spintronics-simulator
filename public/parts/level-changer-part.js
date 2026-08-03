@@ -26,27 +26,11 @@ export class LevelChangerPart extends PartBase
             alphaTolerance: 1
         });
 
-
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 98/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = levelChangerRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 98/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = levelChangerRadius; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 98/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = levelChangerRadius; // in m
-        this.sprocketCenter[3] = {x: 0, y: 0};
-        this.sprocketRadius[3] = 98/2;
-        this.sprocketExists[3] = true;
-        this.sprocketPhysicsRadius[3] = levelChangerRadius; // in m
-        this.sprocketCenter[4] = {x: 0, y: 0};
-        this.sprocketRadius[4] = 98/2;
-        this.sprocketExists[4] = true;
-        this.sprocketPhysicsRadius[4] = levelChangerRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 98/2, true, levelChangerRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 98/2, true, levelChangerRadius);
+        this.setupSprocket(2, {x: 0, y: 0}, 98/2, true, levelChangerRadius);
+        this.setupSprocket(3, {x: 0, y: 0}, 98/2, true, levelChangerRadius);
+        this.setupSprocket(4, {x: 0, y: 0}, 98/2, true, levelChangerRadius);
 
         // Create bodies and fixtures for Planck world
 

@@ -66,19 +66,9 @@ export class TransistorPart extends PartBase
             this.transistorBall3Image
         );
 
-
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 117/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = baseRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 0;
-        this.sprocketExists[1] = false;
-        this.sprocketPhysicsRadius[1] = 0; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 181/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = gateRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 117/2, true, baseRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 0, false, 0);
+        this.setupSprocket(2, {x: 0, y: 0}, 181/2, true, gateRadius);
 
         // Create bodies and fixtures for Planck world
 

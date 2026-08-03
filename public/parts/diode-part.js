@@ -31,18 +31,9 @@ export class DiodePart extends PartBase
             this.diodeBaseImage
         )
 
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 99/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = diodeRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 99/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = diodeRadius; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 99/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = diodeRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 99/2, true, diodeRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 99/2, true, diodeRadius);
+        this.setupSprocket(2, {x: 0, y: 0}, 99/2, true, diodeRadius);
 
         // Create bodies and fixtures for Planck world
 

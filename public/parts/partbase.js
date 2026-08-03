@@ -322,4 +322,11 @@ export class PartBase extends Phaser.GameObjects.Container
             image.setInteractive(descriptor);
         });
     }
+    
+    setupSprocket(index, center, radius, exists, physicsRadius) {
+        this.sprocketCenter[index] = center;
+        this.sprocketRadius[index] = radius;
+        this.sprocketExists[index] = exists;
+        this.sprocketPhysicsRadius[index] = physicsRadius; // in m
+    }
 }

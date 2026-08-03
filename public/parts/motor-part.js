@@ -103,19 +103,9 @@ export class MotorPart extends PartBase
             this.motorSpannerImage
         );
 
-        this.sprocketCenter[0] = {x: 0.5, y: -91.5};//{x: -75/2, y: -216/2};
-        this.sprocketRadius[0] = 75/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = motorWheelRadius; // in m
-        this.sprocketCenter[1] = {x: 0.5, y: -91.5};//{x: -75/2, y: -216/2};
-        this.sprocketRadius[1] = 75/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = motorWheelRadius; // in m
-        this.sprocketCenter[2] = {x: 0.5, y: -91.5};//{x: -75/2, y: -216/2};
-        this.sprocketRadius[2] = 75/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = motorWheelRadius; // in m
-
+        this.setupSprocket(0, {x: 0.5, y: -91.5}, 75/2, true, motorWheelRadius);
+        this.setupSprocket(1, {x: 0.5, y: -91.5}, 75/2, true, motorWheelRadius);
+        this.setupSprocket(2, {x: 0.5, y: -91.5}, 75/2, true, motorWheelRadius);
         // Create bodies and fixtures for Planck world
 
         // Create a rigid ground body
