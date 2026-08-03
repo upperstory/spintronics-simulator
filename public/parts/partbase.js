@@ -83,6 +83,15 @@ export class PartBase extends Phaser.GameObjects.Container
         this.parentClass = parentClass;
         this.dragEndCallback = callback;
     }
+    
+    setCallbacks(manager) {
+        this.setPointerDownCallback(manager.onPartClicked, manager);
+        this.setPointerMoveCallback(manager.onPointerMoveOverPart, manager);
+        this.setPointerOutCallback(manager.onPointerMoveOutOfPart, manager);
+        this.setDragStartCallback(manager.onPartDragStart, manager);
+        this.setDragCallback(manager.onPartDrag, manager);
+        this.setDragEndCallback(manager.onPartDragEnd, manager);
+    }
 
     getXYPoint(gridSpacing)
     {
