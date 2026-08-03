@@ -18,6 +18,7 @@ import { tileSpacing } from './constants.js';
 
 // PartManager holds the list of parts, interacts directly with them, and provides methods for changing them. The parts themselves are never passed out or into the PartManager.
 export class PartManager {
+    registered = {};
     parts = [];
     chains = [];
     chainBeingBuilt = null;
@@ -38,6 +39,177 @@ export class PartManager {
         this.mapHeight = mapHeight;
         this.world = planckWorld;
         this.mouseGround = this.world.createBody();
+        
+        // register parts
+        this.registerPart("junction", JunctionPart, (mg, partCls, x, y, value) => {
+            var newPart = new JunctionPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("button", ButtonPart, (mg, partCls, x, y, value) => {
+            var newPart = new ButtonPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            if (value != null)
+            {
+                newPart.setButtonState(value);
+            }
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("resistor", ResistorPart, (mg, partCls, x, y, value) => {
+            var newPart = new ResistorPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            if (value != null)
+            {
+                let requestedValue = ResistorPart.possibleResistorValues.indexOf(value);
+                if (requestedValue == -1)
+                    requestedValue = 0;
+                newPart.setResistance(requestedValue);
+            }
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("capacitor", CapacitorPart, (mg, partCls, x, y, value) => {
+            var newPart = new CapacitorPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            
+            if (value != null)
+            {
+                let requestedValue = CapacitorPart.possibleCapacitanceValues.indexOf(value);
+                if (requestedValue == -1)
+                    requestedValue = 0;
+                newPart.setCapacitance(requestedValue);
+            }
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("diode", DiodePart, (mg, partCls, x, y, value) => {
+            var newPart = new DiodePart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("transistor", TransistorPart, (mg, partCls, x, y, value) => {
+            var newPart = new TransistorPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            if (value != null)
+            {
+                newPart.setTransistorCW(value);
+            }
+
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("level-changer", LevelChangerPart, (mg, partCls, x, y, value) => {
+            var newPart = new LevelChangerPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("phonograph", PhonographPart, (mg, partCls, x, y, value) => {
+            var newPart = new PhonographPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("motor", MotorPart, (mg, partCls, x, y, value) => {
+            var newPart = new MotorPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("inductor", InductorPart, (mg, partCls, x, y, value) => {
+            var newPart = new InductorPart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            if (value != null)
+            {
+                let requestedValue = InductorPart.possibleInductanceValues.indexOf(value);
+                if (requestedValue == -1)
+                    requestedValue = 0;
+                newPart.setInductance(requestedValue);
+            }
+            
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("tile", TilePart, (mg, partCls, x, y, value) => {
+            var newPart = new TilePart(mg.scene, x, y, mg.world);
+            newPart.setPointerDownCallback(mg.onPartClicked, mg);
+            newPart.setPointerMoveCallback(mg.onPointerMoveOverPart, mg);
+            newPart.setPointerOutCallback(mg.onPointerMoveOutOfPart, mg);
+            newPart.setDragStartCallback(mg.onPartDragStart, mg);
+            newPart.setDragCallback(mg.onPartDrag, mg);
+            newPart.setDragEndCallback(mg.onPartDragEnd, mg);
+            mg.parts.push(newPart);
+            return newPart;
+        });
+        
+        this.registerPart("tile-connector", TileConnectorPart, (mg, partCls, x, y, value) => {
+            var newPart = new TileConnectorPart(mg.scene, x, y, mg.world);
+            mg.parts.push(newPart);
+            return newPart;
+        });
     }
 
     update()
@@ -48,168 +220,20 @@ export class PartManager {
         }
 
     }
+    
+    registerPart(name, partClass, init) {
+        this.registered[name] = {
+            "class":partClass,
+            "init":init
+        }
+    }
 
     addPart(partType, x, y, value = null)
     {
-        if (partType == 'junction') {
-            var newPart = new JunctionPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            this.parts.push(newPart);
-            return newPart;
+        if (this.registered[partType]) {
+            const def = this.registered[partType];
+            return def.init(this, def.partClass, x, y ,value);
         }
-        else if (partType == 'button') {
-            var newPart = new ButtonPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            if (value != null)
-            {
-                newPart.setButtonState(value);
-            }
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'resistor') {
-            var newPart = new ResistorPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            if (value != null)
-            {
-                let requestedValue = ResistorPart.possibleResistorValues.indexOf(value);
-                if (requestedValue == -1)
-                    requestedValue = 0;
-                newPart.setResistance(requestedValue);
-            }
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'capacitor') {
-            var newPart = new CapacitorPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-
-            if (value != null)
-            {
-                let requestedValue = CapacitorPart.possibleCapacitanceValues.indexOf(value);
-                if (requestedValue == -1)
-                    requestedValue = 0;
-                newPart.setCapacitance(requestedValue);
-            }
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'diode') {
-            var newPart = new DiodePart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'transistor') {
-            var newPart = new TransistorPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            if (value != null)
-            {
-                newPart.setTransistorCW(value);
-            }
-
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'level-changer') {
-            var newPart = new LevelChangerPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'phonograph') {
-            var newPart = new PhonographPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'motor') {
-            var newPart = new MotorPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'inductor') {
-            var newPart = new InductorPart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            if (value != null)
-            {
-                let requestedValue = InductorPart.possibleInductanceValues.indexOf(value);
-                if (requestedValue == -1)
-                    requestedValue = 0;
-                newPart.setInductance(requestedValue);
-            }
-
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'tile') {
-            var newPart = new TilePart(this.scene, x, y, this.world);
-            newPart.setPointerDownCallback(this.onPartClicked, this);
-            newPart.setPointerMoveCallback(this.onPointerMoveOverPart, this);
-            newPart.setPointerOutCallback(this.onPointerMoveOutOfPart, this);
-            newPart.setDragStartCallback(this.onPartDragStart, this);
-            newPart.setDragCallback(this.onPartDrag, this);
-            newPart.setDragEndCallback(this.onPartDragEnd, this);
-            this.parts.push(newPart);
-            return newPart;
-        }
-        else if (partType == 'tile-connector') {
-            var newPart = new TileConnectorPart(this.scene, x, y, this.world);
-            this.parts.push(newPart);
-            return newPart;
-        }
-
         return null;
     }
 
@@ -893,3 +917,4 @@ export class PartManager {
         return chainsArray;
     }
 }
+
