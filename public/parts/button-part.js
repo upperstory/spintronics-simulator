@@ -9,28 +9,22 @@ export class ButtonPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'button';
-
-        this.partImage = scene.add.image(this.x, this.y,'button-sprocket');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(8);
+        
+        this.partImage = PartBase.makeImage(scene, this.x, this.y, 'button-sprocket', 0.5, 8)
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
-
-        this.buttonBaseImage = scene.add.image(this.x, this.y,'button-base');
-        this.buttonBaseImage.setScale(0.5);
-        this.buttonBaseImage.setDepth(16);
-
-        this.partImage.setInteractive({
+        
+        this.buttonBaseImage = PartBase.makeImage(scene, this.x, this.y, 'button-base', 0.5, 16);
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.buttonBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.buttonBaseImage
+        )
 
         this.sprocketCenter[0] = {x: 0, y: 0};
         this.sprocketRadius[0] = 117/2;

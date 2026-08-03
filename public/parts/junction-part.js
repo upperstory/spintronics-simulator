@@ -34,9 +34,7 @@ export class JunctionPart extends PartBase
         this.partType = 'junction';
 
         // Create the images for this part
-        this.partImage = scene.add.image(this.x, this.y,'junction-bottom');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(2);
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'junction-bottom', 0.5, 2)
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
@@ -44,20 +42,11 @@ export class JunctionPart extends PartBase
         //this.setSize(this.partWidth, this.partHeight);
         //this.partCenterX = this.partWidth / 2;
         //this.partCenterY = this.partHeight / 2;
-
-        this.capImage = scene.add.image(this.x, this.y,'junction-cap');
-        this.capImage.setScale(0.5);
-        this.capImage.setDepth(10);
+        this.capImage = PartBase.makeImage(scene, this.x, this.y, 'junction-cap', 0.5, 10);
         //this.add(this.capImage);
-
-        this.middleSprocketImage = scene.add.image(this.x, this.y,'junction-middle');
-        this.middleSprocketImage.setScale(0.5);
-        this.middleSprocketImage.setDepth(5);
+        this.middleSprocketImage = PartBase.makeImage(scene, this.x, this.y, 'junction-middle', 0.5, 5);
         //this.add(this.middleSprocketImage);
-
-        this.topSprocketImage = scene.add.image(this.x, this.y,'junction-top');
-        this.topSprocketImage.setScale(0.5);
-        this.topSprocketImage.setDepth(8);
+        this.topSprocketImage = PartBase.makeImage(scene, this.x, this.y, 'junction-top', 0.5, 8);
         //this.add(this.topSprocketImage);
 
         /*this.planet1Image = scene.add.image(this.x, this.y,'junction-planet');
@@ -74,27 +63,16 @@ export class JunctionPart extends PartBase
         this.planet3Image.setScale(0.5);
         this.planet3Image.setDepth(5);
         //this.add(this.planet3Image);*/
-
-        this.partImage.setInteractive({
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.capImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.middleSprocketImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.topSprocketImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.capImage,
+            this.middleSprocketImage,
+            this.topSprocketImage
+        )
 
         this.sprocketCenter[0] = {x: 0, y: 0};
         this.sprocketRadius[0] = 176/2;

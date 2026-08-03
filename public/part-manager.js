@@ -44,7 +44,6 @@ export class PartManager {
         this.registerPart("junction", JunctionPart, (mg, partCls, x, y, value) => {
             var newPart = new JunctionPart(mg.scene, x, y, mg.world);
             newPart.setCallbacks(mg);
-            mg.parts.push(newPart);
             return newPart;
         });
         
@@ -55,7 +54,6 @@ export class PartManager {
             {
                 newPart.setButtonState(value);
             }
-            mg.parts.push(newPart);
             return newPart;
         });
         
@@ -69,7 +67,6 @@ export class PartManager {
                     requestedValue = 0;
                 newPart.setResistance(requestedValue);
             }
-            mg.parts.push(newPart);
             return newPart;
         });
         
@@ -83,14 +80,12 @@ export class PartManager {
                     requestedValue = 0;
                 newPart.setCapacitance(requestedValue);
             }
-            mg.parts.push(newPart);
             return newPart;
         });
         
         this.registerPart("diode", DiodePart, (mg, partCls, x, y, value) => {
             var newPart = new DiodePart(mg.scene, x, y, mg.world);
             newPart.setCallbacks(mg);
-            mg.parts.push(newPart);
             return newPart;
         });
         
@@ -101,29 +96,24 @@ export class PartManager {
             {
                 newPart.setTransistorCW(value);
             }
-
-            mg.parts.push(newPart);
             return newPart;
         });
         
         this.registerPart("level-changer", LevelChangerPart, (mg, partCls, x, y, value) => {
             var newPart = new LevelChangerPart(mg.scene, x, y, mg.world);
             newPart.setCallbacks(mg);
-            mg.parts.push(newPart);
             return newPart;
         });
         
         this.registerPart("phonograph", PhonographPart, (mg, partCls, x, y, value) => {
             var newPart = new PhonographPart(mg.scene, x, y, mg.world);
             newPart.setCallbacks(mg);
-            mg.parts.push(newPart);
             return newPart;
         });
         
         this.registerPart("motor", MotorPart, (mg, partCls, x, y, value) => {
             var newPart = new MotorPart(mg.scene, x, y, mg.world);
             newPart.setCallbacks(mg);
-            mg.parts.push(newPart);
             return newPart;
         });
         
@@ -137,21 +127,17 @@ export class PartManager {
                     requestedValue = 0;
                 newPart.setInductance(requestedValue);
             }
-            
-            mg.parts.push(newPart);
             return newPart;
         });
         
         this.registerPart("tile", TilePart, (mg, partCls, x, y, value) => {
             var newPart = new TilePart(mg.scene, x, y, mg.world);
             newPart.setCallbacks(mg);
-            mg.parts.push(newPart);
             return newPart;
         });
         
         this.registerPart("tile-connector", TileConnectorPart, (mg, partCls, x, y, value) => {
             var newPart = new TileConnectorPart(mg.scene, x, y, mg.world);
-            mg.parts.push(newPart);
             return newPart;
         });
     }
@@ -176,7 +162,9 @@ export class PartManager {
     {
         if (this.registered[partType]) {
             const def = this.registered[partType];
-            return def.init(this, def.partClass, x, y ,value);
+            var part = def.init(this, def.partClass, x, y ,value);
+            this.parts.push(part);
+            return part;
         }
         return null;
     }

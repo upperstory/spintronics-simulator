@@ -9,10 +9,8 @@ export class DiodePart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'diode';
-
-        this.partImage = scene.add.image(this.x, this.y,'diode-sprocket');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(10);
+        
+        this.partImage = PartBase.makeImage(scene, this.x, this.y, 'diode-sprocket', 0.5, 10);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -22,20 +20,16 @@ export class DiodePart extends PartBase
         //this.partCenterX = this.partWidth / 2;
         //this.partCenterY = this.partHeight / 2;
 
-        this.diodeBaseImage = scene.add.image(this.x, this.y,'diode-base');
-        this.diodeBaseImage.setScale(0.5);
-        this.diodeBaseImage.setDepth(10);
-
-        this.partImage.setInteractive({
+        this.diodeBaseImage = PartBase.makeImage(scene, this.x, this.y, 'diode-base', 0.5, 10);
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.diodeBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.diodeBaseImage
+        )
 
         this.sprocketCenter[0] = {x: 0, y: 0};
         this.sprocketRadius[0] = 99/2;

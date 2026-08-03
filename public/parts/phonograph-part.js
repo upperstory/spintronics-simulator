@@ -10,9 +10,7 @@ export class PhonographPart extends PartBase
         super(scene, x, y, planckWorld);
         this.partType = 'phonograph';
 
-        this.partImage = scene.add.image(this.x, this.y,'phonograph-sprocket');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(10);
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'phonograph-sprocket', 0.5, 10);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -23,20 +21,16 @@ export class PhonographPart extends PartBase
         //this.partCenterY = this.partHeight / 2;
 
         this.phonographBaseImageOffset = {x: -3, y: 18};
-        this.phonographBaseImage = scene.add.image(this.x + this.phonographBaseImageOffset.x, this.y + this.phonographBaseImageOffset.y, 'phonograph-base');
-        this.phonographBaseImage.setScale(0.5);
-        this.phonographBaseImage.setDepth(16);
-
-        this.partImage.setInteractive({
+        this.phonographBaseImage = PartBase.makeImage(scene, this.x + this.phonographBaseImageOffset.x, this.y + this.phonographBaseImageOffset.y, 'phonograph-base', 0.5, 16);
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.phonographBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.phonographBaseImage
+        );
 
         this.sprocketCenter[0] = {x: 0, y: 0};
         this.sprocketRadius[0] = 117/2;

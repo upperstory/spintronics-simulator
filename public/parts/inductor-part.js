@@ -11,27 +11,21 @@ export class InductorPart extends PartBase
         super(scene, x, y, planckWorld);
         this.partType = 'inductor';
 
-        this.partImage = scene.add.image(this.x, this.y,'inductor-weights');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(10);
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'inductor-weights', 0.5, 10);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
-        this.inductorBaseImage = scene.add.image(this.x, this.y,'inductor-base');
-        this.inductorBaseImage.setScale(0.5);
-        this.inductorBaseImage.setDepth(16);
-
-        this.partImage.setInteractive({
+        this.inductorBaseImage = PartBase.makeImage(scene, this.x, this.y,'inductor-base', 0.5, 16);
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.inductorBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.inductorBaseImage
+        )
 
         this.sprocketCenter[0] = {x: 0, y: 0};
         this.sprocketRadius[0] = 70/2;

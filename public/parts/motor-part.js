@@ -54,103 +54,54 @@ export class MotorPart extends PartBase
         this.resetButton.setVisible(false);
 
         this.partImageOffset = {x: 0.5, y: -91.5};
-        this.partImage = scene.add.image(this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'motor-wheel');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(10);
+        this.partImage = PartBase.makeImage(scene, this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'motor-wheel', 0.5, 10);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
         this.motorBaseUnderImageOffset = {x: -8, y: -7};
-        this.motorBaseUnderImage = scene.add.image(this.x + this.motorBaseUnderImageOffset.x, this.y + this.motorBaseUnderImageOffset.y, 'motor-base-under');
-        this.motorBaseUnderImage.setScale(0.5);
-        this.motorBaseUnderImage.setDepth(0);
+        this.motorBaseUnderImage = PartBase.makeImage(scene, this.x + this.motorBaseUnderImageOffset.x, this.y + this.motorBaseUnderImageOffset.y, 'motor-base-under', 0.5, 0);
 
         this.motorBaseTileImageOffset = {x: 0, y: 20.5};
-        this.motorBaseTileImage = scene.add.image(this.x + this.motorBaseTileImageOffset.x, this.y + this.motorBaseTileImageOffset.y, 'motor-base-tile');
-        this.motorBaseTileImage.setScale(0.5);
-        this.motorBaseTileImage.setDepth(1);
+        this.motorBaseTileImage = PartBase.makeImage(scene, this.x + this.motorBaseTileImageOffset.x, this.y + this.motorBaseTileImageOffset.y, 'motor-base-tile', 0.5, 1);
 
         this.motorPawlClosedImageOffset = {x: 11, y: 58};
-        this.motorPawlClosedImage = scene.add.image(this.x + this.motorPawlClosedImageOffset.x, this.y + this.motorPawlClosedImageOffset.y, 'motor-pawl-closed');
-        this.motorPawlClosedImage.setScale(0.5);
-        this.motorPawlClosedImage.setDepth(0);
-        this.motorPawlClosedImage.setVisible(false);
+        this.motorPawlClosedImage = PartBase.makeImage(scene, this.x + this.motorPawlClosedImageOffset.x, this.y + this.motorPawlClosedImageOffset.y, 'motor-pawl-closed', 0.5, 0, false);
 
         this.motorPawlOpenImageOffset = {x: 11, y: 66};
-        this.motorPawlOpenImage = scene.add.image(this.x + this.motorPawlOpenImageOffset.x, this.y + this.motorPawlOpenImageOffset.y, 'motor-pawl-open');
-        this.motorPawlOpenImage.setScale(0.5);
-        this.motorPawlOpenImage.setDepth(0);
+        this.motorPawlOpenImage = PartBase.makeImage(scene, this.x + this.motorPawlOpenImageOffset.x, this.y + this.motorPawlOpenImageOffset.y, 'motor-pawl-open', 0.5, 0);
         //this.motorPawlOpenImage.setAlpha(0.0);
 
         this.motorScrewImageOffset = {x: 0.5, y: -91.5};
-        this.motorScrewImage = scene.add.image(this.x + this.motorScrewImageOffset.x, this.y + this.motorScrewImageOffset.y,'motor-screw');
-        this.motorScrewImage.setScale(0.5);
-        this.motorScrewImage.setDepth(10);
+        this.motorScrewImage = PartBase.makeImage(scene, this.x + this.motorScrewImageOffset.x, this.y + this.motorScrewImageOffset.y,'motor-screw', 0.5, 10);
 
         this.motorDriveGearImageOffset = {x: -32.5, y: 129-91.5};
-        this.motorDriveGearImage = scene.add.image(this.x + this.motorDriveGearImageOffset.x, this.y + this.motorDriveGearImageOffset.y,'motor-drive-gear');
-        this.motorDriveGearImage.setScale(0.5);
-        this.motorDriveGearImage.setDepth(1);
+        this.motorDriveGearImage = PartBase.makeImage(scene, this.x + this.motorDriveGearImageOffset.x, this.y + this.motorDriveGearImageOffset.y,'motor-drive-gear', 0.5, 1);
         //this.motorDriveGearImage.setAlpha(0.5);
 
         this.motorIntermediateGearImageOffset = {x: 25.5, y: 70.5-91.5};
-        this.motorIntermediateGearImage = scene.add.image(this.x + this.motorIntermediateGearImageOffset.x, this.y + this.motorIntermediateGearImageOffset.y,'motor-intermediate-gear');
-        this.motorIntermediateGearImage.setScale(0.5);
-        this.motorIntermediateGearImage.setDepth(1);
+        this.motorIntermediateGearImage = PartBase.makeImage(scene, this.x + this.motorIntermediateGearImageOffset.x, this.y + this.motorIntermediateGearImageOffset.y,'motor-intermediate-gear', 0.5, 1);
         //this.motorIntermediateGearImage.setAlpha(0.5);
 
         this.motorSpannerImageOffset = {x: -3.5, y: 99.5-91.5};
-        this.motorSpannerImage = scene.add.image(this.x + this.motorSpannerImageOffset.x, this.y + this.motorSpannerImageOffset.y,'motor-spanner');
-        this.motorSpannerImage.setScale(0.5);
-        this.motorSpannerImage.setDepth(2);
+        this.motorSpannerImage = PartBase.makeImage(scene, this.x + this.motorSpannerImageOffset.x, this.y + this.motorSpannerImageOffset.y,'motor-spanner', 0.5, 2);
         //this.motorSpannerImage.setAlpha(0.5);
-
-        this.partImage.setInteractive({
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.motorBaseUnderImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.motorBaseTileImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.motorPawlClosedImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.motorPawlOpenImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.motorScrewImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.motorDriveGearImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.motorIntermediateGearImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.motorSpannerImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.motorBaseUnderImage,
+            this.motorBaseTileImage,
+            this.motorPawlClosedImage,
+            this.motorPawlOpenImage,
+            this.motorScrewImage,
+            this.motorDriveGearImage,
+            this.motorIntermediateGearImage,
+            this.motorSpannerImage
+        );
 
         this.sprocketCenter[0] = {x: 0.5, y: -91.5};//{x: -75/2, y: -216/2};
         this.sprocketRadius[0] = 75/2;

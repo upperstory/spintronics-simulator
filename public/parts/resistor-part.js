@@ -16,9 +16,7 @@ export class ResistorPart extends PartBase
         this.resistance = 1000; // 1000 ohms default
 
         // Create the resistor image
-        this.partImage = scene.add.image(this.x, this.y,'resistor');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(8);
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'resistor', 0.5, 8);
         //this.add(this.partImage);
 
         this.partWidth = this.partImage.displayWidth;

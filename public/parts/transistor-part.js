@@ -12,124 +12,59 @@ export class TransistorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'transistor';
-        this.partImage = scene.add.image(this.x, this.y,'transistor-gate');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(8);
+        
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'transistor-gate', 0.5, 8);
         //this.partImage.setAlpha(0.0);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
-        this.transistorGuideImage = scene.add.image(this.x, this.y,'transistor-guide');
-        this.transistorGuideImage.setScale(0.5);
-        this.transistorGuideImage.setDepth(13);
+        this.transistorGuideImage = PartBase.makeImage(scene, this.x, this.y,'transistor-guide', 0.5, 13);
 
-        this.transistorBaseImage = scene.add.image(this.x, this.y,'transistor-base');
-        this.transistorBaseImage.setScale(0.5);
-        this.transistorBaseImage.setDepth(6);
+        this.transistorBaseImage = PartBase.makeImage(scene, this.x, this.y,'transistor-base', 0.5, 6);
 
-        this.transistorTabImage = scene.add.image(this.x, this.y + 86,'transistor-tab');
-        this.transistorTabImage.setScale(0.5);
-        this.transistorTabImage.setDepth(13);
+        this.transistorTabImage = PartBase.makeImage(scene, this.x, this.y + 86,'transistor-tab', 0.5, 13);
 
-        this.transistorMidCapImage = scene.add.image(this.x, this.y,'transistor-mid-cap');
-        this.transistorMidCapImage.setScale(0.5);
-        this.transistorMidCapImage.setDepth(10);
+        this.transistorMidCapImage = PartBase.makeImage(scene, this.x, this.y,'transistor-mid-cap', 0.5, 10);
 
-        this.transistorResistorImage = scene.add.image(this.x, this.y,'transistor-resistor');
-        this.transistorResistorImage.setScale(0.5);
-        this.transistorResistorImage.setDepth(2);
+        this.transistorResistorImage = PartBase.makeImage(scene, this.x, this.y,'transistor-resistor', 0.5, 2);
 
         let brakeRadius = 56;
         let ballRadius = 25;
 
-        this.transistorBrake1Image = scene.add.image(this.x, this.y - brakeRadius,'transistor-brake');
-        this.transistorBrake1Image.setScale(0.5);
-        this.transistorBrake1Image.setDepth(7);
+        this.transistorBrake1Image = PartBase.makeImage(scene, this.x, this.y - brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake1Image.setRotation(-Math.PI/2);
 
-        this.transistorBrake2Image = scene.add.image(this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake');
-        this.transistorBrake2Image.setScale(0.5);
-        this.transistorBrake2Image.setDepth(7);
+        this.transistorBrake2Image = PartBase.makeImage(scene, this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake2Image.setRotation(Math.PI*(2/3) - Math.PI/2);
 
-        this.transistorBrake3Image = scene.add.image(this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake');
-        this.transistorBrake3Image.setScale(0.5);
-        this.transistorBrake3Image.setDepth(7);
+        this.transistorBrake3Image = PartBase.makeImage(scene, this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake3Image.setRotation(-Math.PI*(2/3) - Math.PI/2);
 
-        this.transistorBall1Image = scene.add.image(this.x, this.y - ballRadius,'transistor-ball');
-        this.transistorBall1Image.setScale(0.5);
-        this.transistorBall1Image.setDepth(12);
+        this.transistorBall1Image = PartBase.makeImage(scene, this.x, this.y - ballRadius,'transistor-ball', 0.5, 12);
 
-        this.transistorBall2Image = scene.add.image(this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball');
-        this.transistorBall2Image.setScale(0.5);
-        this.transistorBall2Image.setDepth(12);
+        this.transistorBall2Image = PartBase.makeImage(scene, this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball', 0.5, 12);
 
-        this.transistorBall3Image = scene.add.image(this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball');
-        this.transistorBall3Image.setScale(0.5);
-        this.transistorBall3Image.setDepth(12);
-
-        this.partImage.setInteractive({
+        this.transistorBall3Image = PartBase.makeImage(scene, this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball', 0.5, 12);
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.transistorGuideImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorTabImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorMidCapImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorResistorImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBrake1Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBrake2Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBrake3Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBall1Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBall2Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBall3Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.transistorGuideImage,
+            this.transistorBaseImage,
+            this.transistorTabImage,
+            this.transistorMidCapImage,
+            this.transistorResistorImage,
+            this.transistorBrake1Image,
+            this.transistorBrake2Image,
+            this.transistorBrake3Image,
+            this.transistorBall1Image,
+            this.transistorBall2Image,
+            this.transistorBall3Image
+        );
 
 
         this.sprocketCenter[0] = {x: 0, y: 0};

@@ -10,9 +10,7 @@ export class TilePart extends PartBase
 
         // Create the resistor image
         this.partImageOffset = {x: 0, y: 0};
-        this.partImage = scene.add.image(this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(0);
+        this.partImage = PartBase.makeImage(scene, this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile', 0.5, 0);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;

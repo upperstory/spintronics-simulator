@@ -9,10 +9,8 @@ export class LevelChangerPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'level-changer';
-
-        this.partImage = scene.add.image(this.x, this.y,'level-changer');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(16);
+        
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'level-changer', 0.5, 16);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;

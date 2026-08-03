@@ -15,10 +15,8 @@ export class CapacitorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partType = 'capacitor';
-        this.partImage = scene.add.image(this.x, this.y,'capacitor-sprocket');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(10);
-        this.partImage.setVisible(true);
+        
+        this.partImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-sprocket', 0.5, 10, true);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -27,41 +25,19 @@ export class CapacitorPart extends PartBase
         //this.partImage.setDisplaySize(this.partWidth, this.partHeight);
         //this.partCenterX = this.partWidth / 2;
         //this.partCenterY = this.partHeight / 2;
-
-        this.capacitorCapImage = scene.add.image(this.x, this.y,'capacitor-cap');
-        this.capacitorCapImage.setScale(0.5);
-        this.capacitorCapImage.setDepth(12);
-        this.capacitorCapImage.setVisible(true);
-
-        this.capacitorShortHandImage = scene.add.image(this.x, this.y,'capacitor-short-hand');
-        this.capacitorShortHandImage.setScale(0.5);
-        this.capacitorShortHandImage.setDepth(11);
+        this.capacitorCapImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-cap', 0.5, 12, true);
+        
+        this.capacitorShortHandImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-short-hand', 0.5, 11, true)
         this.capacitorShortHandImage.setOrigin(0.5, 0.74);
-        this.capacitorShortHandImage.setVisible(true);
-
-        this.capacitorLongHandImage = scene.add.image(this.x, this.y,'capacitor-long-hand');
-        this.capacitorLongHandImage.setScale(0.5);
-        this.capacitorLongHandImage.setDepth(11);
+        
+        this.capacitorLongHandImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-long-hand', 0.5, 11, true)
         this.capacitorLongHandImage.setOrigin(0.5, 0.8);
-        this.capacitorLongHandImage.setVisible(true);
 
-        this.capacitorSprocketNoValueImage = scene.add.image(this.x, this.y,'capacitor-sprocket-no-value');
-        this.capacitorSprocketNoValueImage.setScale(0.5);
-        this.capacitorSprocketNoValueImage.setDepth(11);
-        //this.capacitorSprocketNoValueImage.setOrigin(0.5, 0.8);
-        this.capacitorSprocketNoValueImage.setVisible(false);
-
-        this.capacitorMeterImage = scene.add.image(this.x, this.y,'capacitor-meter');
-        this.capacitorMeterImage.setScale(0.5);
-        this.capacitorMeterImage.setDepth(12);
-        //this.capacitorMeterImage.setOrigin(0.5, 0.8);
-        this.capacitorMeterImage.setVisible(false);
-
-        this.capacitorNumbersImage = scene.add.image(this.x, this.y,'capacitor-numbers');
-        this.capacitorNumbersImage.setScale(0.5);
-        this.capacitorNumbersImage.setDepth(11);
-        //this.capacitorNumbersImage.setOrigin(0.5, 0.8);
-        this.capacitorNumbersImage.setVisible(false);
+        this.capacitorSprocketNoValueImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-sprocket-no-value', 0.5, 11, false);
+        
+        this.capacitorMeterImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-meter', 0.5, 12, false);
+        
+        this.capacitorNumbersImage = PartBase.makeImage(scene, this.x, this.y,'capacitor-numbers', 0.5, 11, false);
 
         this.maskShape = scene.add.graphics();
         this.maskShape.setPosition(this.x, this.y);
@@ -69,42 +45,21 @@ export class CapacitorPart extends PartBase
         this.maskShape.fillRect(-30,-30,60,60);
         const mask = this.maskShape.createGeometryMask();
         this.capacitorNumbersImage.setMask(mask);
-
-        this.partImage.setInteractive({
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.capacitorCapImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.capacitorShortHandImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.capacitorLongHandImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.capacitorSprocketNoValueImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.capacitorMeterImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.capacitorNumbersImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.capacitorCapImage,
+            this.capacitorShortHandImage,
+            this.capacitorLongHandImage,
+            this.capacitorSprocketNoValueImage,
+            this.capacitorMeterImage,
+            this.capacitorNumbersImage
+            
+        )
 
         this.sprocketCenter[0] = {x: 0, y: 0};
         this.sprocketRadius[0] = 117/2;

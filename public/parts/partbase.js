@@ -290,6 +290,16 @@ export class PartBase extends Phaser.GameObjects.Container
         }
         return retVal;
     }
+    
+    static makeImage(scene, x, y, name, scale = 0.5, depth = 0, visible = null) {
+        var image = scene.add.image(x, y, name);
+        image.setScale(scale);
+        image.setDepth(depth);
+        if (visible != null) {
+            image.setVisible(visible);
+        }
+        return image;
+    }
 
     updatePhysics()
     {
@@ -304,5 +314,12 @@ export class PartBase extends Phaser.GameObjects.Container
             return null;
 
         return {left: this.x, right: this.x, top: this.y, bottom: this.y};
+    }
+    
+    // dunder help
+    static setAllInteractive(descriptor, ...images) {
+        images.forEach((image) => {
+            image.setInteractive(descriptor);
+        });
     }
 }

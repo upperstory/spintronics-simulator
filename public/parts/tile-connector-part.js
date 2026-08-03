@@ -9,9 +9,7 @@ export class TileConnectorPart extends PartBase
         this.partType = 'tile-connector';
 
         this.partImageOffset = {x: 0, y: 0};
-        this.partImage = scene.add.image(this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile-connector');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(1);
+        this.partImage = PartBase.makeImage(scene, this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile-connector', 0.5, 1);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
