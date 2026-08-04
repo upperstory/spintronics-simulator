@@ -9,8 +9,6 @@ export class ButtonPart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        //this.partType = 'button';
-        
         this.partImage = PartBase.makeImage(scene, this.x, this.y, 'button-sprocket', 0.5, 8)
 
         this.partWidth = this.partImage.displayWidth;

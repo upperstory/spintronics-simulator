@@ -3,11 +3,10 @@ import {worldScale} from '../constants.js';
 
 export class TileConnectorPart extends PartBase
 {
+    partType = 'tile-connector';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'tile-connector';
-
         this.partImageOffset = {x: 0, y: 0};
         this.partImage = PartBase.makeImage(scene, this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile-connector', 0.5, 1);
 

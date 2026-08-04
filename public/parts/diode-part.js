@@ -5,11 +5,10 @@ const diodeRadius = 0.033979 / 2;
 
 export class DiodePart extends PartBase
 {
+    partType = 'diode';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'diode';
-        
         this.partImage = PartBase.makeImage(scene, this.x, this.y, 'diode-sprocket', 0.5, 10);
 
         //this.add(this.partImage);

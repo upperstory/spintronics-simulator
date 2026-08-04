@@ -5,12 +5,10 @@ const inductorSprocketRadius = 0.025771 / 2;
 export class InductorPart extends PartBase
 {
     static possibleInductanceValues = [.01, .02, .05, .1, .2, .5, 1, 2, 5, 10, 20, 50, 100, 200, 500];
-
+    partType = 'inductor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'inductor';
-
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'inductor-weights', 0.5, 10);
 
         this.partWidth = this.partImage.displayWidth;

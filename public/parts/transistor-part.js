@@ -8,11 +8,10 @@ const upperAngleLimit = (Math.PI*2)*0.125;
 
 export class TransistorPart extends PartBase
 {
+    partType = 'transistor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'transistor';
-        
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'transistor-gate', 0.5, 8);
         //this.partImage.setAlpha(0.0);
 

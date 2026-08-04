@@ -27,12 +27,10 @@ export class JunctionPart extends PartBase
     // 14 = Level 5 sprockets
     // 15 = Level 5 chains
     // 16 = Part content above level 5 sprockets
-
+    partType = 'junction';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'junction';
-
         // Create the images for this part
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'junction-bottom', 0.5, 2)
         //this.add(this.partImage);

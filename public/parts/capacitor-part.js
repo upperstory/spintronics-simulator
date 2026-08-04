@@ -10,12 +10,10 @@ const upperAngleLimit = 288 * (1/360)*2*Math.PI;
 export class CapacitorPart extends PartBase
 {
     static possibleCapacitanceValues = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05];
-
+    partType = 'capacitor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'capacitor';
-        
         this.partImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-sprocket', 0.5, 10, true);
 
         //this.add(this.partImage);

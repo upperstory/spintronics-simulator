@@ -12,11 +12,10 @@ const sprocketGearRadius = 0.014 / 2;
 
 export class MotorPart extends PartBase
 {
+    partType = 'motor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'motor';
-
         this.isShorted = false;
         this.buttonWidth = 300;
         this.buttonHeight = 50;

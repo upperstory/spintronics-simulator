@@ -3,11 +3,10 @@ import {worldScale} from '../constants.js';
 
 export class TilePart extends PartBase
 {
+    partType = 'tile';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'tile';
-
         // Create the resistor image
         this.partImageOffset = {x: 0, y: 0};
         this.partImage = PartBase.makeImage(scene, this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'tile', 0.5, 0);

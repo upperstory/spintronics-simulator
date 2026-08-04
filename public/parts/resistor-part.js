@@ -6,12 +6,10 @@ const resistorRadius = 0.041168 / 2;
 export class ResistorPart extends PartBase
 {
     static possibleResistorValues = [100, 200, 500, 1000, 2000, 20, 50];
-
+    partType = 'resistor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'resistor';
-
         // Set the starting resistance
         this.resistance = 1000; // 1000 ohms default
 

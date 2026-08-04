@@ -5,11 +5,10 @@ const phonographRadius = 0.041168 / 2;
 
 export class PhonographPart extends PartBase
 {
+    partType = 'phonograph';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'phonograph';
-
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'phonograph-sprocket', 0.5, 10);
 
         //this.add(this.partImage);

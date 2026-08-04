@@ -5,11 +5,10 @@ const levelChangerRadius = 0.033979 / 2;
 
 export class LevelChangerPart extends PartBase
 {
+    partType = 'level-changer';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'level-changer';
-        
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'level-changer', 0.5, 16);
 
         //this.add(this.partImage);
