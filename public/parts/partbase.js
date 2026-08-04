@@ -331,6 +331,10 @@ export class PartBase extends Phaser.GameObjects.Container
         this.sprocketPhysicsRadius[index] = physicsRadius; // in m
     }
     
+    syncRotation(image, body) {
+        image.rotation = body.getAngle();
+    }
+    
     static createFixture(body, radius, density = 0.1, filterGroupIndex = -1, friction = 0) {
         return body.createFixture(planck.Circle(radius), {density: density, filterGroupIndex: filterGroupIndex, friction: friction});
     }

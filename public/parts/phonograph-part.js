@@ -71,7 +71,7 @@ export class PhonographPart extends PartBase
     {
         //this.partImage.x = this.phonographSprocket.getPosition().x * worldScale;
         //this.partImage.y = this.phonographSprocket.getPosition().y * worldScale;
-        this.partImage.rotation = this.phonographSprocket.getAngle();
+        this.syncRotation(this.partImage, this.phonographSprocket);
         let angVel = Math.abs(this.phonographSprocket.getAngularVelocity());
         //if (angVel == 0)
         //    this.osc.stop();

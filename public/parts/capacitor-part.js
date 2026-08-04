@@ -129,8 +129,8 @@ export class CapacitorPart extends PartBase
     {
         //this.partImage.x = this.capacitorBody.getPosition().x * worldScale;
         //this.partImage.y = this.capacitorBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.capacitorBody.getAngle();
-        this.capacitorSprocketNoValueImage.rotation = this.capacitorBody.getAngle();
+        this.syncRotation(this.partImage, this.capacitorBody);
+        this.syncRotation(this.capacitorSprocketNoValueImage, this.capacitorBody);
 
         // Set resistance of base
         let angleFraction = 0;
@@ -161,11 +161,11 @@ export class CapacitorPart extends PartBase
         this.capacitorNumbersImage.x = this.x + (-(angleFraction - 0.5) * 2) * (1/this.capacitance) * .21705;
         //this.capacitorShortHandImage.x = this.capacitorShortHandBody.getPosition().x * worldScale;
         //this.capacitorShortHandImage.y = this.capacitorShortHandBody.getPosition().y * worldScale;
-        this.capacitorShortHandImage.rotation = this.capacitorShortHandBody.getAngle();
+        this.syncRotation(this.capacitorShortHandImage, this.capacitorShortHandBody);
 
         //this.capacitorLongHandImage.x = this.capacitorLongHandBody.getPosition().x * worldScale;
         //this.capacitorLongHandImage.y = this.capacitorLongHandBody.getPosition().y * worldScale;
-        this.capacitorLongHandImage.rotation = this.capacitorLongHandBody.getAngle();
+        this.syncRotation(this.capacitorLongHandImage, this.capacitorLongHandBody);
     }
 
     getCapacitanceString()

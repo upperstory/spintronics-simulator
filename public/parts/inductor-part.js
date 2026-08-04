@@ -84,7 +84,7 @@ export class InductorPart extends PartBase
     {
         //this.partImage.x = this.inductorBody.getPosition().x * worldScale;
         //this.partImage.y = this.inductorBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.inductorBody.getAngle();
+        this.syncRotation(this.partImage, this.inductorBody);
 
         //let BaseResistance = 13000*0.0000000003; // in ohms
         // update averageAngularVelocity

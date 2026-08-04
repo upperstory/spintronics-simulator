@@ -104,7 +104,7 @@ export class ResistorPart extends PartBase
     {
         //this.partImage.x = this.resistorBody.getPosition().x * worldScale;
         //this.partImage.y = this.resistorBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.resistorBody.getAngle();
+        this.syncRotation(this.partImage, this.resistorBody);
 
         //let BaseResistance = 13000*0.0000000003; // in ohms
         // update averageAngularVelocity

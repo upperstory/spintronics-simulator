@@ -64,7 +64,7 @@ export class DiodePart extends PartBase
     {
         //this.partImage.x = this.diodeSprocket.getPosition().x * worldScale;
         //this.partImage.y = this.diodeSprocket.getPosition().y * worldScale;
-        this.partImage.rotation = this.diodeSprocket.getAngle();
+        this.syncRotation(this.partImage, this.diodeSprocket);
 
         if (this.lowerLimit == null || this.diodeSprocket.getAngle() > this.lowerLimit) {
             this.lowerLimit = this.diodeSprocket.getAngle();

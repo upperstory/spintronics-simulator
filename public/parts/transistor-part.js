@@ -139,9 +139,9 @@ export class TransistorPart extends PartBase
     {
         //this.partImage.x = this.transistorGateBody.getPosition().x * worldScale;
         //this.partImage.y = this.transistorGateBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.transistorGateBody.getAngle();
-        this.transistorGuideImage.rotation = this.transistorGateBody.getAngle();
-        this.transistorResistorImage.rotation = this.transistorResistorBody.getAngle();
+        this.syncRotation(this.partImage, this.transistorGateBody);
+        this.syncRotation(this.transistorGuideImage, this.transistorGateBody);
+        this.syncRotation(this.transistorResistorImage, this.transistorResistorBody);
         let ballRadius = 26 - (Math.abs(this.transistorGateBody.getAngle()) * 18);
         this.transistorBall1Image.setPosition(this.x, this.y - ballRadius);
         this.transistorBall2Image.setPosition(this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius);

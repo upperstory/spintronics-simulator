@@ -84,7 +84,7 @@ export class ButtonPart extends PartBase
     {
         //this.partImage.x = this.buttonBody.getPosition().x * worldScale;
         //this.partImage.y = this.buttonBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.buttonBody.getAngle();
+        this.syncRotation(this.partImage, this.buttonBody);
     }
 
     setPartTint(color)

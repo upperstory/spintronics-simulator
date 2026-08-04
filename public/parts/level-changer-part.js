@@ -55,7 +55,7 @@ export class LevelChangerPart extends PartBase
     {
         //this.partImage.x = this.levelChangerBody.getPosition().x * worldScale;
         //this.partImage.y = this.levelChangerBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.levelChangerBody.getAngle();
+        this.syncRotation(this.partImage, this.levelChangerBody);
     }
 
     setPartTint(color)

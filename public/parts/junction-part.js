@@ -150,19 +150,19 @@ export class JunctionPart extends PartBase
     {
         //this.partImage.x = this.largeSprocketBody.getPosition().x * worldScale;
         //this.partImage.y = this.largeSprocketBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.largeSprocketBody.getAngle();
+        this.syncRotation(this.partImage, this.largeSprocketBody);
 
         //this.middleSprocketImage.x = this.mediumSprocketBody.getPosition().x * worldScale;
         //this.middleSprocketImage.y = this.mediumSprocketBody.getPosition().y * worldScale;
-        this.middleSprocketImage.rotation = this.mediumSprocketBody.getAngle();
+        this.syncRotation(this.middleSprocketImage, this.mediumSprocketBody);
 
         //this.topSprocketImage.x = this.smallSprocketBody.getPosition().x * worldScale;
         //this.topSprocketImage.y = this.smallSprocketBody.getPosition().y * worldScale;
-        this.topSprocketImage.rotation = this.smallSprocketBody.getAngle();
+        this.syncRotation(this.topSprocketImage, this.smallSprocketBody);
 
         //this.capImage.x = this.sprocketCapBody.getPosition().x * worldScale;
         //this.capImage.y = this.sprocketCapBody.getPosition().y * worldScale;
-        this.capImage.rotation = this.sprocketCapBody.getAngle();
+        this.syncRotation(this.capImage, this.sprocketCapBody);
 
         /*this.planet1Image.x = this.planet1Body.getPosition().x * worldScale;
         this.planet1Image.y = this.planet1Body.getPosition().y * worldScale;
