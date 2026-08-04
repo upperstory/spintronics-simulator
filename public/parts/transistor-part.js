@@ -13,38 +13,50 @@ export class TransistorPart extends PartBase
     {
         super(scene, x, y, planckWorld);
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'transistor-gate', 0.5, 8);
+        this.markImage(this.partImage);
         //this.partImage.setAlpha(0.0);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
         this.transistorGuideImage = PartBase.makeImage(scene, this.x, this.y,'transistor-guide', 0.5, 13);
+        this.markImage(this.transistorGuideImage);
 
         this.transistorBaseImage = PartBase.makeImage(scene, this.x, this.y,'transistor-base', 0.5, 6);
+        this.markImage(this.transistorBaseImage);
 
         this.transistorTabImage = PartBase.makeImage(scene, this.x, this.y + 86,'transistor-tab', 0.5, 13);
+        this.markImage(this.transistorTabImage);
 
         this.transistorMidCapImage = PartBase.makeImage(scene, this.x, this.y,'transistor-mid-cap', 0.5, 10);
+        this.markImage(this.transistorMidCapImage);
 
         this.transistorResistorImage = PartBase.makeImage(scene, this.x, this.y,'transistor-resistor', 0.5, 2);
+        this.markImage(this.transistorResistorImage);
 
         let brakeRadius = 56;
         let ballRadius = 25;
 
         this.transistorBrake1Image = PartBase.makeImage(scene, this.x, this.y - brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake1Image.setRotation(-Math.PI/2);
+        this.markImage(this.transistorBrake1Image);
 
         this.transistorBrake2Image = PartBase.makeImage(scene, this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake2Image.setRotation(Math.PI*(2/3) - Math.PI/2);
+        this.markImage(this.transistorBrake2Image);
 
         this.transistorBrake3Image = PartBase.makeImage(scene, this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake3Image.setRotation(-Math.PI*(2/3) - Math.PI/2);
+        this.markImage(this.transistorBrake3Image);
 
         this.transistorBall1Image = PartBase.makeImage(scene, this.x, this.y - ballRadius,'transistor-ball', 0.5, 12);
+        this.markImage(this.transistorBall1Image);
 
         this.transistorBall2Image = PartBase.makeImage(scene, this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball', 0.5, 12);
+        this.markImage(this.transistorBall2Image);
 
         this.transistorBall3Image = PartBase.makeImage(scene, this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball', 0.5, 12);
+        this.markImage(this.transistorBall3Image);
         
         PartBase.setAllInteractive({
             draggable: true,
@@ -72,16 +84,20 @@ export class TransistorPart extends PartBase
         // Create bodies and fixtures for Planck world
         // Create transistor bodies and joints
         this.transistorGateBody = this.standardBody(0.02);
+        this.markBody(this.transistorGateBody);
         PartBase.createFixture(this.transistorGateBody, gateRadius);
         this.sprocketBodies[2] = this.transistorGateBody;
 
         this.transistorResistorBody = this.standardBody(0.02);
+        this.markBody(this.transistorResistorBody);
         this.transistorResistorFixture = PartBase.createFixture(this.transistorResistorBody, baseRadius, 10);
         this.sprocketBodies[0] = this.transistorResistorBody;
 
         this.transistorGateJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.transistorGateBody, this.transistorGateBody.getPosition()));
+        this.markJoint(this.transistorGateJoint);
         this.sprocketJoints[2] = this.transistorGateJoint;
         this.transistorResistorJoint = this.standardRevolute(this.ground, this.transistorResistorBody);
+        this.markJoint(this.transistorResistorJoint);
         this.sprocketJoints[0] = this.transistorResistorJoint;
 
         this.setupInteractions(
@@ -290,25 +306,6 @@ export class TransistorPart extends PartBase
             this.transistorBall2Image.setPosition(x, y);
         if (this.transistorBall3Image != undefined)
             this.transistorBall3Image.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.transistorGuideImage.destroy();
-        this.transistorBaseImage.destroy();
-        this.transistorTabImage.destroy();
-        this.transistorMidCapImage.destroy();
-        this.transistorResistorImage.destroy();
-        this.transistorBrake1Image.destroy();
-        this.transistorBrake2Image.destroy();
-        this.transistorBrake3Image.destroy();
-        this.transistorBall1Image.destroy();
-        this.transistorBall2Image.destroy();
-        this.transistorBall3Image.destroy();
-        this.world.destroyBody(this.transistorGateBody);
-        this.world.destroyBody(this.transistorResistorBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

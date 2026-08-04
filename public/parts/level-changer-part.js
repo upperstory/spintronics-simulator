@@ -9,7 +9,10 @@ export class LevelChangerPart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
+        
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'level-changer', 0.5, 16);
+        this.markImage(this.partImage);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -33,12 +36,14 @@ export class LevelChangerPart extends PartBase
 
         // Create bodies and fixtures for Planck world
         this.levelChangerBody = this.standardBody(0.02);
-        this.levelChangerFixture = this.levelChangerBody.createFixture(planck.Circle(levelChangerRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
+        this.markBody(this.levelChangerBody);
+        this.levelChangerFixture = PartBase.createFixture(this.levelChangerBody, levelChangerRadius);
         this.sprocketBodies[0] = this.levelChangerBody;
         this.sprocketBodies[1] = this.levelChangerBody;
         this.sprocketBodies[2] = this.levelChangerBody;
         
         this.levelChangerJoint = this.standardRevolute(this.ground, this.levelChangerBody);
+        this.markJoint(this.levelChangerJoint);
         this.sprocketJoints[0] = this.levelChangerJoint;
         this.sprocketJoints[1] = this.levelChangerJoint;
         this.sprocketJoints[2] = this.levelChangerJoint;
@@ -74,13 +79,6 @@ export class LevelChangerPart extends PartBase
         this.y = y;
         if (this.partImage != undefined)
             this.partImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.world.destroyBody(this.levelChangerBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

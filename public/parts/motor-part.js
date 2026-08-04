@@ -8,14 +8,14 @@ const intermediateGearBottomRadius = 0.014 / 2;
 const driveGearRadius = 0.042 / 2;
 const sprocketGearRadius = 0.014 / 2;
 
-//Note from AlphaTechNinja: I'll touch this later as that is a lot of different interactive parts that I need to test
-
 export class MotorPart extends PartBase
 {
     partType = 'motor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
+        
         this.isShorted = false;
         this.buttonWidth = 300;
         this.buttonHeight = 50;
@@ -56,36 +56,45 @@ export class MotorPart extends PartBase
 
         this.partImageOffset = {x: 0.5, y: -91.5};
         this.partImage = PartBase.makeImage(scene, this.x + this.partImageOffset.x, this.y + this.partImageOffset.y,'motor-wheel', 0.5, 10);
+        this.markImage(this.partImage);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
         this.motorBaseUnderImageOffset = {x: -8, y: -7};
         this.motorBaseUnderImage = PartBase.makeImage(scene, this.x + this.motorBaseUnderImageOffset.x, this.y + this.motorBaseUnderImageOffset.y, 'motor-base-under', 0.5, 0);
+        this.markImage(this.motorBaseUnderImage);
 
         this.motorBaseTileImageOffset = {x: 0, y: 20.5};
         this.motorBaseTileImage = PartBase.makeImage(scene, this.x + this.motorBaseTileImageOffset.x, this.y + this.motorBaseTileImageOffset.y, 'motor-base-tile', 0.5, 1);
+        this.markImage(this.motorBaseTileImage);
 
         this.motorPawlClosedImageOffset = {x: 11, y: 58};
         this.motorPawlClosedImage = PartBase.makeImage(scene, this.x + this.motorPawlClosedImageOffset.x, this.y + this.motorPawlClosedImageOffset.y, 'motor-pawl-closed', 0.5, 0, false);
+        this.markImage(this.motorPawlClosedImage);
 
         this.motorPawlOpenImageOffset = {x: 11, y: 66};
         this.motorPawlOpenImage = PartBase.makeImage(scene, this.x + this.motorPawlOpenImageOffset.x, this.y + this.motorPawlOpenImageOffset.y, 'motor-pawl-open', 0.5, 0);
+        this.markImage(this.motorPawlOpenImage);
         //this.motorPawlOpenImage.setAlpha(0.0);
 
         this.motorScrewImageOffset = {x: 0.5, y: -91.5};
         this.motorScrewImage = PartBase.makeImage(scene, this.x + this.motorScrewImageOffset.x, this.y + this.motorScrewImageOffset.y,'motor-screw', 0.5, 10);
+        this.markImage(this.motorScrewImage);
 
         this.motorDriveGearImageOffset = {x: -32.5, y: 129-91.5};
         this.motorDriveGearImage = PartBase.makeImage(scene, this.x + this.motorDriveGearImageOffset.x, this.y + this.motorDriveGearImageOffset.y,'motor-drive-gear', 0.5, 1);
+        this.markImage(this.motorDriveGearImage);
         //this.motorDriveGearImage.setAlpha(0.5);
 
         this.motorIntermediateGearImageOffset = {x: 25.5, y: 70.5-91.5};
         this.motorIntermediateGearImage = PartBase.makeImage(scene, this.x + this.motorIntermediateGearImageOffset.x, this.y + this.motorIntermediateGearImageOffset.y,'motor-intermediate-gear', 0.5, 1);
+        this.markImage(this.motorIntermediateGearImage);
         //this.motorIntermediateGearImage.setAlpha(0.5);
 
         this.motorSpannerImageOffset = {x: -3.5, y: 99.5-91.5};
         this.motorSpannerImage = PartBase.makeImage(scene, this.x + this.motorSpannerImageOffset.x, this.y + this.motorSpannerImageOffset.y,'motor-spanner', 0.5, 2);
+        this.markImage(this.motorSpannerImage);
         //this.motorSpannerImage.setAlpha(0.5);
         
         PartBase.setAllInteractive({
@@ -111,89 +120,73 @@ export class MotorPart extends PartBase
         this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
 
         // Create junction bodies and joints
-        this.motorWheelSprocketBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.02});
-        this.motorWheelSprocketBody.createFixture(planck.Circle(motorWheelRadius), {density: 0.1, filterGroupIndex: -1});
+        this.motorWheelSprocketBody = this.standardBody(0.02);
+        this.markBody(this.motorWheelSprocketBody);
+        PartBase.createFixture(this.motorWheelSprocketBody, motorWheelRadius);
         this.sprocketBodies[0] = this.motorWheelSprocketBody;
         this.sprocketBodies[1] = this.motorWheelSprocketBody;
         this.sprocketBodies[2] = this.motorWheelSprocketBody;
-        this.motorIntermediateGearBody = this.world.createDynamicBody({position: planck.Vec2((0 + 44.5) / worldScale, (0 + 59.5) / worldScale), angularDamping: 0.02});
-        this.motorIntermediateGearBody.createFixture(planck.Circle(intermediateGearTopRadius), {density: 0.1, filterGroupIndex: -1});
-        this.motorDriveGearBody = this.world.createDynamicBody({position: planck.Vec2((0 + 7.5) / worldScale, (0 + 133) / worldScale), angularDamping: 0.02});
-        this.motorDriveGearBody.createFixture(planck.Circle(driveGearRadius), {density: 0.1, filterGroupIndex: -1});
-
-        this.motorWheelJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.motorWheelSprocketBody, this.motorWheelSprocketBody.getPosition()));
+        this.motorIntermediateGearBody = this.standardBody(0.02, (0 + 44.5) / worldScale, (0 + 59.5) / worldScale);
+        this.markBody(this.motorIntermediateGearBody);
+        PartBase.createFixture(this.motorIntermediateGearBody, intermediateGearTopRadius);
+        this.motorDriveGearBody = this.standardBody(0.02, (0 + 7.5) / worldScale, (0 + 133) / worldScale);
+        this.markBody(this.motorDriveGearBody);
+        PartBase.createFixture(this.motorDriveGearBody, driveGearRadius);
+        
+        this.motorWheelJoint = this.standardRevolute(this.ground, this.motorWheelSprocketBody);
+        this.markJoint(this.motorWheelJoint);
         this.sprocketJoints[0] = this.motorWheelJoint;
         this.sprocketJoints[1] = this.motorWheelJoint;
         this.sprocketJoints[2] = this.motorWheelJoint;
-        this.motorIntermediateGearJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.motorIntermediateGearBody, this.motorIntermediateGearBody.getPosition()));
-        this.motorDriveGearJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.motorDriveGearBody, this.motorDriveGearBody.getPosition()));
+        this.motorIntermediateGearJoint = this.standardRevolute(this.ground, this.motorIntermediateGearBody);
+        this.markJoint(this.motorIntermediateGearJoint);
+        this.motorDriveGearJoint = this.standardRevolute(this.ground, this.motorDriveGearBody);
+        this.markJoint(this.motorDriveGearJoint);
 
         // Create the gear joints
-        this.motorIntermediateGearGearJoint = this.world.createJoint(planck.GearJoint({}, this.motorIntermediateGearBody, this.motorWheelSprocketBody, this.motorIntermediateGearJoint, this.motorWheelJoint, sprocketGearRadius/intermediateGearTopRadius));
-        this.motorDriveGearGearJoint = this.world.createJoint(planck.GearJoint({}, this.motorDriveGearBody, this.motorIntermediateGearBody, this.motorDriveGearJoint, this.motorIntermediateGearJoint, intermediateGearBottomRadius/driveGearRadius));
-
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.motorWheelSprocketBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.motorWheelSprocketBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.motorWheelSprocketBody));
-
-        this.motorBaseUnderImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorBaseUnderImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorBaseUnderImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorBaseUnderImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.motorBaseUnderImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.motorBaseUnderImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.motorBaseTileImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorBaseTileImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorBaseTileImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorBaseTileImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.motorBaseTileImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.motorBaseTileImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.motorPawlClosedImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorPawlClosedImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorPawlClosedImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorPawlClosedImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.motorPawlClosedImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.motorPawlClosedImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.motorPawlOpenImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorPawlOpenImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorPawlOpenImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorPawlOpenImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.motorPawlOpenImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.motorPawlOpenImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.motorScrewImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorScrewImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorScrewImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorScrewImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.motorScrewImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.motorScrewImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.motorDriveGearImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorDriveGearImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorDriveGearImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorDriveGearImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.motorDriveGearBody));
-        this.motorDriveGearImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.motorDriveGearBody));
-        this.motorDriveGearImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.motorDriveGearBody));
-
-        this.motorIntermediateGearImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorIntermediateGearImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorIntermediateGearImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorIntermediateGearImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.motorIntermediateGearBody));
-        this.motorIntermediateGearImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.motorIntermediateGearBody));
-        this.motorIntermediateGearImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.motorIntermediateGearBody));
-
-        this.motorSpannerImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.motorSpannerImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.motorSpannerImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.motorSpannerImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.motorSpannerImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.motorSpannerImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.motorIntermediateGearGearJoint = this.gearJoint(this.motorIntermediateGearBody, this.motorWheelSprocketBody, this.motorIntermediateGearJoint, this.motorWheelJoint, sprocketGearRadius/intermediateGearTopRadius);
+        this.markJoint(this.motorIntermediateGearGearJoint);
+        this.motorDriveGearGearJoint = this.gearJoint(this.motorDriveGearBody, this.motorIntermediateGearBody, this.motorDriveGearJoint, this.motorIntermediateGearJoint, intermediateGearBottomRadius/driveGearRadius);
+        this.markJoint(this.motorDriveGearGearJoint);
+        
+        this.setupInteractions(
+            this.partImage,
+            this.motorWheelSprocketBody
+        );
+        
+        this.setupInteractions(
+            this.motorBaseUnderImage
+        );
+        
+        this.setupInteractions(
+            this.motorBaseTileImage
+        );
+        
+        this.setupInteractions(
+            this.motorPawlClosedImage
+        );
+        
+        this.setupInteractions(
+            this.motorPawlOpenImage
+        );
+        
+        this.setupInteractions(
+            this.motorScrewImage
+        );
+        
+        this.setupInteractions(
+            this.motorDriveGearImage,
+            this.motorDriveGearBody
+        );
+        
+        this.setupInteractions(
+            this.motorIntermediateGearImage,
+            this.motorIntermediateGearBody
+        );
+        
+        this.setupInteractions(
+            this.motorSpannerImage
+        );
     }
 
     updatePhysics()
@@ -224,15 +217,15 @@ export class MotorPart extends PartBase
 
         //this.partImage.x = this.motorWheelSprocketBody.getPosition().x * worldScale;
         //this.partImage.y = this.motorWheelSprocketBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.motorWheelSprocketBody.getAngle();
+        this.syncRotation(this.partImage, this.motorWheelSprocketBody);
 
         //this.motorDriveGearImage.x = this.motorDriveGearBody.getPosition().x * worldScale;
         //this.motorDriveGearImage.y = this.motorDriveGearBody.getPosition().y * worldScale;
-        this.motorDriveGearImage.rotation = this.motorDriveGearBody.getAngle();
+        this.syncRotation(this.motorDriveGearImage, this.motorDriveGearBody);
 
         //this.motorIntermediateGearImage.x = this.motorIntermediateGearBody.getPosition().x * worldScale;
         //this.motorIntermediateGearImage.y = this.motorIntermediateGearBody.getPosition().y * worldScale;
-        this.motorIntermediateGearImage.rotation = this.motorIntermediateGearBody.getAngle();
+        this.syncRotation(this.motorIntermediateGearImage, this.motorIntermediateGearBody);
     }
 
     setPartTint(color)
@@ -286,26 +279,6 @@ export class MotorPart extends PartBase
             this.motorSpannerImage.setPosition(x + this.motorSpannerImageOffset.x, y + this.motorSpannerImageOffset.y);
         if (this.resetButton != undefined)
             this.resetButton.setPosition(x, y + this.resetButtonYOffset);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.motorBaseUnderImage.destroy();
-        this.motorBaseTileImage.destroy();
-        this.motorPawlClosedImage.destroy();
-        this.motorPawlOpenImage.destroy();
-        this.motorScrewImage.destroy();
-        this.motorDriveGearImage.destroy();
-        this.motorIntermediateGearImage.destroy();
-        this.motorSpannerImage.destroy();
-        this.resetButton.destroy();
-        this.world.destroyJoint(this.motorIntermediateGearGearJoint);
-        this.world.destroyJoint(this.motorDriveGearGearJoint);
-        this.world.destroyBody(this.motorWheelSprocketBody);
-        this.world.destroyBody(this.motorIntermediateGearBody);
-        this.world.destroyBody(this.motorDriveGearBody);
-        this.world.destroyBody(this.ground);
     }
 
     onSwitchToggled (name, newToggleState) {

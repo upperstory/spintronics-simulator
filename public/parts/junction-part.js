@@ -31,8 +31,10 @@ export class JunctionPart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
         // Create the images for this part
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'junction-bottom', 0.5, 2)
+        this.markImage(this.partImage);
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
@@ -41,10 +43,13 @@ export class JunctionPart extends PartBase
         //this.partCenterX = this.partWidth / 2;
         //this.partCenterY = this.partHeight / 2;
         this.capImage = PartBase.makeImage(scene, this.x, this.y, 'junction-cap', 0.5, 10);
+        this.markImage(this.capImage);
         //this.add(this.capImage);
         this.middleSprocketImage = PartBase.makeImage(scene, this.x, this.y, 'junction-middle', 0.5, 5);
+        this.markImage(this.middleSprocketImage);
         //this.add(this.middleSprocketImage);
         this.topSprocketImage = PartBase.makeImage(scene, this.x, this.y, 'junction-top', 0.5, 8);
+        this.markImage(this.topSprocketImage);
         //this.add(this.topSprocketImage);
 
         /*this.planet1Image = scene.add.image(this.x, this.y,'junction-planet');
@@ -79,17 +84,22 @@ export class JunctionPart extends PartBase
         // Create bodies and fixtures for Planck world
         // Create junction bodies and joints
         this.largeSprocketBody = this.standardBody(0.5);
+        this.markBody(this.largeSprocketBody)
         PartBase.createFixture(this.largeSprocketBody, largeSprocketRadius);
         this.sprocketBodies[0] = this.largeSprocketBody;
         this.largeSprocketBodyNG = this.standardBody(0);
+        this.markBody(this.largeSprocketBodyNG);
         PartBase.createFixture(this.largeSprocketBodyNG, largeSprocketRadius);
         this.mediumSprocketBody = this.standardBody(0.5);
+        this.markBody(this.mediumSprocketBody);
         PartBase.createFixture(this.mediumSprocketBody, mediumSprocketRadius);
         this.sprocketBodies[1] = this.mediumSprocketBody;
         this.smallSprocketBody = this.standardBody(0.5);
+        this.markBody(this.smallSprocketBody);
         PartBase.createFixture(this.smallSprocketBody, smallSprocketRadius);
         this.sprocketBodies[2] = this.smallSprocketBody;
         this.sprocketCapBody = this.world.createDynamicBody(planck.Vec2(0,0));
+        this.markBody(this.sprocketCapBody);
         PartBase.createFixture(this.sprocketCapBody, sprocketCapRadius);
 
         // Create the planets
@@ -109,7 +119,14 @@ export class JunctionPart extends PartBase
         let jointTground = this.standardRevolute(this.ground, this.smallSprocketBody);
         this.sprocketJoints[2] = jointTground;
         let jointCap = this.weld(this.largeSprocketBodyNG, this.sprocketCapBody);
-
+        
+        this.markJoint(jointBNG);
+        this.markJoint(jointB);
+        this.markJoint(jointM);
+        this.markJoint(jointMground);
+        this.markJoint(jointT);
+        this.markJoint(jointTground);
+        this.markJoint(jointCap);
         /*let jointPlanet1 = this.world.createJoint(planck.RevoluteJoint({}, this.largeSprocketBody, this.planet1Body, this.planet1Body.getPosition()));
         let jointPlanet2 = this.world.createJoint(planck.RevoluteJoint({}, this.largeSprocketBody, this.planet2Body, this.planet2Body.getPosition()));
         let jointPlanet3 = this.world.createJoint(planck.RevoluteJoint({}, this.largeSprocketBody, this.planet3Body, this.planet3Body.getPosition()));*/
@@ -120,7 +137,9 @@ export class JunctionPart extends PartBase
 */
         //2(vm - 2vb) = vt - vb
         this.jointLargeLargeNGSprocket = this.gearJoint(this.largeSprocketBody, this.largeSprocketBodyNG, jointB, jointBNG, -1);
+        this.markJoint(this.jointLargeLargeNGSprocket);
         this.jointMediumTopSprocket = this.gearJoint(this.mediumSprocketBody, this.largeSprocketBodyNG, jointM, jointT, 1/2);
+        this.markJoint(this.jointMediumTopSprocket);
 
         // Set up drag listeners
         this.setupInteractions(
@@ -213,21 +232,6 @@ export class JunctionPart extends PartBase
             this.topSprocketImage.setPosition(x, y);
         if (this.capImage != undefined)
             this.capImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.middleSprocketImage.destroy();
-        this.topSprocketImage.destroy();
-        this.capImage.destroy();
-        this.world.destroyJoint(this.jointLargeLargeNGSprocket);
-        this.world.destroyJoint(this.jointMediumTopSprocket);
-        this.world.destroyBody(this.largeSprocketBody);
-        this.world.destroyBody(this.mediumSprocketBody);
-        this.world.destroyBody(this.smallSprocketBody);
-        this.world.destroyBody(this.sprocketCapBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

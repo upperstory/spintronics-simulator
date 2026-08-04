@@ -15,6 +15,7 @@ export class ResistorPart extends PartBase
 
         // Create the resistor image
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'resistor', 0.5, 8);
+        this.markImage(this.partImage);
         //this.add(this.partImage);
 
         this.partWidth = this.partImage.displayWidth;
@@ -38,6 +39,7 @@ export class ResistorPart extends PartBase
 
         // Create bodies and fixtures for Planck world
         this.resistorBody = this.standardBody(0);
+        this.markBody(this.resistorBody);
         this.resistorFixture = PartBase.createFixture(this.resistorBody, resistorRadius);
         this.sprocketBodies[0] = this.resistorBody;
         this.sprocketBodies[1] = this.resistorBody;
@@ -46,6 +48,7 @@ export class ResistorPart extends PartBase
         //this.frictionBody = this.world.createBody({position: planck.Vec2(this.x / worldScale, this.y / worldScale)});
         //this.frictionBody.createFixture(planck.Circle(resistorRadius), {density: 1, filterGroupIndex: -1, friction: 0.3});
         this.resistorJoint = this.standardRevolute(this.ground, this.resistorBody);
+        this.markJoint(this.resistorJoint);
         this.sprocketJoints[0] = this.resistorJoint;
         this.sprocketJoints[1] = this.resistorJoint;
         this.sprocketJoints[2] = this.resistorJoint;
@@ -203,16 +206,6 @@ export class ResistorPart extends PartBase
         this.y = y;
         if (this.partImage != undefined)
             this.partImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        //this.resistanceText.destroy();
-        //this.textLine.destroy();
-        //this.graphics.destroy();
-        this.world.destroyBody(this.resistorBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

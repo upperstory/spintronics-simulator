@@ -9,7 +9,10 @@ export class DiodePart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
+        
         this.partImage = PartBase.makeImage(scene, this.x, this.y, 'diode-sprocket', 0.5, 10);
+        this.markImage(this.partImage);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -20,6 +23,7 @@ export class DiodePart extends PartBase
         //this.partCenterY = this.partHeight / 2;
 
         this.diodeBaseImage = PartBase.makeImage(scene, this.x, this.y, 'diode-base', 0.5, 10);
+        this.markImage(this.diodeBaseImage);
         
         PartBase.setAllInteractive({
             draggable: true,
@@ -36,12 +40,14 @@ export class DiodePart extends PartBase
 
         // Create bodies and fixtures for Planck world
         this.diodeSprocket = this.standardBody(0.05);
+        this.markBody(this.diodeSprocket);
         this.diodeFixture = PartBase.createFixture(this.diodeSprocket, diodeRadius);
         this.sprocketBodies[0] = this.diodeSprocket;
         this.sprocketBodies[1] = this.diodeSprocket;
         this.sprocketBodies[2] = this.diodeSprocket;
 
         this.diodeJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true}, this.ground, this.diodeSprocket, this.diodeSprocket.getPosition())); // non standard
+        this.markJoint(this.diodeJoint);
         this.sprocketJoints[0] = this.diodeJoint;
         this.sprocketJoints[1] = this.diodeJoint;
         this.sprocketJoints[2] = this.diodeJoint;
@@ -94,14 +100,6 @@ export class DiodePart extends PartBase
             this.partImage.setPosition(x, y);
         if (this.diodeBaseImage != undefined)
             this.diodeBaseImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.diodeBaseImage.destroy();
-        this.world.destroyBody(this.diodeSprocket);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

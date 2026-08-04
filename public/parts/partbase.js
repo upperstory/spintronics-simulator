@@ -32,6 +32,8 @@ export class PartBase extends Phaser.GameObjects.Container
     sprocketRadius = [100];
     sprocketExists = [false];
     parentClass = null;
+    
+    destroyWith = [];
 
     serialize()
     {
@@ -363,5 +365,34 @@ export class PartBase extends Phaser.GameObjects.Container
     
     weld(a, b) {
         return this.world.createJoint(planck.WeldJoint({}, a, b));
+    }
+    
+    // destroying marking
+    destroy() {
+        this.destroyWith.forEach((destroyer) => {
+            destroyer();
+        });
+    }
+    
+    addDestroyer(func) {
+        this.destroyWith.push(func);
+    }
+    
+    markImage(image) {
+        this.addDestroyer(() => {
+            image.destroy();
+        });
+    }
+    
+    markBody(body) {
+        this.addDestroyer(() => {
+            this.world.destroyBody(body);
+        });
+    }
+    
+    markJoint(joint) {
+        this.addDestroyer(() => {
+            this.world.destroyJoint(joint);
+        });
     }
 }

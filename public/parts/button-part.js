@@ -9,12 +9,16 @@ export class ButtonPart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
+        
         this.partImage = PartBase.makeImage(scene, this.x, this.y, 'button-sprocket', 0.5, 8)
+        this.markImage(this.partImage);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
         
         this.buttonBaseImage = PartBase.makeImage(scene, this.x, this.y, 'button-base', 0.5, 16);
+        this.markImage(this.buttonBaseImage);
         
         PartBase.setAllInteractive({
             draggable: true,
@@ -31,12 +35,15 @@ export class ButtonPart extends PartBase
 
         // Create bodies and fixtures for Planck world
         this.buttonBody = this.standardBody(0.02);
+        this.markBody(this.buttonBody);
         this.buttonFixture = PartBase.createFixture(this.buttonBody, buttonRadius);
         this.sprocketBodies[0] = this.buttonBody;
         this.sprocketBodies[1] = this.buttonBody;
         this.sprocketBodies[2] = this.buttonBody;
         
         this.buttonJoint = this.standardRevolute(this.ground, this.buttonBody);
+        this.markJoint(this.buttonJoint);
+        
         this.sprocketJoints[0] = this.buttonJoint;
         this.sprocketJoints[1] = this.buttonJoint;
         this.sprocketJoints[2] = this.buttonJoint;
@@ -128,14 +135,6 @@ export class ButtonPart extends PartBase
             value: this.buttonState
         }
         return partObject;
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.buttonBaseImage.destroy();
-        this.world.destroyBody(this.buttonBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

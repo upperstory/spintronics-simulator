@@ -9,7 +9,10 @@ export class PhonographPart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
+        
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'phonograph-sprocket', 0.5, 10);
+        this.markImage(this.partImage);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -21,6 +24,7 @@ export class PhonographPart extends PartBase
 
         this.phonographBaseImageOffset = {x: -3, y: 18};
         this.phonographBaseImage = PartBase.makeImage(scene, this.x + this.phonographBaseImageOffset.x, this.y + this.phonographBaseImageOffset.y, 'phonograph-base', 0.5, 16);
+        this.markImage(this.phonographBaseImage);
         
         PartBase.setAllInteractive({
             draggable: true,
@@ -37,6 +41,7 @@ export class PhonographPart extends PartBase
 
         // Create bodies and fixtures for Planck world
         this.phonographSprocket = this.standardBody(1);
+        this.markBody(this.phonographSprocket);
         this.phonographFixture = PartBase.createFixture(this.phonographSprocket, phonographRadius);
         this.sprocketBodies[0] = this.phonographSprocket;
         this.sprocketBodies[1] = this.phonographSprocket;
@@ -45,6 +50,7 @@ export class PhonographPart extends PartBase
         //this.frictionBody = this.world.createBody({position: planck.Vec2(this.x / worldScale, this.y / worldScale)});
         //this.frictionBody.createFixture(planck.Circle(resistorRadius), {density: 1, filterGroupIndex: -1, friction: 0.3});
         this.phonographJoint = this.standardRevolute(this.ground, this.phonographSprocket);
+        this.markJoint(this.phonographJoint);
         this.sprocketJoints[0] = this.phonographJoint;
         this.sprocketJoints[1] = this.phonographJoint;
         this.sprocketJoints[2] = this.phonographJoint;
@@ -65,6 +71,12 @@ export class PhonographPart extends PartBase
         this.osc.volume.value = -20;
         this.osc.frequency.value = 400;
         this.osc.start();
+        
+        this.addDestroyer(() => {
+            this.osc.stop();
+            this.osc.disconnect();
+            this.osc.dispose();
+        }); // oscillator destroyer
     }
 
     updatePhysics()
@@ -114,17 +126,6 @@ export class PhonographPart extends PartBase
             this.partImage.setPosition(x, y);
         if (this.phonographBaseImage != undefined)
             this.phonographBaseImage.setPosition(x + this.phonographBaseImageOffset.x, y + this.phonographBaseImageOffset.y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.phonographBaseImage.destroy();
-        this.world.destroyBody(this.phonographSprocket);
-        this.world.destroyBody(this.ground);
-        this.osc.stop();
-        this.osc.disconnect();
-        this.osc.dispose();
     }
 
     getPartExtents()

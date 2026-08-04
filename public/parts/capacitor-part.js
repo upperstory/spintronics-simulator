@@ -14,7 +14,10 @@ export class CapacitorPart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
+        
         this.partImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-sprocket', 0.5, 10, true);
+        this.markImage(this.partImage);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -24,23 +27,31 @@ export class CapacitorPart extends PartBase
         //this.partCenterX = this.partWidth / 2;
         //this.partCenterY = this.partHeight / 2;
         this.capacitorCapImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-cap', 0.5, 12, true);
+        this.markImage(this.capacitorCapImage);
         
         this.capacitorShortHandImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-short-hand', 0.5, 11, true)
         this.capacitorShortHandImage.setOrigin(0.5, 0.74);
+        this.markImage(this.capacitorShortHandImage);
         
         this.capacitorLongHandImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-long-hand', 0.5, 11, true)
         this.capacitorLongHandImage.setOrigin(0.5, 0.8);
+        this.markImage(this.capacitorLongHandImage);
 
         this.capacitorSprocketNoValueImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-sprocket-no-value', 0.5, 11, false);
+        this.markImage(this.capacitorSprocketNoValueImage);
         
         this.capacitorMeterImage = PartBase.makeImage(scene, this.x, this.y, 'capacitor-meter', 0.5, 12, false);
+        this.markImage(this.capacitorMeterImage);
         
         this.capacitorNumbersImage = PartBase.makeImage(scene, this.x, this.y,'capacitor-numbers', 0.5, 11, false);
+        this.markImage(this.capacitorNumbersImage);
 
         this.maskShape = scene.add.graphics();
         this.maskShape.setPosition(this.x, this.y);
         this.maskShape.fillStyle(0xffffff);
         this.maskShape.fillRect(-30,-30,60,60);
+        this.markImage(this.maskShape);
+        
         const mask = this.maskShape.createGeometryMask();
         this.capacitorNumbersImage.setMask(mask);
         
@@ -65,20 +76,26 @@ export class CapacitorPart extends PartBase
 
         // Create bodies and fixtures for Planck world
         this.capacitorBody = this.standardBody(5);
+        this.markBody(this.capacitorBody);
         this.capacitorFixture = PartBase.createFixture(this.capacitorBody, capacitorRadius);
         this.sprocketBodies[0] = this.capacitorBody;
         this.sprocketBodies[1] = this.capacitorBody;
         this.sprocketBodies[2] = this.capacitorBody;
 
         this.capacitorShortHandBody = this.standardBody(0.02);
+        this.markBody(this.capacitorShortHandBody);
         this.capacitorLongHandBody = this.standardBody(0.02);
+        this.markBody(this.capacitorLongHandBody);
         //this.capacitorFixture = this.capacitorBody.createFixture(planck.Circle(capacitorRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
         this.capacitorJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: false, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.capacitorBody, this.capacitorBody.getPosition())); // non standard
+        this.markJoint(this.capacitorJoint);
         this.sprocketJoints[0] = this.capacitorJoint;
         this.sprocketJoints[1] = this.capacitorJoint;
         this.sprocketJoints[2] = this.capacitorJoint;
         this.capacitorShortHandJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.capacitorShortHandBody, planck.Vec2(this.x / worldScale, this.y / worldScale))); // non standard
+        this.markJoint(this.capacitorShortHandJoint);
         this.capacitorLongHandJoint = this.standardRevolute(this.ground, this.capacitorLongHandBody, this.capacitorBody);
+        this.markJoint(this.capacitorLongHandJoint)
         
         this.setupInteractions(
             this.partImage,
@@ -114,12 +131,15 @@ export class CapacitorPart extends PartBase
             color: "rgb(20, 20, 20)",
             fontStyle: 'strong'
         });
+        this.markImage(this.capacitanceText);
         this.add(this.capacitanceText);
 
         // Draw a line to the capacitor
         this.textLine = new Phaser.Curves.Path(48, -50);
         this.textLine.splineTo([50, -55, 54, -57, 56, -62]);
+        this.markImage(this.textLine);
         this.graphics = scene.add.graphics();
+        this.markImage(this.graphics);
         this.add(this.graphics);
         this.graphics.lineStyle(2, 0x111111, 1);
         this.textLine.draw(this.graphics);
@@ -281,26 +301,6 @@ export class CapacitorPart extends PartBase
             this.capacitorNumbersImage.setPosition(x, y);
         if (this.maskShape != undefined)
             this.maskShape.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.capacitorCapImage.destroy();
-        this.capacitorShortHandImage.destroy();
-        this.capacitorLongHandImage.destroy();
-        this.capacitorSprocketNoValueImage.destroy();
-        this.capacitorMeterImage.destroy();
-        this.capacitorNumbersImage.destroy();
-        this.maskShape.destroy();
-        this.capacitanceText.destroy();
-        this.textLine.destroy();
-        this.graphics.destroy();
-        this.world.destroyBody(this.capacitorBody);
-        this.world.destroyBody(this.capacitorShortHandBody);
-        this.world.destroyBody(this.capacitorLongHandBody);
-
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

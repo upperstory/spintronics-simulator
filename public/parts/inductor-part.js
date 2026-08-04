@@ -9,12 +9,16 @@ export class InductorPart extends PartBase
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
+        this.markBody(this.ground);
+        
         this.partImage = PartBase.makeImage(scene, this.x, this.y,'inductor-weights', 0.5, 10);
+        this.markImage(this.partImage);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
         this.inductorBaseImage = PartBase.makeImage(scene, this.x, this.y,'inductor-base', 0.5, 16);
+        this.markImage(this.inductorBaseImage);
         
         PartBase.setAllInteractive({
             draggable: true,
@@ -31,6 +35,7 @@ export class InductorPart extends PartBase
 
         // Create bodies and fixtures for Planck world
         this.inductorBody = this.standardBody(0.5);
+        this.markBody(this.inductorBody);
         this.inductorFixture = PartBase.createFixture(this.inductorBody, inductorSprocketRadius, 1);
         this.sprocketBodies[0] = this.inductorBody;
         this.sprocketBodies[1] = this.inductorBody;
@@ -39,6 +44,7 @@ export class InductorPart extends PartBase
         //this.frictionBody = this.world.createBody({position: planck.Vec2(this.x / worldScale, this.y / worldScale)});
         //this.frictionBody.createFixture(planck.Circle(resistorRadius), {density: 1, filterGroupIndex: -1, friction: 0.3});
         this.inductorJoint = this.standardRevolute(this.ground, this.inductorBody);
+        this.markJoint(this.inductorJoint);
         this.sprocketJoints[0] = this.inductorJoint;
         this.sprocketJoints[1] = this.inductorJoint;
         this.sprocketJoints[2] = this.inductorJoint;
@@ -64,13 +70,16 @@ export class InductorPart extends PartBase
             fontStyle: 'strong'
         });
         this.inductanceText.setDepth(16);
+        this.markImage(this.inductanceText);
         this.add(this.inductanceText);
 
         // Draw a line to the inductor
         this.textLine = new Phaser.Curves.Path(textPos.x, textPos.y);
         this.textLine.splineTo([textPos.x+2, textPos.y-5, textPos.x+6, textPos.y-7, textPos.x+8, textPos.y-12]);
+        this.markImage(this.textLine);
         this.graphics = scene.add.graphics();
         this.graphics.setDepth(16);
+        this.markImage(this.graphics);
         this.add(this.graphics);
 
         this.graphics.lineStyle(2, 0x111111, 1);
@@ -173,17 +182,6 @@ export class InductorPart extends PartBase
             this.partImage.setPosition(x, y);
         if (this.inductorBaseImage != undefined)
             this.inductorBaseImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.inductorBaseImage.destroy();
-        this.inductanceText.destroy();
-        this.textLine.destroy();
-        this.graphics.destroy();
-        this.world.destroyBody(this.inductorBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()
