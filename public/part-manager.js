@@ -184,28 +184,21 @@ export class PartManager {
             }
         }
         // Iterate through all the tiles. For each tile, iterate through all other tiles, looking for adjacent tiles.
-        for (let i = 0; i < this.parts.length; i++)
-        {
-            if (this.parts[i].partType == 'tile' || this.parts[i].partType == 'motor')
-            {
-                // Iterate through all the other tiles
-                for (let j = i + 1; j < this.parts.length; j++)
+        
+        let tiles = this.parts.filter((part) => part.partType == 'tile' || part.partType == 'motor');
+        
+        for (let i = 0; i < tiles.length; i++) {
+            for (let j = i + 1; j < tiles.length; j++) {
+                // Check if the tile 'j' is adjacent to the current one 'i'.
+                // Calculate the distance between the tiles
+                let distanceBetween = Math.sqrt(Math.pow(tiles[i].x - tiles[j].x, 2) + Math.pow(tiles[i].y - tiles[j].y, 2));
+                if (distanceBetween > tileSpacing * (2 / Math.sqrt(3)) * 0.9 && distanceBetween < tileSpacing * (2 / Math.sqrt(3)) * 1.1)
                 {
-                    if (this.parts[j].partType == 'tile' || this.parts[j].partType == 'motor')
-                    {
-                        // Check if the tile 'j' is adjacent to the current one 'i'.
-                        // Calculate the distance between the tiles
-                        let distanceBetween = Math.sqrt(Math.pow(this.parts[i].x - this.parts[j].x, 2) + Math.pow(this.parts[i].y - this.parts[j].y, 2));
-                        if (distanceBetween > tileSpacing * (2/Math.sqrt(3)) * 0.9 && distanceBetween <  tileSpacing * (2/Math.sqrt(3)) * 1.1)
-                        {
-                            // This is an adjacent tile
-                            // Add a connector in between.
-                            var newPart = new TileConnectorPart(this.scene, 0, 0, this.world);
-                            newPart.setJoiningTiles(this.parts[i], this.parts[j]);
-                            this.parts.push(newPart);
-                        }
-
-                    }
+                    // This is an adjacent tile
+                    // Add a connector in between.
+                    var newPart = new TileConnectorPart(this.scene, 0, 0, this.world);
+                    newPart.setJoiningTiles(tiles[i], tiles[j]);
+                    this.parts.push(newPart);
                 }
             }
         }
