@@ -348,4 +348,16 @@ export class PartBase extends Phaser.GameObjects.Container
             interactable.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, body));
             interactable.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, body));
     }
+    
+    standardRevolute(base, body, target) {
+        return this.world.createJoint(planck.RevoluteJoint({}, base, body, (target || body).getPosition()));
+    }
+    
+    gearJoint(a, b, a_joint, b_joint, ratio) {
+        return this.world.createJoint(planck.GearJoint({}, a, b, a_joint, b_joint, ratio));
+    }
+    
+    weld(a, b) {
+        return this.world.createJoint(planck.WeldJoint({}, a, b));
+    }
 }

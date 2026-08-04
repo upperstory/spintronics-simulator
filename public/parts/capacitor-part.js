@@ -75,13 +75,12 @@ export class CapacitorPart extends PartBase
         this.capacitorShortHandBody = this.standardBody(0.02);
         this.capacitorLongHandBody = this.standardBody(0.02);
         //this.capacitorFixture = this.capacitorBody.createFixture(planck.Circle(capacitorRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
-
-        this.capacitorJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: false, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.capacitorBody, this.capacitorBody.getPosition()));
+        this.capacitorJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: false, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.capacitorBody, this.capacitorBody.getPosition())); // non standard
         this.sprocketJoints[0] = this.capacitorJoint;
         this.sprocketJoints[1] = this.capacitorJoint;
         this.sprocketJoints[2] = this.capacitorJoint;
-        this.capacitorShortHandJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.capacitorShortHandBody, planck.Vec2(this.x / worldScale, this.y / worldScale)));
-        this.capacitorLongHandJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.capacitorLongHandBody, this.capacitorBody.getPosition()));
+        this.capacitorShortHandJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.capacitorShortHandBody, planck.Vec2(this.x / worldScale, this.y / worldScale))); // non standard
+        this.capacitorLongHandJoint = this.standardRevolute(this.ground, this.capacitorLongHandBody, this.capacitorBody);
         
         this.setupInteractions(
             this.partImage,

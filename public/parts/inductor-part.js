@@ -40,8 +40,7 @@ export class InductorPart extends PartBase
 
         //this.frictionBody = this.world.createBody({position: planck.Vec2(this.x / worldScale, this.y / worldScale)});
         //this.frictionBody.createFixture(planck.Circle(resistorRadius), {density: 1, filterGroupIndex: -1, friction: 0.3});
-
-        this.inductorJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.inductorBody, this.inductorBody.getPosition()));
+        this.inductorJoint = this.standardRevolute(this.ground, this.inductorBody);
         this.sprocketJoints[0] = this.inductorJoint;
         this.sprocketJoints[1] = this.inductorJoint;
         this.sprocketJoints[2] = this.inductorJoint;

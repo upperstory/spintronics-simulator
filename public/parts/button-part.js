@@ -36,8 +36,8 @@ export class ButtonPart extends PartBase
         this.sprocketBodies[0] = this.buttonBody;
         this.sprocketBodies[1] = this.buttonBody;
         this.sprocketBodies[2] = this.buttonBody;
-
-        this.buttonJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.buttonBody, this.buttonBody.getPosition()));
+        
+        this.buttonJoint = this.standardRevolute(this.ground, this.buttonBody);
         this.sprocketJoints[0] = this.buttonJoint;
         this.sprocketJoints[1] = this.buttonJoint;
         this.sprocketJoints[2] = this.buttonJoint;

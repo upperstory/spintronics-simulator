@@ -82,7 +82,7 @@ export class TransistorPart extends PartBase
 
         this.transistorGateJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.transistorGateBody, this.transistorGateBody.getPosition()));
         this.sprocketJoints[2] = this.transistorGateJoint;
-        this.transistorResistorJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.transistorResistorBody, this.transistorResistorBody.getPosition()));
+        this.transistorResistorJoint = this.standardRevolute(this.ground, this.transistorResistorBody);
         this.sprocketJoints[0] = this.transistorResistorJoint;
 
         this.setupInteractions(

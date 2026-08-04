@@ -38,8 +38,8 @@ export class LevelChangerPart extends PartBase
         this.sprocketBodies[0] = this.levelChangerBody;
         this.sprocketBodies[1] = this.levelChangerBody;
         this.sprocketBodies[2] = this.levelChangerBody;
-
-        this.levelChangerJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.levelChangerBody, this.levelChangerBody.getPosition()));
+        
+        this.levelChangerJoint = this.standardRevolute(this.ground, this.levelChangerBody);
         this.sprocketJoints[0] = this.levelChangerJoint;
         this.sprocketJoints[1] = this.levelChangerJoint;
         this.sprocketJoints[2] = this.levelChangerJoint;

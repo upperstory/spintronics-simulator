@@ -42,7 +42,7 @@ export class DiodePart extends PartBase
         this.sprocketBodies[1] = this.diodeSprocket;
         this.sprocketBodies[2] = this.diodeSprocket;
 
-        this.diodeJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true}, this.ground, this.diodeSprocket, this.diodeSprocket.getPosition()));
+        this.diodeJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true}, this.ground, this.diodeSprocket, this.diodeSprocket.getPosition())); // non standard
         this.sprocketJoints[0] = this.diodeJoint;
         this.sprocketJoints[1] = this.diodeJoint;
         this.sprocketJoints[2] = this.diodeJoint;

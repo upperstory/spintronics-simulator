@@ -101,17 +101,16 @@ export class JunctionPart extends PartBase
         this.planet2Body.createFixture(planck.Circle(planetRadius), {density: 0.1, filterGroupIndex: -1});
         this.planet3Body = this.world.createDynamicBody(planck.Vec2((this.x / worldScale) + Math.cos(-((Math.PI * 2) / 3) - Math.PI / 2) * planetOrbitRadius, (this.y / worldScale) + Math.sin(-((Math.PI * 2) / 3) - Math.PI / 2) * planetOrbitRadius));
         this.planet3Body.createFixture(planck.Circle(planetRadius), {density: 0.1, filterGroupIndex: -1});*/
-
-        let jointBNG = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.largeSprocketBodyNG, this.largeSprocketBodyNG.getPosition()));
-        let jointB = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.largeSprocketBody, this.largeSprocketBody.getPosition()));
+        let jointBNG = this.standardRevolute(this.ground, this.largeSprocketBodyNG);
+        let jointB = this.standardRevolute(this.ground, this.largeSprocketBody);
         this.sprocketJoints[0] = jointB;
-        let jointM = this.world.createJoint(planck.RevoluteJoint({}, this.largeSprocketBodyNG, this.mediumSprocketBody, this.mediumSprocketBody.getPosition()));
-        let jointMground = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.mediumSprocketBody, this.mediumSprocketBody.getPosition()));
+        let jointM = this.standardRevolute(this.largeSprocketBodyNG, this.mediumSprocketBody);
+        let jointMground = this.standardRevolute(this.ground,this.mediumSprocketBody);
         this.sprocketJoints[1] = jointMground;
-        let jointT = this.world.createJoint(planck.RevoluteJoint({}, this.largeSprocketBody, this.smallSprocketBody, this.smallSprocketBody.getPosition()));
-        let jointTground = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.smallSprocketBody, this.smallSprocketBody.getPosition()));
+        let jointT = this.standardRevolute(this.largeSprocketBody, this.smallSprocketBody);
+        let jointTground = this.standardRevolute(this.ground, this.smallSprocketBody);
         this.sprocketJoints[2] = jointTground;
-        let jointCap = this.world.createJoint(planck.WeldJoint({}, this.largeSprocketBodyNG, this.sprocketCapBody));
+        let jointCap = this.weld(this.largeSprocketBodyNG, this.sprocketCapBody);
 
         /*let jointPlanet1 = this.world.createJoint(planck.RevoluteJoint({}, this.largeSprocketBody, this.planet1Body, this.planet1Body.getPosition()));
         let jointPlanet2 = this.world.createJoint(planck.RevoluteJoint({}, this.largeSprocketBody, this.planet2Body, this.planet2Body.getPosition()));
@@ -122,8 +121,8 @@ export class JunctionPart extends PartBase
         let jointPlanet3MediumSprocket = this.world.createJoint(planck.GearJoint({}, this.planet3Body, this.mediumSprocketBody, jointPlanet3, jointM, 48/12));
 */
         //2(vm - 2vb) = vt - vb
-        this.jointLargeLargeNGSprocket = this.world.createJoint(planck.GearJoint({}, this.largeSprocketBody, this.largeSprocketBodyNG, jointB, jointBNG, -1));
-        this.jointMediumTopSprocket = this.world.createJoint(planck.GearJoint({}, this.mediumSprocketBody, this.largeSprocketBodyNG, jointM, jointT, 1/2));
+        this.jointLargeLargeNGSprocket = this.gearJoint(this.largeSprocketBody, this.largeSprocketBodyNG, jointB, jointBNG, -1);
+        this.jointMediumTopSprocket = this.gearJoint(this.mediumSprocketBody, this.largeSprocketBodyNG, jointM, jointT, 1/2);
 
         // Set up drag listeners
         this.setupInteractions(
