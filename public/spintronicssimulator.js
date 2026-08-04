@@ -175,107 +175,114 @@ function preload ()
         //this.percentText.destroy();
         this.assetText.destroy();
     }.bind(this));
-
-    this.load.image('junction-bottom', 'Images/junction-bottom-1.png');
-    this.load.image('junction-middle', 'Images/junction-middle-1.png');
-    this.load.image('junction-top', 'Images/junction-top-2.png');
-    this.load.image('junction-cap', 'Images/junction-cap-1.png');
-    this.load.image('junction-planet', 'Images/junction-planet-1.png');
-
-    this.load.image('junction-icon', 'Images/junction-icon.png');
-    this.load.image('resistor-icon', 'Images/resistor-icon.png');
-    this.load.image('motor-icon', 'Images/motor-icon.png');
-    this.load.image('inductor-icon', 'Images/inductor-icon.png');
-    this.load.image('capacitor-icon', 'Images/capacitor-icon.png');
-    this.load.image('button-icon', 'Images/button-icon.png');
-    this.load.image('phonograph-icon', 'Images/phonograph-icon.png');
-    this.load.image('transistor-icon', 'Images/transistor-icon.png');
-    this.load.image('level-changer-icon', 'Images/level-changer-icon.png');
-    this.load.image('diode-icon', 'Images/diode-icon.png');
-    this.load.image('chain-icon', 'Images/chain-icon.png');
-    this.load.image('tile-icon', 'Images/tile-icon.png');
-
-    this.load.image('interact-icon', 'Images/hand-icon.png');
-    this.load.image('move-icon', 'Images/move-icon.png');
-    this.load.image('delete-icon', 'Images/remove-icon.png');
-    this.load.image('remove-all-icon', 'Images/trash-icon.png')
-    this.load.image('zoom-in-icon', 'Images/zoom-in-icon.png');
-    this.load.image('zoom-out-icon', 'Images/zoom-out-icon.png');
-    this.load.image('link-icon', 'Images/link-icon.png');
-    this.load.image('save-icon', 'Images/save-icon.png');
-    this.load.image('load-icon', 'Images/open-icon.png');
-    this.load.image('edit-icon', 'Images/edit-icon.png');
-    this.load.image('full-screen-icon', 'Images/full-screen-icon.png');
-
-    this.load.image('junction', 'Images/junction.png');
-
-    this.load.image('resistor', 'Images/resistor.png');
-    this.load.image('resistor-20', 'Images/resistor-20.png');
-    this.load.image('resistor-50', 'Images/resistor-50.png');
-    this.load.image('resistor-100', 'Images/resistor-100.png');
-    this.load.image('resistor-200', 'Images/resistor-200.png');
-    this.load.image('resistor-500', 'Images/resistor-500.png');
-    this.load.image('resistor-1000', 'Images/resistor-1000.png');
-    this.load.image('resistor-2000', 'Images/resistor-2000.png');
-
-    this.load.image('level-changer', 'Images/level-changer.png');
-
-    this.load.image('inductor', 'Images/inductor.png')
-    this.load.image('inductor-base', 'Images/inductor-base.png');
-    this.load.image('inductor-weights', 'Images/inductor-weights.png');
-
-    this.load.image('capacitor', 'Images/capacitor.png');
-    this.load.image('capacitor-sprocket', 'Images/capacitor-sprocket.png');
-    this.load.image('capacitor-cap', 'Images/capacitor-cap.png');
-    this.load.image('capacitor-long-hand', 'Images/capacitor-long-hand.png');
-    this.load.image('capacitor-short-hand', 'Images/capacitor-short-hand.png');
-    this.load.image('capacitor-sprocket-no-value', 'Images/capacitor-sprocket-no-value.png');
-    this.load.image('capacitor-meter', 'Images/capacitor-meter.png');
-    this.load.image('capacitor-numbers', 'Images/capacitor-numbers.png');
-
-    this.load.image('button', 'Images/button.png');
-    this.load.image('button-sprocket', 'Images/button-sprocket.png');
-    this.load.image('button-base', 'Images/button-base.png');
-    this.load.image('button-base-pushed', 'Images/button-base-pushed.png');
-
-    this.load.image('transistor', 'Images/transistor.png');
-    this.load.image('transistor-base', 'Images/transistor-base.png');
-    this.load.image('transistor-gate', 'Images/transistor-gate.png');
-    this.load.image('transistor-brake', 'Images/transistor-brake.png');
-    this.load.image('transistor-ball', 'Images/transistor-ball.png');
-    this.load.image('transistor-resistor', 'Images/transistor-resistor.png');
-    this.load.image('transistor-mid-cap', 'Images/transistor-mid-cap.png');
-    this.load.image('transistor-guide', 'Images/transistor-guide.png');
-    this.load.image('transistor-tab', 'Images/transistor-tab.png');
-
-    this.load.image('motor', 'Images/motor.png');
-    this.load.image('motor-base-tile', 'Images/motor-base-tile.png');
-    this.load.image('motor-base-under', 'Images/motor-base-under.png');
-    this.load.image('motor-drive-gear', 'Images/motor-drive-gear.png');
-    this.load.image('motor-intermediate-gear', 'Images/motor-intermediate-gear.png');
-    this.load.image('motor-pawl-closed', 'Images/motor-pawl-closed.png');
-    this.load.image('motor-pawl-open', 'Images/motor-pawl-open.png');
-    this.load.image('motor-wheel', 'Images/motor-wheel.png');
-    this.load.image('motor-screw', 'Images/motor-screw.png');
-    this.load.image('motor-spanner', 'Images/motor-spanner.png');
-    this.load.image('reset-circuit-breaker', 'Images/reset-circuit-breaker.png');
-
-    this.load.image('phonograph', 'Images/phonograph.png');
-    this.load.image('phonograph-base', 'Images/phonograph-base.png');
-    this.load.image('phonograph-sprocket', 'Images/phonograph-sprocket.png');
-
-    this.load.image('diode', 'Images/diode.png');
-    this.load.image('diode-base', 'Images/diode-base.png');
-    this.load.image('diode-sprocket', 'Images/diode-sprocket.png');
-
-    this.load.image('tile', 'Images/tile.png');
-    this.load.image('tile-connector', 'Images/tile-connector.png');
-
-    this.load.image('1', 'Images/1.png');
-    this.load.image('2', 'Images/2.png');
-    this.load.image('3', 'Images/3.png');
-    this.load.image('4', 'Images/4.png');
-    this.load.image('5', 'Images/5.png');
+    
+    // paired with name to file
+    const toload = [
+        ['junction-bottom', 'Images/junction-bottom-1.png'],
+        ['junction-middle', 'Images/junction-middle-1.png'],
+        ['junction-top', 'Images/junction-top-2.png'],
+        ['junction-cap', 'Images/junction-cap-1.png'],
+        ['junction-planet', 'Images/junction-planet-1.png'],
+        
+        ['junction-icon', 'Images/junction-icon.png'],
+        ['resistor-icon', 'Images/resistor-icon.png'],
+        ['motor-icon', 'Images/motor-icon.png'],
+        ['inductor-icon', 'Images/inductor-icon.png'],
+        ['capacitor-icon', 'Images/capacitor-icon.png'],
+        ['button-icon', 'Images/button-icon.png'],
+        ['phonograph-icon', 'Images/phonograph-icon.png'],
+        ['transistor-icon', 'Images/transistor-icon.png'],
+        ['level-changer-icon', 'Images/level-changer-icon.png'],
+        ['diode-icon', 'Images/diode-icon.png'],
+        ['chain-icon', 'Images/chain-icon.png'],
+        ['tile-icon', 'Images/tile-icon.png'],
+        
+        ['interact-icon', 'Images/hand-icon.png'],
+        ['move-icon', 'Images/move-icon.png'],
+        ['delete-icon', 'Images/remove-icon.png'],
+        ['remove-all-icon', 'Images/trash-icon.png'],
+        ['zoom-in-icon', 'Images/zoom-in-icon.png'],
+        ['zoom-out-icon', 'Images/zoom-out-icon.png'],
+        ['link-icon', 'Images/link-icon.png'],
+        ['save-icon', 'Images/save-icon.png'],
+        ['load-icon', 'Images/open-icon.png'],
+        ['edit-icon', 'Images/edit-icon.png'],
+        ['full-screen-icon', 'Images/full-screen-icon.png'],
+        
+        ['junction', 'Images/junction.png'],
+        
+        ['resistor', 'Images/resistor.png'],
+        ['resistor-20', 'Images/resistor-20.png'],
+        ['resistor-50', 'Images/resistor-50.png'],
+        ['resistor-100', 'Images/resistor-100.png'],
+        ['resistor-200', 'Images/resistor-200.png'],
+        ['resistor-500', 'Images/resistor-500.png'],
+        ['resistor-1000', 'Images/resistor-1000.png'],
+        ['resistor-2000', 'Images/resistor-2000.png'],
+        
+        ['level-changer', 'Images/level-changer.png'],
+        
+        ['inductor', 'Images/inductor.png'],
+        ['inductor-base', 'Images/inductor-base.png'],
+        ['inductor-weights', 'Images/inductor-weights.png'],
+        
+        ['capacitor', 'Images/capacitor.png'],
+        ['capacitor-sprocket', 'Images/capacitor-sprocket.png'],
+        ['capacitor-cap', 'Images/capacitor-cap.png'],
+        ['capacitor-long-hand', 'Images/capacitor-long-hand.png'],
+        ['capacitor-short-hand', 'Images/capacitor-short-hand.png'],
+        ['capacitor-sprocket-no-value', 'Images/capacitor-sprocket-no-value.png'],
+        ['capacitor-meter', 'Images/capacitor-meter.png'],
+        ['capacitor-numbers', 'Images/capacitor-numbers.png'],
+        
+        ['button', 'Images/button.png'],
+        ['button-sprocket', 'Images/button-sprocket.png'],
+        ['button-base', 'Images/button-base.png'],
+        ['button-base-pushed', 'Images/button-base-pushed.png'],
+        
+        ['transistor', 'Images/transistor.png'],
+        ['transistor-base', 'Images/transistor-base.png'],
+        ['transistor-gate', 'Images/transistor-gate.png'],
+        ['transistor-brake', 'Images/transistor-brake.png'],
+        ['transistor-ball', 'Images/transistor-ball.png'],
+        ['transistor-resistor', 'Images/transistor-resistor.png'],
+        ['transistor-mid-cap', 'Images/transistor-mid-cap.png'],
+        ['transistor-guide', 'Images/transistor-guide.png'],
+        ['transistor-tab', 'Images/transistor-tab.png'],
+        
+        ['motor', 'Images/motor.png'],
+        ['motor-base-tile', 'Images/motor-base-tile.png'],
+        ['motor-base-under', 'Images/motor-base-under.png'],
+        ['motor-drive-gear', 'Images/motor-drive-gear.png'],
+        ['motor-intermediate-gear', 'Images/motor-intermediate-gear.png'],
+        ['motor-pawl-closed', 'Images/motor-pawl-closed.png'],
+        ['motor-pawl-open', 'Images/motor-pawl-open.png'],
+        ['motor-wheel', 'Images/motor-wheel.png'],
+        ['motor-screw', 'Images/motor-screw.png'],
+        ['motor-spanner', 'Images/motor-spanner.png'],
+        ['reset-circuit-breaker', 'Images/reset-circuit-breaker.png'],
+        
+        ['phonograph', 'Images/phonograph.png'],
+        ['phonograph-base', 'Images/phonograph-base.png'],
+        ['phonograph-sprocket', 'Images/phonograph-sprocket.png'],
+        
+        ['diode', 'Images/diode.png'],
+        ['diode-base', 'Images/diode-base.png'],
+        ['diode-sprocket', 'Images/diode-sprocket.png'],
+        
+        ['tile', 'Images/tile.png'],
+        ['tile-connector', 'Images/tile-connector.png'],
+        
+        ['1', 'Images/1.png'],
+        ['2', 'Images/2.png'],
+        ['3', 'Images/3.png'],
+        ['4', 'Images/4.png'],
+        ['5', 'Images/5.png']
+    ]
+    
+    toload.forEach((item) => {
+        this.load.image(item[0], item[1])
+    });
 }
 
 function preloaderResize (gameSize, baseSize, displaySize, resolution)
