@@ -5,80 +5,58 @@ const inductorSprocketRadius = 0.025771 / 2;
 export class InductorPart extends PartBase
 {
     static possibleInductanceValues = [.01, .02, .05, .1, .2, .5, 1, 2, 5, 10, 20, 50, 100, 200, 500];
-
+    partType = 'inductor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'inductor';
-
-        this.partImage = scene.add.image(this.x, this.y,'inductor-weights');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(10);
+        this.markBody(this.ground);
+        
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'inductor-weights', 0.5, 10);
+        this.markImage(this.partImage);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
-        this.inductorBaseImage = scene.add.image(this.x, this.y,'inductor-base');
-        this.inductorBaseImage.setScale(0.5);
-        this.inductorBaseImage.setDepth(16);
-
-        this.partImage.setInteractive({
+        this.inductorBaseImage = PartBase.makeImage(scene, this.x, this.y,'inductor-base', 0.5, 16);
+        this.markImage(this.inductorBaseImage);
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.inductorBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.inductorBaseImage
+        )
 
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 70/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = inductorSprocketRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 70/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = inductorSprocketRadius; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 70/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = inductorSprocketRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 70/2, true, inductorSprocketRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 70/2, true, inductorSprocketRadius);
+        this.setupSprocket(2, {x: 0, y: 0}, 70/2, true, inductorSprocketRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.inductorBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.5});
-        this.inductorFixture = this.inductorBody.createFixture(planck.Circle(inductorSprocketRadius), {density: 1, filterGroupIndex: -1, friction: 0});
+        this.inductorBody = this.standardBody(0.5);
+        this.markBody(this.inductorBody);
+        this.inductorFixture = PartBase.createFixture(this.inductorBody, inductorSprocketRadius, 1);
         this.sprocketBodies[0] = this.inductorBody;
         this.sprocketBodies[1] = this.inductorBody;
         this.sprocketBodies[2] = this.inductorBody;
 
         //this.frictionBody = this.world.createBody({position: planck.Vec2(this.x / worldScale, this.y / worldScale)});
         //this.frictionBody.createFixture(planck.Circle(resistorRadius), {density: 1, filterGroupIndex: -1, friction: 0.3});
-
-        this.inductorJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.inductorBody, this.inductorBody.getPosition()));
+        this.inductorJoint = this.standardRevolute(this.ground, this.inductorBody);
+        this.markJoint(this.inductorJoint);
         this.sprocketJoints[0] = this.inductorJoint;
         this.sprocketJoints[1] = this.inductorJoint;
         this.sprocketJoints[2] = this.inductorJoint;
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.inductorBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.inductorBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.inductorBody));
-
-        this.inductorBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.inductorBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.inductorBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.inductorBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.inductorBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.inductorBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.partImage,
+            this.inductorBody
+        );
+        
+        this.setupInteractions(
+            this.inductorBaseImage
+        );
 
         // Set the starting inductance
         this.inductance = 50; // 50 H default
@@ -92,13 +70,16 @@ export class InductorPart extends PartBase
             fontStyle: 'strong'
         });
         this.inductanceText.setDepth(16);
+        this.markImage(this.inductanceText);
         this.add(this.inductanceText);
 
         // Draw a line to the inductor
         this.textLine = new Phaser.Curves.Path(textPos.x, textPos.y);
         this.textLine.splineTo([textPos.x+2, textPos.y-5, textPos.x+6, textPos.y-7, textPos.x+8, textPos.y-12]);
+        this.markImage(this.textLine);
         this.graphics = scene.add.graphics();
         this.graphics.setDepth(16);
+        this.markImage(this.graphics);
         this.add(this.graphics);
 
         this.graphics.lineStyle(2, 0x111111, 1);
@@ -112,7 +93,7 @@ export class InductorPart extends PartBase
     {
         //this.partImage.x = this.inductorBody.getPosition().x * worldScale;
         //this.partImage.y = this.inductorBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.inductorBody.getAngle();
+        this.syncRotation(this.partImage, this.inductorBody);
 
         //let BaseResistance = 13000*0.0000000003; // in ohms
         // update averageAngularVelocity
@@ -201,17 +182,6 @@ export class InductorPart extends PartBase
             this.partImage.setPosition(x, y);
         if (this.inductorBaseImage != undefined)
             this.inductorBaseImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.inductorBaseImage.destroy();
-        this.inductanceText.destroy();
-        this.textLine.destroy();
-        this.graphics.destroy();
-        this.world.destroyBody(this.inductorBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

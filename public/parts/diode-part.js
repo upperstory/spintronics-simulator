@@ -5,14 +5,14 @@ const diodeRadius = 0.033979 / 2;
 
 export class DiodePart extends PartBase
 {
+    partType = 'diode';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'diode';
-
-        this.partImage = scene.add.image(this.x, this.y,'diode-sprocket');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(10);
+        this.markBody(this.ground);
+        
+        this.partImage = PartBase.makeImage(scene, this.x, this.y, 'diode-sprocket', 0.5, 10);
+        this.markImage(this.partImage);
 
         //this.add(this.partImage);
         this.partWidth = this.partImage.displayWidth;
@@ -22,64 +22,44 @@ export class DiodePart extends PartBase
         //this.partCenterX = this.partWidth / 2;
         //this.partCenterY = this.partHeight / 2;
 
-        this.diodeBaseImage = scene.add.image(this.x, this.y,'diode-base');
-        this.diodeBaseImage.setScale(0.5);
-        this.diodeBaseImage.setDepth(10);
-
-        this.partImage.setInteractive({
+        this.diodeBaseImage = PartBase.makeImage(scene, this.x, this.y, 'diode-base', 0.5, 10);
+        this.markImage(this.diodeBaseImage);
+        
+        PartBase.setAllInteractive({
             draggable: true,
             pixelPerfect: true,
             alphaTolerance: 1
-        });
-        this.diodeBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
+        },
+            this.partImage,
+            this.diodeBaseImage
+        )
 
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 99/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = diodeRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 99/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = diodeRadius; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 99/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = diodeRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 99/2, true, diodeRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 99/2, true, diodeRadius);
+        this.setupSprocket(2, {x: 0, y: 0}, 99/2, true, diodeRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.diodeSprocket = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0.05});//this.resistance / 100});
-        this.diodeFixture = this.diodeSprocket.createFixture(planck.Circle(diodeRadius), {density: 0.1, filterGroupIndex: -1, friction: 0});
+        this.diodeSprocket = this.standardBody(0.05);
+        this.markBody(this.diodeSprocket);
+        this.diodeFixture = PartBase.createFixture(this.diodeSprocket, diodeRadius);
         this.sprocketBodies[0] = this.diodeSprocket;
         this.sprocketBodies[1] = this.diodeSprocket;
         this.sprocketBodies[2] = this.diodeSprocket;
 
-        this.diodeJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true}, this.ground, this.diodeSprocket, this.diodeSprocket.getPosition()));
+        this.diodeJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true}, this.ground, this.diodeSprocket, this.diodeSprocket.getPosition())); // non standard
+        this.markJoint(this.diodeJoint);
         this.sprocketJoints[0] = this.diodeJoint;
         this.sprocketJoints[1] = this.diodeJoint;
         this.sprocketJoints[2] = this.diodeJoint;
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.diodeSprocket));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.diodeSprocket));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.diodeSprocket));
-
-        this.diodeBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.diodeBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.diodeBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.diodeBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.diodeBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.diodeBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.partImage,
+            this.diodeSprocket
+        );
+        
+        this.setupInteractions(
+            this.diodeBaseImage
+        );
 
         this.diodeSprocket.applyAngularImpulse(0.0000002);
     }
@@ -90,7 +70,7 @@ export class DiodePart extends PartBase
     {
         //this.partImage.x = this.diodeSprocket.getPosition().x * worldScale;
         //this.partImage.y = this.diodeSprocket.getPosition().y * worldScale;
-        this.partImage.rotation = this.diodeSprocket.getAngle();
+        this.syncRotation(this.partImage, this.diodeSprocket);
 
         if (this.lowerLimit == null || this.diodeSprocket.getAngle() > this.lowerLimit) {
             this.lowerLimit = this.diodeSprocket.getAngle();
@@ -120,14 +100,6 @@ export class DiodePart extends PartBase
             this.partImage.setPosition(x, y);
         if (this.diodeBaseImage != undefined)
             this.diodeBaseImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.diodeBaseImage.destroy();
-        this.world.destroyBody(this.diodeSprocket);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

@@ -6,19 +6,16 @@ const resistorRadius = 0.041168 / 2;
 export class ResistorPart extends PartBase
 {
     static possibleResistorValues = [100, 200, 500, 1000, 2000, 20, 50];
-
+    partType = 'resistor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'resistor';
-
         // Set the starting resistance
         this.resistance = 1000; // 1000 ohms default
 
         // Create the resistor image
-        this.partImage = scene.add.image(this.x, this.y,'resistor');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(8);
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'resistor', 0.5, 8);
+        this.markImage(this.partImage);
         //this.add(this.partImage);
 
         this.partWidth = this.partImage.displayWidth;
@@ -36,35 +33,22 @@ export class ResistorPart extends PartBase
         });
 
         // Define the positions of the sprockets.
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 117/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = 0.041168 / 2; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 117/2;
-        this.sprocketExists[1] = true;
-        this.sprocketPhysicsRadius[1] = 0.041168 / 2; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 117/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = 0.041168 / 2; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 117/2, true, 0.041168 / 2);
+        this.setupSprocket(1, {x: 0, y: 0}, 117/2, true, 0.041168 / 2);
+        this.setupSprocket(2, {x: 0, y: 0}, 117/2, true, 0.041168 / 2);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-        //this.ground.createFixture(planck.Edge(planck.Vec2(50.0, 0.0), planck.Vec2(-50.0, 0.0)),{density: 0.1, filterGroupIndex: -1});
-
-        this.resistorBody = this.world.createDynamicBody({position: planck.Vec2(0,0), angularDamping: 0});//this.resistance / 100});
-        this.resistorFixture = this.resistorBody.createFixture(planck.Circle(resistorRadius), {density: 10, filterGroupIndex: -1, friction: 0});
+        this.resistorBody = this.standardBody(0);
+        this.markBody(this.resistorBody);
+        this.resistorFixture = PartBase.createFixture(this.resistorBody, resistorRadius);
         this.sprocketBodies[0] = this.resistorBody;
         this.sprocketBodies[1] = this.resistorBody;
         this.sprocketBodies[2] = this.resistorBody;
 
         //this.frictionBody = this.world.createBody({position: planck.Vec2(this.x / worldScale, this.y / worldScale)});
         //this.frictionBody.createFixture(planck.Circle(resistorRadius), {density: 1, filterGroupIndex: -1, friction: 0.3});
-
-        this.resistorJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.resistorBody, this.resistorBody.getPosition()));
+        this.resistorJoint = this.standardRevolute(this.ground, this.resistorBody);
+        this.markJoint(this.resistorJoint);
         this.sprocketJoints[0] = this.resistorJoint;
         this.sprocketJoints[1] = this.resistorJoint;
         this.sprocketJoints[2] = this.resistorJoint;
@@ -74,12 +58,10 @@ export class ResistorPart extends PartBase
 
         //this.frictionJoint = this.world.createJoint(planck.FrictionJoint({maxTorque: .00003, maxForce: 0.0005}, this.resistorBody, this.ground));//this.resistorBody.getPosition()));
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.resistorBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.resistorBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.resistorBody));
+        this.setupInteractions(
+            this.partImage,
+            this.resistorBody
+        );
 
         this.resistorBody.applyAngularImpulse(0.000001);
 
@@ -125,7 +107,7 @@ export class ResistorPart extends PartBase
     {
         //this.partImage.x = this.resistorBody.getPosition().x * worldScale;
         //this.partImage.y = this.resistorBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.resistorBody.getAngle();
+        this.syncRotation(this.partImage, this.resistorBody);
 
         //let BaseResistance = 13000*0.0000000003; // in ohms
         // update averageAngularVelocity
@@ -224,16 +206,6 @@ export class ResistorPart extends PartBase
         this.y = y;
         if (this.partImage != undefined)
             this.partImage.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        //this.resistanceText.destroy();
-        //this.textLine.destroy();
-        //this.graphics.destroy();
-        this.world.destroyBody(this.resistorBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

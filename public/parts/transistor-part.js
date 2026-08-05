@@ -8,245 +8,144 @@ const upperAngleLimit = (Math.PI*2)*0.125;
 
 export class TransistorPart extends PartBase
 {
+    partType = 'transistor';
     constructor (scene, x, y, planckWorld)
     {
         super(scene, x, y, planckWorld);
-        this.partType = 'transistor';
-        this.partImage = scene.add.image(this.x, this.y,'transistor-gate');
-        this.partImage.setScale(0.5);
-        this.partImage.setDepth(8);
+        this.partImage = PartBase.makeImage(scene, this.x, this.y,'transistor-gate', 0.5, 8);
+        this.markImage(this.partImage);
         //this.partImage.setAlpha(0.0);
 
         this.partWidth = this.partImage.displayWidth;
         this.partHeight = this.partImage.displayHeight;
 
-        this.transistorGuideImage = scene.add.image(this.x, this.y,'transistor-guide');
-        this.transistorGuideImage.setScale(0.5);
-        this.transistorGuideImage.setDepth(13);
+        this.transistorGuideImage = PartBase.makeImage(scene, this.x, this.y,'transistor-guide', 0.5, 13);
+        this.markImage(this.transistorGuideImage);
 
-        this.transistorBaseImage = scene.add.image(this.x, this.y,'transistor-base');
-        this.transistorBaseImage.setScale(0.5);
-        this.transistorBaseImage.setDepth(6);
+        this.transistorBaseImage = PartBase.makeImage(scene, this.x, this.y,'transistor-base', 0.5, 6);
+        this.markImage(this.transistorBaseImage);
 
-        this.transistorTabImage = scene.add.image(this.x, this.y + 86,'transistor-tab');
-        this.transistorTabImage.setScale(0.5);
-        this.transistorTabImage.setDepth(13);
+        this.transistorTabImage = PartBase.makeImage(scene, this.x, this.y + 86,'transistor-tab', 0.5, 13);
+        this.markImage(this.transistorTabImage);
 
-        this.transistorMidCapImage = scene.add.image(this.x, this.y,'transistor-mid-cap');
-        this.transistorMidCapImage.setScale(0.5);
-        this.transistorMidCapImage.setDepth(10);
+        this.transistorMidCapImage = PartBase.makeImage(scene, this.x, this.y,'transistor-mid-cap', 0.5, 10);
+        this.markImage(this.transistorMidCapImage);
 
-        this.transistorResistorImage = scene.add.image(this.x, this.y,'transistor-resistor');
-        this.transistorResistorImage.setScale(0.5);
-        this.transistorResistorImage.setDepth(2);
+        this.transistorResistorImage = PartBase.makeImage(scene, this.x, this.y,'transistor-resistor', 0.5, 2);
+        this.markImage(this.transistorResistorImage);
 
         let brakeRadius = 56;
         let ballRadius = 25;
 
-        this.transistorBrake1Image = scene.add.image(this.x, this.y - brakeRadius,'transistor-brake');
-        this.transistorBrake1Image.setScale(0.5);
-        this.transistorBrake1Image.setDepth(7);
+        this.transistorBrake1Image = PartBase.makeImage(scene, this.x, this.y - brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake1Image.setRotation(-Math.PI/2);
+        this.markImage(this.transistorBrake1Image);
 
-        this.transistorBrake2Image = scene.add.image(this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake');
-        this.transistorBrake2Image.setScale(0.5);
-        this.transistorBrake2Image.setDepth(7);
+        this.transistorBrake2Image = PartBase.makeImage(scene, this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake2Image.setRotation(Math.PI*(2/3) - Math.PI/2);
+        this.markImage(this.transistorBrake2Image);
 
-        this.transistorBrake3Image = scene.add.image(this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake');
-        this.transistorBrake3Image.setScale(0.5);
-        this.transistorBrake3Image.setDepth(7);
+        this.transistorBrake3Image = PartBase.makeImage(scene, this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * brakeRadius,'transistor-brake', 0.5, 7);
         this.transistorBrake3Image.setRotation(-Math.PI*(2/3) - Math.PI/2);
+        this.markImage(this.transistorBrake3Image);
 
-        this.transistorBall1Image = scene.add.image(this.x, this.y - ballRadius,'transistor-ball');
-        this.transistorBall1Image.setScale(0.5);
-        this.transistorBall1Image.setDepth(12);
+        this.transistorBall1Image = PartBase.makeImage(scene, this.x, this.y - ballRadius,'transistor-ball', 0.5, 12);
+        this.markImage(this.transistorBall1Image);
 
-        this.transistorBall2Image = scene.add.image(this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball');
-        this.transistorBall2Image.setScale(0.5);
-        this.transistorBall2Image.setDepth(12);
+        this.transistorBall2Image = PartBase.makeImage(scene, this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball', 0.5, 12);
+        this.markImage(this.transistorBall2Image);
 
-        this.transistorBall3Image = scene.add.image(this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball');
-        this.transistorBall3Image.setScale(0.5);
-        this.transistorBall3Image.setDepth(12);
+        this.transistorBall3Image = PartBase.makeImage(scene, this.x + Math.cos(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(-((Math.PI * 2) / 3) - Math.PI/2) * ballRadius,'transistor-ball', 0.5, 12);
+        this.markImage(this.transistorBall3Image);
+        
+        PartBase.setAllInteractive({
+            draggable: true,
+            pixelPerfect: true,
+            alphaTolerance: 1
+        },
+            this.partImage,
+            this.transistorGuideImage,
+            this.transistorBaseImage,
+            this.transistorTabImage,
+            this.transistorMidCapImage,
+            this.transistorResistorImage,
+            this.transistorBrake1Image,
+            this.transistorBrake2Image,
+            this.transistorBrake3Image,
+            this.transistorBall1Image,
+            this.transistorBall2Image,
+            this.transistorBall3Image
+        );
 
-        this.partImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorGuideImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBaseImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorTabImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorMidCapImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorResistorImage.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBrake1Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBrake2Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBrake3Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBall1Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBall2Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-        this.transistorBall3Image.setInteractive({
-            draggable: true,
-            pixelPerfect: true,
-            alphaTolerance: 1
-        });
-
-
-        this.sprocketCenter[0] = {x: 0, y: 0};
-        this.sprocketRadius[0] = 117/2;
-        this.sprocketExists[0] = true;
-        this.sprocketPhysicsRadius[0] = baseRadius; // in m
-        this.sprocketCenter[1] = {x: 0, y: 0};
-        this.sprocketRadius[1] = 0;
-        this.sprocketExists[1] = false;
-        this.sprocketPhysicsRadius[1] = 0; // in m
-        this.sprocketCenter[2] = {x: 0, y: 0};
-        this.sprocketRadius[2] = 181/2;
-        this.sprocketExists[2] = true;
-        this.sprocketPhysicsRadius[2] = gateRadius; // in m
+        this.setupSprocket(0, {x: 0, y: 0}, 117/2, true, baseRadius);
+        this.setupSprocket(1, {x: 0, y: 0}, 0, false, 0);
+        this.setupSprocket(2, {x: 0, y: 0}, 181/2, true, gateRadius);
 
         // Create bodies and fixtures for Planck world
-
-        // Create a rigid ground body
-        this.ground = this.world.createBody();
-
         // Create transistor bodies and joints
-        this.transistorGateBody = this.world.createDynamicBody({position: planck.Vec2(0,0/*this.x / worldScale, this.y / worldScale*/), angularDamping: 0.02});
-        this.transistorGateBody.createFixture(planck.Circle(gateRadius), {density: 0.1, filterGroupIndex: -1});
+        this.transistorGateBody = this.standardBody(0.02);
+        this.markBody(this.transistorGateBody);
+        PartBase.createFixture(this.transistorGateBody, gateRadius);
         this.sprocketBodies[2] = this.transistorGateBody;
 
-        this.transistorResistorBody = this.world.createDynamicBody({position: planck.Vec2(0,0/*(this.x) / worldScale, (this.y) / worldScale*/), angularDamping: 0.02});
-        this.transistorResistorFixture = this.transistorResistorBody.createFixture(planck.Circle(baseRadius), {density: 10, filterGroupIndex: -1});
+        this.transistorResistorBody = this.standardBody(0.02);
+        this.markBody(this.transistorResistorBody);
+        this.transistorResistorFixture = PartBase.createFixture(this.transistorResistorBody, baseRadius, 10);
         this.sprocketBodies[0] = this.transistorResistorBody;
 
         this.transistorGateJoint = this.world.createJoint(planck.RevoluteJoint({enableLimit: true, lowerAngle: lowerAngleLimit, upperAngle: upperAngleLimit}, this.ground, this.transistorGateBody, this.transistorGateBody.getPosition()));
+        this.markJoint(this.transistorGateJoint);
         this.sprocketJoints[2] = this.transistorGateJoint;
-        this.transistorResistorJoint = this.world.createJoint(planck.RevoluteJoint({}, this.ground, this.transistorResistorBody, this.transistorResistorBody.getPosition()));
+        this.transistorResistorJoint = this.standardRevolute(this.ground, this.transistorResistorBody);
+        this.markJoint(this.transistorResistorJoint);
         this.sprocketJoints[0] = this.transistorResistorJoint;
 
-        this.partImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.partImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.partImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.partImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.transistorGateBody));
-        this.partImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.transistorGateBody));
-        this.partImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.transistorGateBody));
+        this.setupInteractions(
+            this.partImage,
+            this.transistorGateBody
+        );
+        
+        this.setupInteractions(
+            this.transistorGuideImage
+        );
+        
+        this.setupInteractions(
+            this.transistorResistorImage,
+            this.transistorResistorBody
+        );
+        
+        
+        this.setupInteractions(
+            this.transistorTabImage
+        );
+        
+        this.setupInteractions(
+            this.transistorMidCapImage
+        );
 
-        this.transistorGuideImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorGuideImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorGuideImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorGuideImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorGuideImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorGuideImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.transistorBaseImage
+        );
 
-        this.transistorResistorImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorResistorImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorResistorImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorResistorImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, this.transistorResistorBody));
-        this.transistorResistorImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, this.transistorResistorBody));
-        this.transistorResistorImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, this.transistorResistorBody));
-
-        this.transistorTabImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorTabImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorTabImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorTabImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorTabImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorTabImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorMidCapImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorMidCapImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorMidCapImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorMidCapImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorMidCapImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorMidCapImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBaseImage.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBaseImage.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBaseImage.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBaseImage.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBaseImage.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBaseImage.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBrake1Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBrake1Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBrake1Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBrake1Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBrake1Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBrake1Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBrake2Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBrake2Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBrake2Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBrake2Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBrake2Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBrake2Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBrake3Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBrake3Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBrake3Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBrake3Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBrake3Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBrake3Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBall1Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBall1Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBall1Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBall1Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBall1Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBall1Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBall2Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBall2Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBall2Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBall2Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBall2Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBall2Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
-
-        this.transistorBall3Image.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
-        this.transistorBall3Image.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
-        this.transistorBall3Image.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
-        this.transistorBall3Image.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY));
-        this.transistorBall3Image.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY));
-        this.transistorBall3Image.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY));
+        this.setupInteractions(
+            this.transistorBrake1Image
+        );
+        this.setupInteractions(
+            this.transistorBrake2Image
+        );
+        this.setupInteractions(
+            this.transistorBrake3Image
+        );
+        
+        this.setupInteractions(
+            this.transistorBall1Image
+        );
+        this.setupInteractions(
+            this.transistorBall2Image
+        );
+        this.setupInteractions(
+            this.transistorBall3Image
+        );
 
         //this.transistorCW = false;
         this.setTransistorCW(false);
@@ -256,9 +155,9 @@ export class TransistorPart extends PartBase
     {
         //this.partImage.x = this.transistorGateBody.getPosition().x * worldScale;
         //this.partImage.y = this.transistorGateBody.getPosition().y * worldScale;
-        this.partImage.rotation = this.transistorGateBody.getAngle();
-        this.transistorGuideImage.rotation = this.transistorGateBody.getAngle();
-        this.transistorResistorImage.rotation = this.transistorResistorBody.getAngle();
+        this.syncRotation(this.partImage, this.transistorGateBody);
+        this.syncRotation(this.transistorGuideImage, this.transistorGateBody);
+        this.syncRotation(this.transistorResistorImage, this.transistorResistorBody);
         let ballRadius = 26 - (Math.abs(this.transistorGateBody.getAngle()) * 18);
         this.transistorBall1Image.setPosition(this.x, this.y - ballRadius);
         this.transistorBall2Image.setPosition(this.x + Math.cos(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius, this.y + Math.sin(((Math.PI * 2) / 3) - Math.PI/2) * ballRadius);
@@ -407,25 +306,6 @@ export class TransistorPart extends PartBase
             this.transistorBall2Image.setPosition(x, y);
         if (this.transistorBall3Image != undefined)
             this.transistorBall3Image.setPosition(x, y);
-    }
-
-    destroy()
-    {
-        this.partImage.destroy();
-        this.transistorGuideImage.destroy();
-        this.transistorBaseImage.destroy();
-        this.transistorTabImage.destroy();
-        this.transistorMidCapImage.destroy();
-        this.transistorResistorImage.destroy();
-        this.transistorBrake1Image.destroy();
-        this.transistorBrake2Image.destroy();
-        this.transistorBrake3Image.destroy();
-        this.transistorBall1Image.destroy();
-        this.transistorBall2Image.destroy();
-        this.transistorBall3Image.destroy();
-        this.world.destroyBody(this.transistorGateBody);
-        this.world.destroyBody(this.transistorResistorBody);
-        this.world.destroyBody(this.ground);
     }
 
     getPartExtents()

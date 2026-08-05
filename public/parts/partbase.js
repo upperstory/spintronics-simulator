@@ -8,6 +8,7 @@ export class PartBase extends Phaser.GameObjects.Container
         // Add this container to the scene
         scene.add.existing(this);
         this.world = planckWorld;
+        this.ground = this.world.createBody();
     }
 
     world = null;
@@ -31,6 +32,8 @@ export class PartBase extends Phaser.GameObjects.Container
     sprocketRadius = [100];
     sprocketExists = [false];
     parentClass = null;
+    
+    destroyWith = [];
 
     serialize()
     {
@@ -82,6 +85,15 @@ export class PartBase extends Phaser.GameObjects.Container
     {
         this.parentClass = parentClass;
         this.dragEndCallback = callback;
+    }
+    
+    setCallbacks(manager) {
+        this.setPointerDownCallback(manager.onPartClicked, manager);
+        this.setPointerMoveCallback(manager.onPointerMoveOverPart, manager);
+        this.setPointerOutCallback(manager.onPointerMoveOutOfPart, manager);
+        this.setDragStartCallback(manager.onPartDragStart, manager);
+        this.setDragCallback(manager.onPartDrag, manager);
+        this.setDragEndCallback(manager.onPartDragEnd, manager);
     }
 
     getXYPoint(gridSpacing)
@@ -281,6 +293,16 @@ export class PartBase extends Phaser.GameObjects.Container
         }
         return retVal;
     }
+    
+    static makeImage(scene, x, y, name, scale = 0.5, depth = 0, visible = null) {
+        var image = scene.add.image(x, y, name);
+        image.setScale(scale);
+        image.setDepth(depth);
+        if (visible != null) {
+            image.setVisible(visible);
+        }
+        return image;
+    }
 
     updatePhysics()
     {
@@ -295,5 +317,82 @@ export class PartBase extends Phaser.GameObjects.Container
             return null;
 
         return {left: this.x, right: this.x, top: this.y, bottom: this.y};
+    }
+    
+    // dunder help
+    static setAllInteractive(descriptor, ...images) {
+        images.forEach((image) => {
+            image.setInteractive(descriptor);
+        });
+    }
+    
+    setupSprocket(index, center, radius, exists, physicsRadius) {
+        this.sprocketCenter[index] = center;
+        this.sprocketRadius[index] = radius;
+        this.sprocketExists[index] = exists;
+        this.sprocketPhysicsRadius[index] = physicsRadius; // in m
+    }
+    
+    syncRotation(image, body) {
+        image.rotation = body.getAngle();
+    }
+    
+    static createFixture(body, radius, density = 0.1, filterGroupIndex = -1, friction = 0) {
+        return body.createFixture(planck.Circle(radius), {density: density, filterGroupIndex: filterGroupIndex, friction: friction});
+    }
+    
+    standardBody(damping, x = 0, y = 0) {
+        return this.world.createDynamicBody({position: planck.Vec2(x,y), angularDamping: damping});
+    }
+    
+    setupInteractions(interactable, body) {
+            console.log(`setup interactible `)
+            interactable.on('pointerdown', (pointer, localx, localy, event) => this.onPointerDown(pointer, localx, localy, event));
+            interactable.on('pointermove', (pointer, localx, localy, event) => this.onPointerMove(pointer, localx, localy, event));
+            interactable.on('pointerout', (pointer, event) => this.onPointerOut(pointer, event));
+            interactable.on('dragstart', (pointer, dragX, dragY) => this.onDragStart(pointer, dragX, dragY, body));
+            interactable.on('dragend', (pointer, dragX, dragY) => this.onDragEnd(pointer, dragX, dragY, body));
+            interactable.on('drag', (pointer, dragX, dragY) => this.onDrag(pointer, dragX, dragY, body));
+    }
+    
+    standardRevolute(base, body, target) {
+        return this.world.createJoint(planck.RevoluteJoint({}, base, body, (target || body).getPosition()));
+    }
+    
+    gearJoint(a, b, a_joint, b_joint, ratio) {
+        return this.world.createJoint(planck.GearJoint({}, a, b, a_joint, b_joint, ratio));
+    }
+    
+    weld(a, b) {
+        return this.world.createJoint(planck.WeldJoint({}, a, b));
+    }
+    
+    // destroying marking
+    destroy() {
+        this.destroyWith.forEach((destroyer) => {
+            destroyer();
+        });
+    }
+    
+    addDestroyer(func) {
+        this.destroyWith.push(func);
+    }
+    
+    markImage(image) {
+        this.addDestroyer(() => {
+            image.destroy();
+        });
+    }
+    
+    markBody(body) {
+        this.addDestroyer(() => {
+            this.world.destroyBody(body);
+        });
+    }
+    
+    markJoint(joint) {
+        this.addDestroyer(() => {
+            this.world.destroyJoint(joint);
+        });
     }
 }
