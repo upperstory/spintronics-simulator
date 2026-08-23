@@ -1,5 +1,6 @@
 import { PartBase } from './partbase.js';
 import {worldScale} from '../constants.js';
+import { t } from '../i18n.js';
 
 const capacitorRadius =  0.041168 / 2;
 const lowerAngleLimit = -288 * (1/360)*2*Math.PI;
@@ -260,15 +261,15 @@ export class CapacitorPart extends PartBase
         let capacitanceString = "";
         if (this.capacitance < 0.001)
         {
-            capacitanceString = (this.capacitance * 1000000).toString() + " μF";
+            capacitanceString = (this.capacitance * 1000000).toString() + " " + t('unit.microfarad');
         }
         if (this.capacitance >= 0.001 && this.capacitance < 1)
         {
-            capacitanceString = (this.capacitance * 1000).toString() + " mF";
+            capacitanceString = (this.capacitance * 1000).toString() + " " + t('unit.millifarad');
         }
         else if (this.capacitance >= 1)
         {
-            capacitanceString = (this.capacitance).toString() + " F";
+            capacitanceString = (this.capacitance).toString() + " " + t('unit.farad');
         }
         return capacitanceString;
     }

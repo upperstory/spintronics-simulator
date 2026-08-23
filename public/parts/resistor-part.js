@@ -1,5 +1,6 @@
 import { PartBase } from './partbase.js';
 import {worldScale} from '../constants.js';
+import { t } from '../i18n.js';
 
 const resistorRadius = 0.041168 / 2;
 
@@ -141,15 +142,15 @@ export class ResistorPart extends PartBase
         let resistanceString = "";
         if (this.resistance < 1000)
         {
-            resistanceString = this.resistance.toString() + " Ω";
+            resistanceString = this.resistance.toString() + " " + t('unit.ohm');
         }
         if (this.resistance >= 1000 && this.resistance < 1000000)
         {
-            resistanceString = (this.resistance / 1000).toString() + " kΩ";
+            resistanceString = (this.resistance / 1000).toString() + " " + t('unit.kiloohm');
         }
         else if (this.resistance >= 1000000)
         {
-            resistanceString = (this.resistance / 1000000).toString() + " MΩ";
+            resistanceString = (this.resistance / 1000000).toString() + " " + t('unit.megaohm');
         }
         return resistanceString;
     }
