@@ -1,5 +1,6 @@
 import { PartBase } from './partbase.js';
 import {worldScale} from '../constants.js';
+import { t } from '../i18n.js';
 const inductorSprocketRadius = 0.025771 / 2;
 
 export class InductorPart extends PartBase
@@ -133,19 +134,19 @@ export class InductorPart extends PartBase
 
         if (this.inductance < 0.001)
         {
-            inductanceString = (this.inductance * 1000000).toString() + " μH";
+            inductanceString = (this.inductance * 1000000).toString() + " " + t('unit.microhenry');
         }
         if (this.inductance >= 0.001 && this.inductance < 1)
         {
-            inductanceString = (this.inductance * 1000).toString() + " mH";
+            inductanceString = (this.inductance * 1000).toString() + " " + t('unit.millihenry');
         }
         if (this.inductance >= 1 && this.inductance < 1000)
         {
-            inductanceString = (this.inductance * 1).toString() + " H";
+            inductanceString = (this.inductance * 1).toString() + " " + t('unit.henry');
         }
         else if (this.inductance >= 1000)
         {
-            inductanceString = (this.inductance / 1000).toString() + " kH";
+            inductanceString = (this.inductance / 1000).toString() + " " + t('unit.kilohenry');
         }
         return inductanceString;
     }

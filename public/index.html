@@ -74,6 +74,21 @@
     <!-- Preloaded items -->
     <link rel="preload" href="https://fonts.googleapis.com/css?family=Roboto&display=swap" as="style">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap">
+
+    <!-- i18n bootstrap: detect language and patch the static HTML strings
+         (title, meta description, preloader text) before the simulator boots.
+         Runs as a module so it executes after parse but before
+         spintronicssimulator.js (also a module) in document order. -->
+    <script type="module">
+        import { initI18n, getLanguage, t } from './i18n.js';
+        initI18n();
+        document.documentElement.lang = getLanguage();
+        document.title = t('html.title');
+        const desc = document.querySelector('meta[name="description"]');
+        if (desc) desc.setAttribute('content', t('html.description'));
+        const preloaderText = document.querySelector('#prepreloader-box p');
+        if (preloaderText) preloaderText.textContent = t('preloader.loading');
+    </script>
 </head>
 
 <body>

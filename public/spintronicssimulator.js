@@ -3,6 +3,10 @@ import { PartBase } from './parts/partbase.js';
 import { PartManager } from './part-manager.js';
 import { PopupLevelChooser } from './popup-level-chooser.js';
 import {tileSpacing} from './constants.js';
+import { t, initI18n } from './i18n.js';
+
+// Detect language (URL ?lang=xx, localStorage, or browser) before any UI is built.
+initI18n();
 
 let mapWidth = 10000;
 let mapHeight = 10000;
@@ -120,7 +124,7 @@ function preload ()
     this.loadingText = this.make.text({
         x: width / 2,
         y: height / 2 - 20,
-        text: 'Loading...',
+        text: t('loading.text'),
         style: {
             font: '20px Roboto',
             fill: '#3a3a3c'
@@ -165,7 +169,7 @@ function preload ()
     }.bind(this));
 
     this.load.on('fileprogress', function (file) {
-        this.assetText.setText('Loading asset: ' + file.key);
+        this.assetText.setText(t('loading.asset', { key: file.key }));
     }.bind(this));
 
     this.load.on('complete', function () {
@@ -370,40 +374,40 @@ function create ()
     let topMargin = 6;
     this.chainbutton = new ToggleButton(controlscene, 'chain', buttonX, topMargin + 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'chain-icon', onSwitchToggled, 'button-disabled-background');
     this.chainbutton.setButtonType('toggle');
-    this.chainbutton.setTooltipString('Add chain loop', 'right');
+    this.chainbutton.setTooltipString(t('tooltip.chain'), 'right');
     this.junctionbutton = new ToggleButton(controlscene, 'junction', buttonX, topMargin + 35+75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'junction-icon', onSwitchToggled, 'button-disabled-background');
     this.junctionbutton.setButtonType('toggle');
-    this.junctionbutton.setTooltipString('Junction', 'right');
+    this.junctionbutton.setTooltipString(t('tooltip.junction'), 'right');
     this.motorbutton = new ToggleButton(controlscene, 'motor', buttonX, topMargin + 35+2*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'motor-icon', onSwitchToggled, 'button-disabled-background');
     this.motorbutton.setButtonType('toggle');
-    this.motorbutton.setTooltipString('Battery', 'right');
+    this.motorbutton.setTooltipString(t('tooltip.motor'), 'right');
     this.resistorbutton = new ToggleButton(controlscene, 'resistor', buttonX, topMargin + 35+3*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'resistor-icon', onSwitchToggled, 'button-disabled-background');
     this.resistorbutton.setButtonType('toggle');
-    this.resistorbutton.setTooltipString('Resistor', 'right');
+    this.resistorbutton.setTooltipString(t('tooltip.resistor'), 'right');
     this.capacitorbutton = new ToggleButton(controlscene, 'capacitor', buttonX, topMargin + 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'capacitor-icon', onSwitchToggled, 'button-disabled-background');
     this.capacitorbutton.setButtonType('toggle');
-    this.capacitorbutton.setTooltipString('Capacitor', 'right');
+    this.capacitorbutton.setTooltipString(t('tooltip.capacitor'), 'right');
     this.inductorbutton = new ToggleButton(controlscene, 'inductor', buttonX, topMargin + 35+5*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'inductor-icon', onSwitchToggled, 'button-disabled-background');
     this.inductorbutton.setButtonType('toggle');
-    this.inductorbutton.setTooltipString('Inductor', 'right');
+    this.inductorbutton.setTooltipString(t('tooltip.inductor'), 'right');
     this.phonographbutton = new ToggleButton(controlscene, 'phonograph', buttonX, topMargin + 35+6*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'phonograph-icon', onSwitchToggled, 'button-disabled-background');
     this.phonographbutton.setButtonType('toggle');
-    this.phonographbutton.setTooltipString('Ammeter', 'right');
+    this.phonographbutton.setTooltipString(t('tooltip.phonograph'), 'right');
     this.diodebutton = new ToggleButton(controlscene, 'diode', buttonX, topMargin + 35+7*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'diode-icon', onSwitchToggled, 'button-disabled-background');
     this.diodebutton.setButtonType('toggle');
-    this.diodebutton.setTooltipString('Diode', 'right');
+    this.diodebutton.setTooltipString(t('tooltip.diode'), 'right');
     this.buttonbutton = new ToggleButton(controlscene, 'button', buttonX, topMargin + 35+8*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'button-icon', onSwitchToggled, 'button-disabled-background');
     this.buttonbutton.setButtonType('toggle');
-    this.buttonbutton.setTooltipString('Switch', 'right');
+    this.buttonbutton.setTooltipString(t('tooltip.button'), 'right');
     this.transistorbutton = new ToggleButton(controlscene, 'transistor', buttonX, topMargin + 35+9*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'transistor-icon', onSwitchToggled, 'button-disabled-background');
     this.transistorbutton.setButtonType('toggle');
-    this.transistorbutton.setTooltipString('Transistor', 'right');
+    this.transistorbutton.setTooltipString(t('tooltip.transistor'), 'right');
     this.levelchangerbutton = new ToggleButton(controlscene, 'level-changer', buttonX, topMargin + 35+10*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'level-changer-icon', onSwitchToggled, 'button-disabled-background');
     this.levelchangerbutton.setButtonType('toggle');
-    this.levelchangerbutton.setTooltipString('Level changer', 'right');
+    this.levelchangerbutton.setTooltipString(t('tooltip.levelChanger'), 'right');
     this.tilebutton = new ToggleButton(controlscene, 'tile', buttonX, topMargin + 35+11*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'tile-icon', onSwitchToggled, 'button-disabled-background');
     this.tilebutton.setButtonType('toggle');
-    this.tilebutton.setTooltipString('Tile', 'right');
+    this.tilebutton.setTooltipString(t('tooltip.tile'), 'right');
 
 
     // Right side toolbar
@@ -411,30 +415,30 @@ function create ()
     let rightSideToolbarPositionX = spaceWidth - 10 - buttonWidth / 2;
     this.interactbutton = new ToggleButton(controlscene, 'interact', rightSideToolbarPositionX, 35, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'interact-icon', onSwitchToggled, 'button-disabled-background');
     this.interactbutton.setButtonType('toggle');
-    this.interactbutton.setTooltipString('Interact', 'left');
+    this.interactbutton.setTooltipString(t('tooltip.interact'), 'left');
     this.movebutton = new ToggleButton(controlscene, 'move', rightSideToolbarPositionX, 35+75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'move-icon', onSwitchToggled, 'button-disabled-background');
     this.movebutton.setButtonType('toggle');
-    this.movebutton.setTooltipString('Reposition part', 'left');
+    this.movebutton.setTooltipString(t('tooltip.move'), 'left');
     this.deletebutton = new ToggleButton(controlscene, 'delete', rightSideToolbarPositionX, 35+2*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'delete-icon', onSwitchToggled, 'button-disabled-background');
     this.deletebutton.setButtonType('toggle');
-    this.deletebutton.setTooltipString('Remove part', 'left');
+    this.deletebutton.setTooltipString(t('tooltip.delete'), 'left');
     this.editbutton = new ToggleButton(controlscene, 'edit', rightSideToolbarPositionX, 35+3*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'edit-icon', onSwitchToggled, 'button-disabled-background');
     this.editbutton.setButtonType('toggle');
-    this.editbutton.setTooltipString('Change part properties', 'left');
+    this.editbutton.setTooltipString(t('tooltip.edit'), 'left');
     this.removeallbutton = new ToggleButton(controlscene, 'remove-all', rightSideToolbarPositionX, 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'remove-all-icon', onRemoveAllClicked, 'button-disabled-background');
-    this.removeallbutton.setTooltipString('Remove all', 'left');
+    this.removeallbutton.setTooltipString(t('tooltip.removeAll'), 'left');
     this.zoominbutton = new ToggleButton(controlscene, 'zoom-in', rightSideToolbarPositionX, 35+4*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-in-icon', onZoomInClicked, 'button-disabled-background');
-    this.zoominbutton.setTooltipString('Zoom in', 'left');
+    this.zoominbutton.setTooltipString(t('tooltip.zoomIn'), 'left');
     this.zoomoutbutton = new ToggleButton(controlscene, 'zoom-out', rightSideToolbarPositionX, 35+5*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'zoom-out-icon', onZoomOutClicked, 'button-disabled-background');
-    this.zoomoutbutton.setTooltipString('Zoom out', 'left');
+    this.zoomoutbutton.setTooltipString(t('tooltip.zoomOut'), 'left');
     this.linkbutton = new ToggleButton(controlscene, 'link', rightSideToolbarPositionX, 35+6*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'link-icon', onGenerateLinkClicked, 'button-disabled-background');
-    this.linkbutton.setTooltipString('Copy circuit to clipboard', 'left');
+    this.linkbutton.setTooltipString(t('tooltip.link'), 'left');
     this.savebutton = new ToggleButton(controlscene, 'save', rightSideToolbarPositionX, 35+7*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'save-icon', onSaveClicked, 'button-disabled-background');
-    this.savebutton.setTooltipString('Save circuit', 'left');
+    this.savebutton.setTooltipString(t('tooltip.save'), 'left');
     this.loadbutton = new ToggleButton(controlscene, 'load', rightSideToolbarPositionX, 35+8*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'load-icon', onLoadClicked, 'button-disabled-background');
-    this.loadbutton.setTooltipString('Load circuit', 'left');
+    this.loadbutton.setTooltipString(t('tooltip.load'), 'left');
     this.fullscreenbutton = new ToggleButton(controlscene, 'full-editor', rightSideToolbarPositionX, 35+9*75, buttonWidth, buttonHeight, 'button-default-background', 'button-hover-background', 'button-selected-background', 'full-screen-icon', onFullEditorClicked, 'button-disabled-background');
-    this.fullscreenbutton.setTooltipString('Open in full simulator', 'left');
+    this.fullscreenbutton.setTooltipString(t('tooltip.fullEditor'), 'left');
 
     if (this.viewOnly)
     {
@@ -743,10 +747,10 @@ async function onGenerateLinkClicked (name, newToggleState)
 
         let form = `
                     <div style="font-family: 'Roboto'; font-size: 16px; position: absolute; transform: translate(-50%, -50%); box-sizing: border-box; background-color: rgba(255, 255, 255, 1); border-color: black; border-width: 1px; border-style: solid; border-radius: 10px; width: 300px; padding-top: 10px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px;" >
-                        <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'"><b>Cannot create link:</b></p>
-                        <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'">There are no parts in your circuit!</p>
+                        <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'"><b>${t('link.error.noPartsTitle')}</b></p>
+                        <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'">${t('link.error.noPartsBody')}</p>
                         <div style="width: 100%; text-align: right;">
-                            <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="doneButton" value="OK">
+                            <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="doneButton" value="${t('dialog.ok')}">
                         </div>
                     </div>
                    `;
@@ -810,14 +814,14 @@ async function onGenerateLinkClicked (name, newToggleState)
 
                     let form = `
                         <div style="font-family: 'Roboto'; font-size: 16px; position: absolute; transform: translate(-50%, -50%); box-sizing: border-box; background-color: rgba(255, 255, 255, 1); border-color: black; border-width: 1px; border-style: solid; border-radius: 10px; width: 300px; padding-top: 10px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px;" >
-                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'"><b>Link created successfully!</b></p>
-                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'">Copy the following link and paste it into a browser to load your circuit:</p>
+                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'"><b>${t('link.success.title')}</b></p>
+                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'">${t('link.success.body')}</p>
                             <div style="width:100%; display:flex">
                                 <input style="flex: 2; box-sizing: border-box; margin-bottom: 10px; font-family: 'Roboto'; font-size: 16px" type="text" name="linkField" placeholder="" value="" disabled>
                             </div>
                             <div style="width: 100%; text-align: right;">
-                                <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="copyButton" value="Copy">
-                                <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="doneButton" value="Done">
+                                <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="copyButton" value="${t('link.success.copy')}">
+                                <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="doneButton" value="${t('link.success.done')}">
                             </div>
                         </div>
                        `;
@@ -864,10 +868,10 @@ async function onGenerateLinkClicked (name, newToggleState)
 
                 let form = `
                         <div style="font-family: 'Roboto'; font-size: 16px; position: absolute; transform: translate(-50%, -50%); box-sizing: border-box; background-color: rgba(255, 255, 255, 1); border-color: black; border-width: 1px; border-style: solid; border-radius: 10px; width: 300px; padding-top: 10px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px;" >
-                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'"><b>Error creating link:</b></p>
-                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'">Unfortunately, a link could not be created. Please contact hello@upperstory.com so we can fix the problem.</p>
+                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'"><b>${t('link.error.title')}</b></p>
+                            <p style="margin-top: 0px; margin-bottom: 10px; font-family: 'Roboto'">${t('link.error.body')}</p>
                             <div style="width: 100%; text-align: right;">
-                                <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="doneButton" value="OK">
+                                <input style="box-sizing: border-box; display: inline-block; font-family: 'Roboto'; font-size: 16px;" type="button" name="doneButton" value="${t('dialog.ok')}">
                             </div>
                         </div>
                        `;
@@ -1803,7 +1807,7 @@ function onPointerDown(pointer, currentlyOver)
                         let menuItems = [];
                         for (let i = 0; i < availableLevels.length; i++)
                         {
-                            menuItems.push({name: 'Level ' + (availableLevels[i]+1)});
+                            menuItems.push({name: t('level.n', { n: availableLevels[i]+1 })});
                         }
 
                         //Now create the popup menu.
